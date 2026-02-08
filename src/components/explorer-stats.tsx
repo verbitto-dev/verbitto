@@ -1,28 +1,18 @@
-'use client';
+'use client'
 
-import { Icons } from '@/components/icons';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { lamportsToSol, usePlatform, useTasks } from '@/hooks/use-program';
+import { Icons } from '@/components/icons'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { lamportsToSol, usePlatform, useTasks } from '@/hooks/use-program'
 
 export function ExplorerStats() {
-  const { platform, loading: pLoading } = usePlatform();
-  const { tasks, loading: tLoading } = useTasks();
+  const { platform, loading: pLoading } = usePlatform()
+  const { tasks, loading: tLoading } = useTasks()
 
-  const loading = pLoading || tLoading;
+  const loading = pLoading || tLoading
 
-  const openTasks = tasks.filter((t) => t.status === 'Open').length;
-  const settledTasks = tasks.filter(
-    (t) => t.status === 'Approved',
-  ).length;
-  const disputedTasks = tasks.filter(
-    (t) => t.status === 'Disputed',
-  ).length;
+  const openTasks = tasks.filter((t) => t.status === 'Open').length
+  const settledTasks = tasks.filter((t) => t.status === 'Approved').length
+  const disputedTasks = tasks.filter((t) => t.status === 'Disputed').length
 
   const stats = [
     {
@@ -37,11 +27,7 @@ export function ExplorerStats() {
     },
     {
       label: 'Total Settled (SOL)',
-      value: loading
-        ? '—'
-        : platform
-          ? lamportsToSol(platform.totalSettledLamports)
-          : '0',
+      value: loading ? '—' : platform ? lamportsToSol(platform.totalSettledLamports) : '0',
       icon: Icons.wallet,
     },
     {
@@ -56,12 +42,10 @@ export function ExplorerStats() {
     },
     {
       label: 'Templates',
-      value: loading
-        ? '—'
-        : String(platform?.templateCount ?? 0),
+      value: loading ? '—' : String(platform?.templateCount ?? 0),
       icon: Icons.layoutTemplate,
     },
-  ];
+  ]
 
   return (
     <>
@@ -85,9 +69,7 @@ export function ExplorerStats() {
         <Card className="mt-12">
           <CardHeader>
             <CardTitle>Platform Configuration</CardTitle>
-            <CardDescription>
-              Live on-chain platform parameters (devnet)
-            </CardDescription>
+            <CardDescription>Live on-chain platform parameters (devnet)</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
@@ -95,16 +77,10 @@ export function ExplorerStats() {
                 <tbody className="divide-y">
                   {[
                     ['Fee Rate', `${platform.feeBps / 100}%`],
-                    [
-                      'Min Bounty',
-                      `${lamportsToSol(platform.minBountyLamports)} SOL`,
-                    ],
+                    ['Min Bounty', `${lamportsToSol(platform.minBountyLamports)} SOL`],
                     ['Dispute Voting Period', `${platform.disputeVotingPeriod}s`],
                     ['Min Votes to Resolve', String(platform.disputeMinVotes)],
-                    [
-                      'Min Voter Reputation',
-                      String(platform.minVoterReputation),
-                    ],
+                    ['Min Voter Reputation', String(platform.minVoterReputation)],
                     ['Claim Grace Period', `${platform.claimGracePeriod}s`],
                     ['Paused', platform.isPaused ? 'Yes' : 'No'],
                   ].map(([label, value]) => (
@@ -125,16 +101,14 @@ export function ExplorerStats() {
         <Card className="mt-12">
           <CardContent className="flex flex-col items-center justify-center py-24">
             <Icons.search className="size-12 text-muted-foreground/50 mb-4" />
-            <CardTitle className="text-center mb-2">
-              Platform Not Initialized
-            </CardTitle>
+            <CardTitle className="text-center mb-2">Platform Not Initialized</CardTitle>
             <CardDescription className="text-center max-w-md">
-              The Verbitto platform has not been initialized on devnet yet.
-              Deploy the program and run initialize_platform to see live stats.
+              The Verbitto platform has not been initialized on devnet yet. Deploy the program and
+              run initialize_platform to see live stats.
             </CardDescription>
           </CardContent>
         </Card>
       )}
     </>
-  );
+  )
 }

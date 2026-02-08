@@ -1,25 +1,24 @@
-import type { Metadata } from 'next';
+import type { Metadata } from 'next'
 
-import { DocContent } from '@/components/doc-content';
+import { DocContent } from '@/components/doc-content'
 import {
+  Callout,
   CodeBlock,
   H2,
-  H3,
   InlineCode,
-  Callout,
-  Steps,
   Step,
+  Steps,
   Table,
+  Td,
+  Th,
   Thead,
   Tr,
-  Th,
-  Td,
-} from '@/components/doc-primitives';
+} from '@/components/doc-primitives'
 
 export const metadata: Metadata = {
   title: 'Devnet Deployment — Verbitto Docs',
   description: 'Deploy the Verbitto program to Solana devnet.',
-};
+}
 
 const toc = [
   { id: 'prerequisites', title: 'Prerequisites', depth: 2 },
@@ -29,7 +28,7 @@ const toc = [
   { id: 'verify-deployment', title: 'Verify Deployment', depth: 2 },
   { id: 'upgrade-program', title: 'Upgrade Program', depth: 2 },
   { id: 'troubleshooting', title: 'Troubleshooting', depth: 2 },
-];
+]
 
 export default function DevnetDeploymentPage() {
   return (
@@ -75,28 +74,26 @@ solana config set --keypair ~/.config/solana/devnet.json`}</CodeBlock>
           <CodeBlock>{`solana address -k target/deploy/task_escrow-keypair.json`}</CodeBlock>
           <p className="mt-2 leading-7">
             Ensure this matches the <InlineCode>declare_id!</InlineCode> in{' '}
-            <InlineCode>lib.rs</InlineCode> and{' '}
-            <InlineCode>Anchor.toml</InlineCode>.
+            <InlineCode>lib.rs</InlineCode> and <InlineCode>Anchor.toml</InlineCode>.
           </p>
         </Step>
         <Step title="Deploy">
           <CodeBlock>{`anchor deploy --provider.cluster devnet`}</CodeBlock>
           <Callout type="info">
-            Deployment costs approximately 3–4 SOL for rent-exempt storage.
-            Ensure your wallet has sufficient balance.
+            Deployment costs approximately 3–4 SOL for rent-exempt storage. Ensure your wallet has
+            sufficient balance.
           </Callout>
         </Step>
       </Steps>
 
       <H2 id="initialize-platform">Initialize Platform</H2>
       <p className="mt-4 leading-7">
-        After deployment, the Platform PDA must be initialised before any tasks
-        can be created.
+        After deployment, the Platform PDA must be initialised before any tasks can be created.
       </p>
       <CodeBlock title="Initialize via test script">{`anchor test --skip-deploy --provider.cluster devnet`}</CodeBlock>
       <p className="mt-2 leading-7">
-        Or call <InlineCode>initialize_platform</InlineCode> directly with your
-        deployment keypair as the authority:
+        Or call <InlineCode>initialize_platform</InlineCode> directly with your deployment keypair
+        as the authority:
       </p>
       <CodeBlock>{`// Example params
 feeBps:          250,   // 2.5%
@@ -111,63 +108,83 @@ minVoterRep:     100`}</CodeBlock>
       <H2 id="verify-deployment">Verify Deployment</H2>
       <Table>
         <Thead>
-          <Tr><Th>Check</Th><Th>Command</Th></Tr>
+          <Tr>
+            <Th>Check</Th>
+            <Th>Command</Th>
+          </Tr>
         </Thead>
         <tbody>
           <Tr>
             <Td>Program exists</Td>
-            <Td><InlineCode>solana program show {'<PROGRAM_ID>'}</InlineCode></Td>
+            <Td>
+              <InlineCode>solana program show {'<PROGRAM_ID>'}</InlineCode>
+            </Td>
           </Tr>
           <Tr>
             <Td>Platform PDA</Td>
-            <Td><InlineCode>anchor account task_escrow.Platform {'<PDA>'}</InlineCode></Td>
+            <Td>
+              <InlineCode>anchor account task_escrow.Platform {'<PDA>'}</InlineCode>
+            </Td>
           </Tr>
           <Tr>
             <Td>IDL uploaded</Td>
-            <Td><InlineCode>anchor idl fetch {'<PROGRAM_ID>'} --provider.cluster devnet</InlineCode></Td>
+            <Td>
+              <InlineCode>anchor idl fetch {'<PROGRAM_ID>'} --provider.cluster devnet</InlineCode>
+            </Td>
           </Tr>
         </tbody>
       </Table>
       <Callout type="info">
         Upload the IDL on-chain so explorers can parse your transactions:{' '}
-        <InlineCode>anchor idl init {'<PROGRAM_ID>'} -f target/idl/task_escrow.json --provider.cluster devnet</InlineCode>
+        <InlineCode>
+          anchor idl init {'<PROGRAM_ID>'} -f target/idl/task_escrow.json --provider.cluster devnet
+        </InlineCode>
       </Callout>
 
       <H2 id="upgrade-program">Upgrade Program</H2>
-      <p className="mt-4 leading-7">
-        To upgrade an existing deployment:
-      </p>
+      <p className="mt-4 leading-7">To upgrade an existing deployment:</p>
       <CodeBlock>{`anchor build
 anchor upgrade target/deploy/task_escrow.so \\
   --program-id 4r3ciYyag1GhBjep45mTs7nGa92kpYfRj3pqFnDqckP5 \\
   --provider.cluster devnet`}</CodeBlock>
       <Callout type="warning">
-        Only the upgrade authority can upgrade the program. By default this is
-        the deploy keypair. Transfer or revoke the upgrade authority for
-        production deployments.
+        Only the upgrade authority can upgrade the program. By default this is the deploy keypair.
+        Transfer or revoke the upgrade authority for production deployments.
       </Callout>
 
       <H2 id="troubleshooting">Troubleshooting</H2>
       <Table>
         <Thead>
-          <Tr><Th>Problem</Th><Th>Solution</Th></Tr>
+          <Tr>
+            <Th>Problem</Th>
+            <Th>Solution</Th>
+          </Tr>
         </Thead>
         <tbody>
           <Tr>
             <Td>Insufficient funds</Td>
-            <Td>Run <InlineCode>solana airdrop 2</InlineCode> (max 2 SOL per request)</Td>
+            <Td>
+              Run <InlineCode>solana airdrop 2</InlineCode> (max 2 SOL per request)
+            </Td>
           </Tr>
           <Tr>
             <Td>Program ID mismatch</Td>
-            <Td>Update <InlineCode>declare_id!</InlineCode> and Anchor.toml to match the keypair</Td>
+            <Td>
+              Update <InlineCode>declare_id!</InlineCode> and Anchor.toml to match the keypair
+            </Td>
           </Tr>
           <Tr>
             <Td>Buffer account too small</Td>
-            <Td>Close the buffer and re-deploy: <InlineCode>solana program close --buffers</InlineCode></Td>
+            <Td>
+              Close the buffer and re-deploy:{' '}
+              <InlineCode>solana program close --buffers</InlineCode>
+            </Td>
           </Tr>
           <Tr>
             <Td>Transaction too large</Td>
-            <Td>Use <InlineCode>anchor deploy</InlineCode> which handles chunked writes</Td>
+            <Td>
+              Use <InlineCode>anchor deploy</InlineCode> which handles chunked writes
+            </Td>
           </Tr>
           <Tr>
             <Td>RPC rate limit</Td>
@@ -176,5 +193,5 @@ anchor upgrade target/deploy/task_escrow.so \\
         </tbody>
       </Table>
     </DocContent>
-  );
+  )
 }

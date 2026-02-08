@@ -1,23 +1,19 @@
-'use client';
+'use client'
 
-import React from 'react';
-
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-
-import { cn } from '@/lib/utils';
-import type { DocsConfig } from '@/config/docs';
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import React from 'react'
+import type { DocsConfig } from '@/config/docs'
+import { cn } from '@/lib/utils'
 
 export function DocsNav({ config }: { config: DocsConfig }) {
-  const pathname = usePathname();
+  const pathname = usePathname()
 
   return (
     <nav className="w-full pr-4 pt-4">
       {config.sidebarNav.map((section, i) => (
         <div key={i} className="mb-4">
-          <h4 className="mb-1 px-2 text-sm font-semibold tracking-tight">
-            {section.title}
-          </h4>
+          <h4 className="mb-1 px-2 text-sm font-semibold tracking-tight">{section.title}</h4>
           {section.items && (
             <div className="grid grid-flow-row auto-rows-max gap-0.5 text-sm">
               {section.items.map((item, j) => (
@@ -69,5 +65,5 @@ export function DocsNav({ config }: { config: DocsConfig }) {
         </div>
       ))}
     </nav>
-  );
+  )
 }

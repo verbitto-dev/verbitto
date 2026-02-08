@@ -1,36 +1,29 @@
-'use client';
+'use client'
 
-import React from 'react';
-
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-
-import { Icons } from '@/components/icons';
-import { DocsTableOfContents } from '@/components/docs-toc';
-import { getPagerForDoc } from '@/config/docs';
-import { cn } from '@/lib/utils';
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import type React from 'react'
+import { DocsTableOfContents } from '@/components/docs-toc'
+import { Icons } from '@/components/icons'
+import { getPagerForDoc } from '@/config/docs'
+import { cn } from '@/lib/utils'
 
 type TocItem = {
-  id: string;
-  title: string;
-  depth: number;
-};
-
-interface DocContentProps {
-  title: string;
-  description?: string;
-  toc?: TocItem[];
-  children: React.ReactNode;
+  id: string
+  title: string
+  depth: number
 }
 
-export function DocContent({
-  title,
-  description,
-  toc,
-  children,
-}: DocContentProps) {
-  const pathname = usePathname();
-  const { previous, next } = getPagerForDoc(pathname);
+interface DocContentProps {
+  title: string
+  description?: string
+  toc?: TocItem[]
+  children: React.ReactNode
+}
+
+export function DocContent({ title, description, toc, children }: DocContentProps) {
+  const pathname = usePathname()
+  const { previous, next } = getPagerForDoc(pathname)
 
   return (
     <div className="relative flex items-stretch lg:w-full">
@@ -112,5 +105,5 @@ export function DocContent({
         </div>
       )}
     </div>
-  );
+  )
 }

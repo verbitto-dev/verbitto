@@ -1,0 +1,9 @@
+node_modules
+.next
+.anchor
+target
+dist
+build
+public
+*.tsbuildinfo
+next-env.d.ts

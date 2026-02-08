@@ -1,13 +1,13 @@
-import type { Metadata } from 'next';
+import type { Metadata } from 'next'
 
-import { ExplorerStats } from '@/components/explorer-stats';
-import { SiteFooter } from '@/components/site-footer';
-import { Badge } from '@/components/ui/badge';
+import { ExplorerStats } from '@/components/explorer-stats'
+import { SiteFooter } from '@/components/site-footer'
+import { Badge } from '@/components/ui/badge'
 
 export const metadata: Metadata = {
   title: 'Explorer',
   description: 'Browse Verbitto platform activity on Solana.',
-};
+}
 
 export default function ExplorerPage() {
   return (
@@ -17,9 +17,7 @@ export default function ExplorerPage() {
           <Badge variant="outline" className="mb-4">
             Explorer
           </Badge>
-          <h1 className="text-4xl font-bold tracking-tight md:text-5xl">
-            Platform Explorer
-          </h1>
+          <h1 className="text-4xl font-bold tracking-tight md:text-5xl">Platform Explorer</h1>
           <p className="mt-4 text-lg text-muted-foreground">
             Browse real-time on-chain activity of the Verbitto task escrow platform.
           </p>
@@ -30,5 +28,5 @@ export default function ExplorerPage() {
 
       <SiteFooter />
     </>
-  );
+  )
 }

@@ -1,12 +1,8 @@
-import Balance from 'react-wrap-balancer';
+import Balance from 'react-wrap-balancer'
 
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/utils'
 
-function PageHeader({
-  children,
-  className,
-  ...props
-}: React.HTMLAttributes<HTMLDivElement>) {
+function PageHeader({ children, className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <section
       className={cn(
@@ -17,13 +13,10 @@ function PageHeader({
     >
       <div className="container flex w-full flex-col items-center">{children}</div>
     </section>
-  );
+  )
 }
 
-function PageHeaderHeading({
-  className,
-  ...props
-}: React.HTMLAttributes<HTMLHeadingElement>) {
+function PageHeaderHeading({ className, ...props }: React.HTMLAttributes<HTMLHeadingElement>) {
   return (
     <h1
       className={cn(
@@ -32,7 +25,7 @@ function PageHeaderHeading({
       )}
       {...props}
     />
-  );
+  )
 }
 
 function PageHeaderDescription({
@@ -41,28 +34,19 @@ function PageHeaderDescription({
 }: React.HTMLAttributes<HTMLParagraphElement>) {
   return (
     <Balance
-      className={cn(
-        'max-w-2xl text-balance text-center text-muted-foreground text-lg',
-        className
-      )}
+      className={cn('max-w-2xl text-balance text-center text-muted-foreground text-lg', className)}
       {...props}
     />
-  );
+  )
 }
 
-function PageActions({
-  className,
-  ...props
-}: React.HTMLAttributes<HTMLDivElement>) {
+function PageActions({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div
-      className={cn(
-        'flex w-full items-center justify-start gap-2 pt-2',
-        className
-      )}
+      className={cn('flex w-full items-center justify-start gap-2 pt-2', className)}
       {...props}
     />
-  );
+  )
 }
 
-export { PageActions, PageHeader, PageHeaderDescription, PageHeaderHeading };
+export { PageActions, PageHeader, PageHeaderDescription, PageHeaderHeading }

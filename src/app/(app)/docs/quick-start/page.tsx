@@ -1,21 +1,12 @@
-import type { Metadata } from 'next';
+import type { Metadata } from 'next'
 
-import { DocContent } from '@/components/doc-content';
-import {
-  Callout,
-  CodeBlock,
-  H2,
-  H3,
-  InlineCode,
-  Steps,
-  Step,
-} from '@/components/doc-primitives';
+import { DocContent } from '@/components/doc-content'
+import { Callout, CodeBlock, H2 } from '@/components/doc-primitives'
 
 export const metadata: Metadata = {
   title: 'Quick Start — Verbitto Docs',
-  description:
-    'Build, test, and deploy your first Verbitto task escrow in 5 minutes.',
-};
+  description: 'Build, test, and deploy your first Verbitto task escrow in 5 minutes.',
+}
 
 const toc = [
   { id: 'overview', title: 'Overview', depth: 2 },
@@ -25,7 +16,7 @@ const toc = [
   { id: 'step-4-initialize', title: '4. Initialize Platform', depth: 2 },
   { id: 'step-5-interact', title: '5. Create Your First Task', depth: 2 },
   { id: 'whats-next', title: "What's Next", depth: 2 },
-];
+]
 
 export default function QuickStartPage() {
   return (
@@ -36,17 +27,13 @@ export default function QuickStartPage() {
     >
       <H2 id="overview">Overview</H2>
       <p className="mt-4 leading-7">
-        This guide walks you through building the Verbitto program, running the
-        test suite, deploying to Solana devnet, and creating your first
-        on-chain task.
+        This guide walks you through building the Verbitto program, running the test suite,
+        deploying to Solana devnet, and creating your first on-chain task.
       </p>
 
       <Callout type="info" title="Prerequisites">
         Make sure you have completed the{' '}
-        <a
-          href="/docs/installation"
-          className="font-medium underline underline-offset-4"
-        >
+        <a href="/docs/installation" className="font-medium underline underline-offset-4">
           Installation
         </a>{' '}
         guide before proceeding.
@@ -57,9 +44,7 @@ export default function QuickStartPage() {
         {`cd verbitto
 anchor build`}
       </CodeBlock>
-      <p className="mt-4 leading-7">
-        Verify the build succeeded and the program ID matches:
-      </p>
+      <p className="mt-4 leading-7">Verify the build succeeded and the program ID matches:</p>
       <CodeBlock title="Terminal">
         {`solana address -k target/deploy/task_escrow-keypair.json
 # Should output: 4r3ciYyag1GhBjep45mTs7nGa92kpYfRj3pqFnDqckP5`}
@@ -67,13 +52,11 @@ anchor build`}
 
       <H2 id="step-2-test">2. Run Tests</H2>
       <p className="mt-4 leading-7">
-        Verbitto includes comprehensive tests covering the full task lifecycle
-        including negative test cases:
+        Verbitto includes comprehensive tests covering the full task lifecycle including negative
+        test cases:
       </p>
       <CodeBlock title="Terminal">{`anchor test`}</CodeBlock>
-      <p className="mt-4 leading-7">
-        The test suite covers:
-      </p>
+      <p className="mt-4 leading-7">The test suite covers:</p>
       <ul className="mt-2 ml-6 list-disc space-y-1 leading-7">
         <li>Platform initialization and configuration</li>
         <li>Task creation, claiming, submission, and settlement</li>
@@ -97,12 +80,9 @@ anchor deploy`}
       </CodeBlock>
 
       <Callout type="warning" title="Devnet Only">
-        Verbitto is currently configured for devnet deployment only. Do not
-        deploy to mainnet without completing the{' '}
-        <a
-          href="/docs/deployment/security"
-          className="font-medium underline underline-offset-4"
-        >
+        Verbitto is currently configured for devnet deployment only. Do not deploy to mainnet
+        without completing the{' '}
+        <a href="/docs/deployment/security" className="font-medium underline underline-offset-4">
           Security Checklist
         </a>
         .
@@ -190,24 +170,18 @@ console.log('Task created at:', taskPda.toBase58());`}
           — Understand the full state machine
         </li>
         <li>
-          <a
-            href="/docs/api"
-            className="font-medium underline underline-offset-4"
-          >
+          <a href="/docs/api" className="font-medium underline underline-offset-4">
             Program API
           </a>{' '}
           — Complete instruction reference
         </li>
         <li>
-          <a
-            href="/docs/guides/frontend"
-            className="font-medium underline underline-offset-4"
-          >
+          <a href="/docs/guides/frontend" className="font-medium underline underline-offset-4">
             Frontend Integration
           </a>{' '}
           — Connect a wallet and read on-chain data
         </li>
       </ul>
     </DocContent>
-  );
+  )
 }

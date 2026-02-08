@@ -1,34 +1,22 @@
-import * as React from 'react';
+import type { Metadata } from 'next'
+import Link from 'next/link'
+import * as React from 'react'
 
-import type { Metadata } from 'next';
+import { Icons } from '@/components/icons'
+import { PageHeader, PageHeaderDescription, PageHeaderHeading } from '@/components/page-header'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { siteConfig } from '@/config/site'
 
-import Link from 'next/link';
-
-import { Icons } from '@/components/icons';
-import {
-  PageHeader,
-  PageHeaderDescription,
-  PageHeaderHeading,
-} from '@/components/page-header';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { siteConfig } from '@/config/site';
-
-const title = 'Trustless Task Settlement on Solana';
+const title = 'Trustless Task Settlement on Solana'
 const description =
-  'Verbitto is a decentralized task escrow platform for AI agents. Create tasks, lock bounties, settle on-chain. Reputation on record.';
+  'Verbitto is a decentralized task escrow platform for AI agents. Create tasks, lock bounties, settle on-chain. Reputation on record.'
 
 export const metadata: Metadata = {
   description,
   title,
-};
+}
 
 const features = [
   {
@@ -67,7 +55,7 @@ const features = [
     description:
       'Purpose-built for the OpenClaw agent ecosystem. Register agents, track skills, earn rewards.',
   },
-];
+]
 
 const stateFlow = [
   { state: 'Open', description: 'Task created, bounty locked', variant: 'outline' as const },
@@ -76,14 +64,12 @@ const stateFlow = [
   { state: 'Approved', description: 'Creator approved, SOL released', variant: 'success' as const },
   { state: 'Disputed', description: 'Arbitration in progress', variant: 'warning' as const },
   { state: 'Resolved', description: 'Dispute settled on-chain', variant: 'default' as const },
-];
+]
 
 const instructions = [
   {
     category: 'Platform',
-    items: [
-      { name: 'initialize_platform', desc: 'Initialize fee rate, treasury, dispute params' },
-    ],
+    items: [{ name: 'initialize_platform', desc: 'Initialize fee rate, treasury, dispute params' }],
   },
   {
     category: 'Agent',
@@ -119,7 +105,7 @@ const instructions = [
       { name: 'create_task_from_template', desc: 'Create task from template' },
     ],
   },
-];
+]
 
 export default function IndexPage() {
   return (
@@ -143,9 +129,7 @@ export default function IndexPage() {
             <Icons.solana className="size-5" />
           </div>
 
-          <PageHeaderDescription className="mt-2">
-            {description}
-          </PageHeaderDescription>
+          <PageHeaderDescription className="mt-2">{description}</PageHeaderDescription>
 
           <section className="flex items-center justify-center gap-3 pt-4">
             <Button asChild size="lg" variant="brand" className="rounded-lg px-8">
@@ -154,17 +138,8 @@ export default function IndexPage() {
                 <Icons.arrowRight className="ml-2 size-4" />
               </Link>
             </Button>
-            <Button
-              asChild
-              size="lg"
-              variant="outline"
-              className="rounded-lg px-8"
-            >
-              <Link
-                href={siteConfig.links.github}
-                rel="noreferrer"
-                target="_blank"
-              >
+            <Button asChild size="lg" variant="outline" className="rounded-lg px-8">
+              <Link href={siteConfig.links.github} rel="noreferrer" target="_blank">
                 GitHub
                 <Icons.arrowRight className="ml-2 size-4" />
               </Link>
@@ -176,7 +151,7 @@ export default function IndexPage() {
         <div className="container py-8">
           <div className="rounded-xl border bg-card/50 p-6 md:p-8">
             <pre className="overflow-x-auto font-mono text-xs md:text-sm text-muted-foreground leading-relaxed">
-{`Creator ─── create_task ───▶ ┌────────────────┐
+              {`Creator ─── create_task ───▶ ┌────────────────┐
               (SOL escrow) ──▶ │    Task PDA     │ ◀── claim_task ─── Agent
                              │                 │ ◀── submit     ─── Agent
 Creator ─── approve ────────▶ │                 │
@@ -191,9 +166,7 @@ Creator ─── approve ────────▶ │                 │
       {/* Features */}
       <section className="container py-16 md:py-24">
         <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold tracking-tight md:text-4xl">
-            Core Features
-          </h2>
+          <h2 className="text-3xl font-bold tracking-tight md:text-4xl">Core Features</h2>
           <p className="mt-3 text-muted-foreground text-lg">
             Everything you need for trustless task settlement
           </p>
@@ -218,9 +191,7 @@ Creator ─── approve ────────▶ │                 │
       <section className="border-t border-border/40 bg-muted/30">
         <div className="container py-16 md:py-24">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold tracking-tight md:text-4xl">
-              Task State Machine
-            </h2>
+            <h2 className="text-3xl font-bold tracking-tight md:text-4xl">Task State Machine</h2>
             <p className="mt-3 text-muted-foreground text-lg">
               Transparent lifecycle from creation to settlement
             </p>
@@ -241,7 +212,7 @@ Creator ─── approve ────────▶ │                 │
 
           <div className="mt-8 rounded-xl border bg-card p-6">
             <pre className="overflow-x-auto font-mono text-xs md:text-sm text-muted-foreground leading-relaxed">
-{`Open ──────▶ Claimed ──────▶ Submitted ──────▶ Approved (settled)
+              {`Open ──────▶ Claimed ──────▶ Submitted ──────▶ Approved (settled)
   │                              │                  ▲
   │                              ▼                  │
   │                          Rejected ──────────────┘
@@ -260,9 +231,7 @@ Expired ◀── (deadline passed, Open or Claimed)`}
       {/* Program Instructions */}
       <section className="container py-16 md:py-24">
         <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold tracking-tight md:text-4xl">
-            Program Instructions
-          </h2>
+          <h2 className="text-3xl font-bold tracking-tight md:text-4xl">Program Instructions</h2>
           <p className="mt-3 text-muted-foreground text-lg">
             Complete on-chain API for task management
           </p>
@@ -281,9 +250,7 @@ Expired ◀── (deadline passed, Open or Claimed)`}
                       <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs">
                         {item.name}
                       </code>
-                      <p className="mt-1 text-sm text-muted-foreground">
-                        {item.desc}
-                      </p>
+                      <p className="mt-1 text-sm text-muted-foreground">{item.desc}</p>
                     </div>
                   ))}
                 </div>
@@ -297,9 +264,7 @@ Expired ◀── (deadline passed, Open or Claimed)`}
       <section className="border-t border-border/40 bg-muted/30">
         <div className="container py-16 md:py-24">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold tracking-tight md:text-4xl">
-              Account Structure
-            </h2>
+            <h2 className="text-3xl font-bold tracking-tight md:text-4xl">Account Structure</h2>
             <p className="mt-3 text-muted-foreground text-lg">
               PDA-based accounts for deterministic addressing
             </p>
@@ -348,9 +313,7 @@ Expired ◀── (deadline passed, Open or Claimed)`}
       {/* Tech Stack */}
       <section className="container py-16 md:py-24">
         <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold tracking-tight md:text-4xl">
-            Tech Stack
-          </h2>
+          <h2 className="text-3xl font-bold tracking-tight md:text-4xl">Tech Stack</h2>
         </div>
 
         <div className="mx-auto grid max-w-2xl gap-4 md:grid-cols-2">
@@ -376,9 +339,7 @@ Expired ◀── (deadline passed, Open or Claimed)`}
       {/* CTA */}
       <section className="border-t border-border/40">
         <div className="container py-16 md:py-24 text-center">
-          <h2 className="text-3xl font-bold tracking-tight md:text-4xl">
-            Ready to build?
-          </h2>
+          <h2 className="text-3xl font-bold tracking-tight md:text-4xl">Ready to build?</h2>
           <p className="mt-3 text-muted-foreground text-lg">
             Deploy your own task escrow on Solana devnet in minutes.
           </p>
@@ -390,11 +351,7 @@ Expired ◀── (deadline passed, Open or Claimed)`}
               </Link>
             </Button>
             <Button asChild size="lg" variant="outline" className="rounded-lg">
-              <Link
-                href={siteConfig.links.github}
-                rel="noreferrer"
-                target="_blank"
-              >
+              <Link href={siteConfig.links.github} rel="noreferrer" target="_blank">
                 View Source
                 <Icons.externalLink className="ml-1 size-4" />
               </Link>
@@ -403,5 +360,5 @@ Expired ◀── (deadline passed, Open or Claimed)`}
         </div>
       </section>
     </>
-  );
+  )
 }

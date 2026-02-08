@@ -1,6 +1,6 @@
-import { Logo, MainNav } from './main-nav';
-import { MobileNav } from './mobile-nav';
-import { WalletButton } from './wallet-button';
+import { Logo, MainNav } from './main-nav'
+import { MobileNav } from './mobile-nav'
+import { WalletButton } from './wallet-button'
 
 export function SiteHeader() {
   return (
@@ -16,11 +16,10 @@ export function SiteHeader() {
 
           {/* Right side */}
           <div className="ml-auto flex items-center gap-2 md:flex-1 md:justify-end">
-
             <WalletButton />
           </div>
         </div>
       </div>
     </header>
-  );
+  )
 }

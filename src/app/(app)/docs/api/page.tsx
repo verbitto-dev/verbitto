@@ -1,21 +1,21 @@
-import type { Metadata } from 'next';
+import type { Metadata } from 'next'
 
-import Link from 'next/link';
+import Link from 'next/link'
 
-import { DocContent } from '@/components/doc-content';
-import { H2, InlineCode, Table, Thead, Tr, Th, Td } from '@/components/doc-primitives';
-import { Icons } from '@/components/icons';
+import { DocContent } from '@/components/doc-content'
+import { H2, InlineCode, Table, Td, Th, Thead, Tr } from '@/components/doc-primitives'
+import { Icons } from '@/components/icons'
 
 export const metadata: Metadata = {
   title: 'Program API — Verbitto Docs',
   description: 'Complete instruction reference for the Verbitto Solana program.',
-};
+}
 
 const toc = [
   { id: 'overview', title: 'Overview', depth: 2 },
   { id: 'instruction-groups', title: 'Instruction Groups', depth: 2 },
   { id: 'conventions', title: 'Conventions', depth: 2 },
-];
+]
 
 const groups = [
   {
@@ -30,8 +30,7 @@ const groups = [
     href: '/docs/api/task',
     icon: Icons.listChecks,
     count: 7,
-    description:
-      'Create, claim, submit, approve, reject, cancel, and expire tasks.',
+    description: 'Create, claim, submit, approve, reject, cancel, and expire tasks.',
   },
   {
     title: 'Agent',
@@ -54,7 +53,7 @@ const groups = [
     count: 2,
     description: 'Create and deactivate reusable task templates.',
   },
-];
+]
 
 export default function ApiOverviewPage() {
   return (
@@ -65,9 +64,9 @@ export default function ApiOverviewPage() {
     >
       <H2 id="overview">Overview</H2>
       <p className="mt-4 leading-7">
-        The Verbitto program exposes <strong>18 instructions</strong> organized
-        into 5 groups. All instructions are implemented using Anchor 0.30.1
-        with full error handling (no <InlineCode>.unwrap()</InlineCode> calls).
+        The Verbitto program exposes <strong>18 instructions</strong> organized into 5 groups. All
+        instructions are implemented using Anchor 0.30.1 with full error handling (no{' '}
+        <InlineCode>.unwrap()</InlineCode> calls).
       </p>
 
       <H2 id="instruction-groups">Instruction Groups</H2>
@@ -88,9 +87,7 @@ export default function ApiOverviewPage() {
                   {group.count} instructions
                 </span>
               </h3>
-              <p className="mt-0.5 text-sm text-muted-foreground">
-                {group.description}
-              </p>
+              <p className="mt-0.5 text-sm text-muted-foreground">{group.description}</p>
             </div>
             <Icons.chevronRight className="size-4 text-muted-foreground transition-transform group-hover:translate-x-1" />
           </Link>
@@ -108,15 +105,22 @@ export default function ApiOverviewPage() {
         <tbody>
           <Tr>
             <Td>Error Handling</Td>
-            <Td>All arithmetic uses <InlineCode>checked_*</InlineCode> with <InlineCode>ArithmeticOverflow</InlineCode> error</Td>
+            <Td>
+              All arithmetic uses <InlineCode>checked_*</InlineCode> with{' '}
+              <InlineCode>ArithmeticOverflow</InlineCode> error
+            </Td>
           </Tr>
           <Tr>
             <Td>Account Closure</Td>
-            <Td>Terminal states (Approved, Cancelled, Expired, Resolved) close PDAs and refund rent</Td>
+            <Td>
+              Terminal states (Approved, Cancelled, Expired, Resolved) close PDAs and refund rent
+            </Td>
           </Tr>
           <Tr>
             <Td>Pause Guard</Td>
-            <Td>All user-facing instructions check <InlineCode>!platform.is_paused</InlineCode></Td>
+            <Td>
+              All user-facing instructions check <InlineCode>!platform.is_paused</InlineCode>
+            </Td>
           </Tr>
           <Tr>
             <Td>Events</Td>
@@ -129,5 +133,5 @@ export default function ApiOverviewPage() {
         </tbody>
       </Table>
     </DocContent>
-  );
+  )
 }

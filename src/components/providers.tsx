@@ -1,8 +1,8 @@
-'use client';
+'use client'
 
-import { ThemeProvider as NextThemesProvider } from 'next-themes';
+import { ThemeProvider as NextThemesProvider } from 'next-themes'
 
-import { SolanaProvider } from './solana-provider';
+import { SolanaProvider } from './solana-provider'
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
@@ -15,5 +15,5 @@ export function Providers({ children }: { children: React.ReactNode }) {
     >
       <SolanaProvider>{children}</SolanaProvider>
     </NextThemesProvider>
-  );
+  )
 }

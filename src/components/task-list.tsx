@@ -1,30 +1,19 @@
-'use client';
+'use client'
 
-import { useWallet } from '@solana/wallet-adapter-react';
-import { useWalletModal } from '@solana/wallet-adapter-react-ui';
+import { useWallet } from '@solana/wallet-adapter-react'
+import { useWalletModal } from '@solana/wallet-adapter-react-ui'
 
-import { Icons } from '@/components/icons';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import {
-  formatDeadline,
-  lamportsToSol,
-  shortKey,
-  useTasks,
-} from '@/hooks/use-program';
-import { STATUS_VARIANTS, type TaskStatus } from '@/lib/program';
+import { Icons } from '@/components/icons'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { formatDeadline, lamportsToSol, shortKey, useTasks } from '@/hooks/use-program'
+import { STATUS_VARIANTS, type TaskStatus } from '@/lib/program'
 
 export function TaskList() {
-  const { publicKey } = useWallet();
-  const { setVisible } = useWalletModal();
-  const { tasks, loading, error, refetch } = useTasks();
+  const { publicKey } = useWallet()
+  const { setVisible } = useWalletModal()
+  const { tasks, loading, error, refetch } = useTasks()
 
   return (
     <>
@@ -59,9 +48,7 @@ export function TaskList() {
       {/* Error */}
       {error && (
         <Card className="border-destructive/50">
-          <CardContent className="py-8 text-center text-sm text-destructive">
-            {error}
-          </CardContent>
+          <CardContent className="py-8 text-center text-sm text-destructive">{error}</CardContent>
         </Card>
       )}
 
@@ -98,9 +85,7 @@ export function TaskList() {
                     )}
                   </CardDescription>
                 </div>
-                <Badge
-                  variant={STATUS_VARIANTS[task.status as TaskStatus] ?? 'outline'}
-                >
+                <Badge variant={STATUS_VARIANTS[task.status as TaskStatus] ?? 'outline'}>
                   {task.status}
                 </Badge>
               </CardHeader>
@@ -116,8 +101,7 @@ export function TaskList() {
             <Icons.listChecks className="size-12 text-muted-foreground/50 mb-4" />
             <CardTitle className="text-center mb-2">No Tasks Found</CardTitle>
             <CardDescription className="text-center max-w-md">
-              No tasks exist on-chain yet. Connect your wallet and create the
-              first task on devnet!
+              No tasks exist on-chain yet. Connect your wallet and create the first task on devnet!
             </CardDescription>
           </CardContent>
         </Card>
@@ -128,18 +112,11 @@ export function TaskList() {
         <Card className="mt-12">
           <CardContent className="flex flex-col items-center justify-center py-16">
             <Icons.lock className="size-12 text-muted-foreground/50 mb-4" />
-            <CardTitle className="text-center mb-2">
-              Connect Wallet to Interact
-            </CardTitle>
+            <CardTitle className="text-center mb-2">Connect Wallet to Interact</CardTitle>
             <CardDescription className="text-center max-w-md">
-              Connect a Solana wallet to create, claim, and settle tasks on
-              devnet.
+              Connect a Solana wallet to create, claim, and settle tasks on devnet.
             </CardDescription>
-            <Button
-              variant="brand"
-              className="mt-6 rounded-lg"
-              onClick={() => setVisible(true)}
-            >
+            <Button variant="brand" className="mt-6 rounded-lg" onClick={() => setVisible(true)}>
               <Icons.wallet className="mr-1 size-4" />
               Connect Wallet
             </Button>
@@ -147,5 +124,5 @@ export function TaskList() {
         </Card>
       )}
     </>
-  );
+  )
 }

@@ -1,13 +1,12 @@
-import React from 'react';
+import type { Metadata, Viewport } from 'next'
+import type React from 'react'
 
-import type { Metadata, Viewport } from 'next';
+import { Providers } from '@/components/providers'
+import { META_THEME_COLORS, siteConfig } from '@/config/site'
+import { fontMono, fontSans } from '@/lib/fonts'
+import { cn } from '@/lib/utils'
 
-import { Providers } from '@/components/providers';
-import { META_THEME_COLORS, siteConfig } from '@/config/site';
-import { fontMono, fontSans } from '@/lib/fonts';
-import { cn } from '@/lib/utils';
-
-import '@/app/globals.css';
+import '@/app/globals.css'
 
 export const metadata: Metadata = {
   authors: [
@@ -49,17 +48,13 @@ export const metadata: Metadata = {
     description: siteConfig.description,
     title: siteConfig.name,
   },
-};
+}
 
 export const viewport: Viewport = {
   themeColor: META_THEME_COLORS.light,
-};
+}
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -86,11 +81,9 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         <Providers>
-          <div className="relative flex min-h-svh flex-col bg-background">
-            {children}
-          </div>
+          <div className="relative flex min-h-svh flex-col bg-background">{children}</div>
         </Providers>
       </body>
     </html>
-  );
+  )
 }

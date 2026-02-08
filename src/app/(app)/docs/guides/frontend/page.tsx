@@ -1,20 +1,12 @@
-import type { Metadata } from 'next';
+import type { Metadata } from 'next'
 
-import { DocContent } from '@/components/doc-content';
-import {
-  CodeBlock,
-  H2,
-  H3,
-  InlineCode,
-  Callout,
-  Steps,
-  Step,
-} from '@/components/doc-primitives';
+import { DocContent } from '@/components/doc-content'
+import { Callout, CodeBlock, H2, InlineCode, Step, Steps } from '@/components/doc-primitives'
 
 export const metadata: Metadata = {
   title: 'Frontend Integration — Verbitto Docs',
   description: 'Connect your frontend to the Verbitto on-chain program.',
-};
+}
 
 const toc = [
   { id: 'wallet-setup', title: 'Wallet Setup', depth: 2 },
@@ -23,7 +15,7 @@ const toc = [
   { id: 'reading-accounts', title: 'Reading Accounts', depth: 2 },
   { id: 'sending-transactions', title: 'Sending Transactions', depth: 2 },
   { id: 'event-listening', title: 'Event Listening', depth: 2 },
-];
+]
 
 export default function FrontendGuidePage() {
   return (
@@ -34,8 +26,8 @@ export default function FrontendGuidePage() {
     >
       <H2 id="wallet-setup">Wallet Setup</H2>
       <p className="mt-4 leading-7">
-        Verbitto uses <InlineCode>@solana/wallet-adapter-react</InlineCode> for
-        wallet connectivity. Wrap your app with the required providers.
+        Verbitto uses <InlineCode>@solana/wallet-adapter-react</InlineCode> for wallet connectivity.
+        Wrap your app with the required providers.
       </p>
       <CodeBlock title="providers.tsx">{`import { WalletAdapterNetwork } from '@solana/wallet-adapter-base';
 import {
@@ -59,14 +51,14 @@ export function SolanaProviders({ children }: { children: React.ReactNode }) {
   );
 }`}</CodeBlock>
       <Callout type="info">
-        Passing an empty <InlineCode>wallets</InlineCode> array enables
-        Wallet Standard auto-detection (Phantom, Solflare, etc.).
+        Passing an empty <InlineCode>wallets</InlineCode> array enables Wallet Standard
+        auto-detection (Phantom, Solflare, etc.).
       </Callout>
 
       <H2 id="anchor-provider">Anchor Provider</H2>
       <p className="mt-4 leading-7">
-        Create an Anchor <InlineCode>Program</InlineCode> instance from the
-        connected wallet and the IDL.
+        Create an Anchor <InlineCode>Program</InlineCode> instance from the connected wallet and the
+        IDL.
       </p>
       <CodeBlock title="useProgram.ts">{`import { useConnection, useWallet } from '@solana/wallet-adapter-react';
 import { AnchorProvider, Program } from '@coral-xyz/anchor';
@@ -92,8 +84,7 @@ export function useProgram() {
 
       <H2 id="deriving-pdas">Deriving PDAs</H2>
       <p className="mt-4 leading-7">
-        All Verbitto accounts are Program Derived Addresses. Use deterministic
-        seeds to locate them.
+        All Verbitto accounts are Program Derived Addresses. Use deterministic seeds to locate them.
       </p>
       <CodeBlock title="pdas.ts">{`import { PublicKey } from '@solana/web3.js';
 import BN from 'bn.js';
@@ -154,8 +145,7 @@ export function findTemplatePDA(creator: PublicKey, index: BN) {
 
       <H2 id="reading-accounts">Reading Accounts</H2>
       <p className="mt-4 leading-7">
-        Fetch and deserialise on-chain accounts using Anchor's built-in account
-        deserialisers.
+        Fetch and deserialise on-chain accounts using Anchor's built-in account deserialisers.
       </p>
       <CodeBlock title="Fetch a single task">{`const [taskPDA] = findTaskPDA(creatorPubkey, new BN(0));
 const task = await program.account.task.fetch(taskPDA);
@@ -200,9 +190,7 @@ await connection.confirmTransaction({
       </Steps>
 
       <H2 id="event-listening">Event Listening</H2>
-      <p className="mt-4 leading-7">
-        Subscribe to Anchor events for real-time updates.
-      </p>
+      <p className="mt-4 leading-7">Subscribe to Anchor events for real-time updates.</p>
       <CodeBlock>{`const listener = program.addEventListener('TaskCreated', (event) => {
   console.log('New task:', event.task.toString());
   console.log('Creator:', event.creator.toString());
@@ -211,9 +199,9 @@ await connection.confirmTransaction({
 // Clean up on unmount
 return () => program.removeEventListener(listener);`}</CodeBlock>
       <Callout type="warning">
-        Always remove event listeners in your component cleanup to prevent
-        memory leaks and duplicate subscriptions.
+        Always remove event listeners in your component cleanup to prevent memory leaks and
+        duplicate subscriptions.
       </Callout>
     </DocContent>
-  );
+  )
 }

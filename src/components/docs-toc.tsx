@@ -1,51 +1,51 @@
-'use client';
+'use client'
 
-import * as React from 'react';
+import * as React from 'react'
 
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/utils'
 
 type TocItem = {
-  id: string;
-  title: string;
-  depth: number;
-};
+  id: string
+  title: string
+  depth: number
+}
 
 function useActiveItem(itemIds: string[]) {
-  const [activeId, setActiveId] = React.useState<string | null>(null);
+  const [activeId, setActiveId] = React.useState<string | null>(null)
 
   React.useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {
           if (entry.isIntersecting) {
-            setActiveId(entry.target.id);
+            setActiveId(entry.target.id)
           }
         }
       },
       { rootMargin: '0% 0% -80% 0%' }
-    );
+    )
 
     for (const id of itemIds) {
-      const element = document.getElementById(id);
-      if (element) observer.observe(element);
+      const element = document.getElementById(id)
+      if (element) observer.observe(element)
     }
 
     return () => {
       for (const id of itemIds) {
-        const element = document.getElementById(id);
-        if (element) observer.unobserve(element);
+        const element = document.getElementById(id)
+        if (element) observer.unobserve(element)
       }
-    };
-  }, [itemIds]);
+    }
+  }, [itemIds])
 
-  return activeId;
+  return activeId
 }
 
 export function DocsTableOfContents({ items }: { items: TocItem[] }) {
-  const itemIds = React.useMemo(() => items.map((item) => item.id), [items]);
-  const activeId = useActiveItem(itemIds);
+  const itemIds = React.useMemo(() => items.map((item) => item.id), [items])
+  const activeId = useActiveItem(itemIds)
 
-  if (!items.length) return null;
+  if (!items.length) return null
 
   return (
     <div className="space-y-2">
@@ -67,5 +67,5 @@ export function DocsTableOfContents({ items }: { items: TocItem[] }) {
         ))}
       </div>
     </div>
-  );
+  )
 }

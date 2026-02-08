@@ -1,28 +1,28 @@
-import type { Metadata } from 'next';
+import type { Metadata } from 'next'
 
-import { DocContent } from '@/components/doc-content';
+import { DocContent } from '@/components/doc-content'
 import {
+  Callout,
+  CodeBlock,
   H2,
   InlineCode,
   Table,
+  Td,
+  Th,
   Thead,
   Tr,
-  Th,
-  Td,
-  Callout,
-  CodeBlock,
-} from '@/components/doc-primitives';
+} from '@/components/doc-primitives'
 
 export const metadata: Metadata = {
   title: 'Error Handling — Verbitto Docs',
   description: 'Complete error code reference for the Verbitto program.',
-};
+}
 
 const toc = [
   { id: 'overview', title: 'Overview', depth: 2 },
   { id: 'error-codes', title: 'Error Code Table', depth: 2 },
   { id: 'client-handling', title: 'Client-Side Handling', depth: 2 },
-];
+]
 
 const errors = [
   { name: 'InvalidFee', code: 6000, msg: 'Fee basis points must be ≤ 5000 (50%)' },
@@ -33,7 +33,11 @@ const errors = [
   { name: 'InvalidRepReward', code: 6005, msg: 'Reputation reward must be 0–1000' },
   { name: 'TaskNotOpen', code: 6006, msg: 'Task is not in Open status' },
   { name: 'TaskExpired', code: 6007, msg: 'Task has passed its deadline' },
-  { name: 'TaskNotClaimedOrRejected', code: 6008, msg: 'Task is not in Claimed or Rejected status' },
+  {
+    name: 'TaskNotClaimedOrRejected',
+    code: 6008,
+    msg: 'Task is not in Claimed or Rejected status',
+  },
   { name: 'NotAssignedAgent', code: 6009, msg: 'Caller is not the assigned agent' },
   { name: 'TaskNotSubmitted', code: 6010, msg: 'Task is not in Submitted status' },
   { name: 'NotTaskCreator', code: 6011, msg: 'Caller is not the task creator' },
@@ -52,15 +56,23 @@ const errors = [
   { name: 'DisputeTaskMismatch', code: 6024, msg: 'Dispute does not reference this task' },
   { name: 'InvalidTreasury', code: 6025, msg: 'Treasury account does not match platform config' },
   { name: 'NotProfileOwner', code: 6026, msg: 'Caller is not the profile owner' },
-  { name: 'InsufficientReputation', code: 6027, msg: 'Voter reputation is below the minimum required to vote' },
+  {
+    name: 'InsufficientReputation',
+    code: 6027,
+    msg: 'Voter reputation is below the minimum required to vote',
+  },
   { name: 'PlatformPaused', code: 6028, msg: 'Platform is paused' },
   { name: 'PlatformAlreadyPaused', code: 6029, msg: 'Platform is already paused' },
   { name: 'PlatformNotPaused', code: 6030, msg: 'Platform is not paused' },
   { name: 'NotPlatformAuthority', code: 6031, msg: 'Caller is not the platform authority' },
   { name: 'ArithmeticOverflow', code: 6032, msg: 'Arithmetic overflow in calculation' },
-  { name: 'MaxRejectionsReached', code: 6033, msg: 'Maximum rejection limit reached — task auto-disputed' },
+  {
+    name: 'MaxRejectionsReached',
+    code: 6033,
+    msg: 'Maximum rejection limit reached — task auto-disputed',
+  },
   { name: 'InvalidTaskIndex', code: 6034, msg: 'Task index does not match creator counter' },
-];
+]
 
 export default function ErrorsGuidePage() {
   return (
@@ -71,9 +83,9 @@ export default function ErrorsGuidePage() {
     >
       <H2 id="overview">Overview</H2>
       <p className="mt-4 leading-7">
-        The Verbitto program defines <strong>{errors.length}</strong> custom
-        error codes under the <InlineCode>VerbittoError</InlineCode> enum.
-        Anchor assigns each variant a numeric code starting at 6000.
+        The Verbitto program defines <strong>{errors.length}</strong> custom error codes under the{' '}
+        <InlineCode>VerbittoError</InlineCode> enum. Anchor assigns each variant a numeric code
+        starting at 6000.
       </p>
 
       <H2 id="error-codes">Error Code Table</H2>
@@ -88,8 +100,12 @@ export default function ErrorsGuidePage() {
         <tbody>
           {errors.map((e) => (
             <Tr key={e.code}>
-              <Td><InlineCode>{e.code}</InlineCode></Td>
-              <Td><InlineCode>{e.name}</InlineCode></Td>
+              <Td>
+                <InlineCode>{e.code}</InlineCode>
+              </Td>
+              <Td>
+                <InlineCode>{e.name}</InlineCode>
+              </Td>
               <Td>{e.msg}</Td>
             </Tr>
           ))}
@@ -98,8 +114,8 @@ export default function ErrorsGuidePage() {
 
       <H2 id="client-handling">Client-Side Handling</H2>
       <p className="mt-4 leading-7">
-        Anchor wraps program errors in an <InlineCode>AnchorError</InlineCode>.
-        Parse them on the client to display user-friendly messages.
+        Anchor wraps program errors in an <InlineCode>AnchorError</InlineCode>. Parse them on the
+        client to display user-friendly messages.
       </p>
       <CodeBlock title="Error handling pattern">{`import { AnchorError } from '@coral-xyz/anchor';
 
@@ -123,11 +139,10 @@ try {
   }
 }`}</CodeBlock>
       <Callout type="info">
-        The <InlineCode>errorCode.code</InlineCode> field is the string variant
-        name (e.g., &quot;TaskNotOpen&quot;), while{' '}
-        <InlineCode>errorCode.number</InlineCode> is the numeric code (e.g.,
-        6006).
+        The <InlineCode>errorCode.code</InlineCode> field is the string variant name (e.g.,
+        &quot;TaskNotOpen&quot;), while <InlineCode>errorCode.number</InlineCode> is the numeric
+        code (e.g., 6006).
       </Callout>
     </DocContent>
-  );
+  )
 }

@@ -1,13 +1,13 @@
-import * as React from 'react';
+import type * as React from 'react'
 
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/utils'
 
 function Badge({
   className,
   variant = 'default',
   ...props
 }: React.HTMLAttributes<HTMLDivElement> & {
-  variant?: 'default' | 'secondary' | 'destructive' | 'outline' | 'success' | 'warning';
+  variant?: 'default' | 'secondary' | 'destructive' | 'outline' | 'success' | 'warning'
 }) {
   const variants: Record<string, string> = {
     default: 'border-transparent bg-primary text-primary-foreground shadow',
@@ -16,7 +16,7 @@ function Badge({
     outline: 'text-foreground',
     success: 'border-transparent bg-success text-white shadow',
     warning: 'border-transparent bg-warning text-black shadow',
-  };
+  }
 
   return (
     <div
@@ -27,7 +27,7 @@ function Badge({
       )}
       {...props}
     />
-  );
+  )
 }
 
-export { Badge };
+export { Badge }

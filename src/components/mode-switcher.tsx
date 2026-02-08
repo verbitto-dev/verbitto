@@ -1,16 +1,16 @@
-'use client';
+'use client'
 
-import * as React from 'react';
-import { useTheme } from 'next-themes';
+import { useTheme } from 'next-themes'
+import * as React from 'react'
 
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/ui/button'
 
 export function ModeSwitcher() {
-  const { resolvedTheme, setTheme } = useTheme();
+  const { resolvedTheme, setTheme } = useTheme()
 
   const toggleTheme = React.useCallback(() => {
-    setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
-  }, [resolvedTheme, setTheme]);
+    setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')
+  }, [resolvedTheme, setTheme])
 
   return (
     <Button
@@ -42,5 +42,5 @@ export function ModeSwitcher() {
       </svg>
       <span className="sr-only">Toggle theme</span>
     </Button>
-  );
+  )
 }

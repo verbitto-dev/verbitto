@@ -1,24 +1,20 @@
-'use client';
+'use client'
 
-import * as React from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import * as React from 'react'
 
-import { Button } from '@/components/ui/button';
-import { siteConfig } from '@/config/site';
-import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button'
+import { siteConfig } from '@/config/site'
+import { cn } from '@/lib/utils'
 
 export function MobileNav({ className }: { className?: string }) {
-  const [open, setOpen] = React.useState(false);
-  const router = useRouter();
+  const [open, setOpen] = React.useState(false)
+  const router = useRouter()
 
   return (
     <div className={className}>
-      <Button
-        variant="ghost"
-        className="size-8 p-0"
-        onClick={() => setOpen(!open)}
-      >
+      <Button variant="ghost" className="size-8 p-0" onClick={() => setOpen(!open)}>
         <div className="relative size-4">
           <span
             className={cn(
@@ -45,8 +41,8 @@ export function MobileNav({ className }: { className?: string }) {
                 href={item.href}
                 className="text-xl font-medium"
                 onClick={() => {
-                  setOpen(false);
-                  router.push(item.href);
+                  setOpen(false)
+                  router.push(item.href)
                 }}
               >
                 {item.label}
@@ -56,5 +52,5 @@ export function MobileNav({ className }: { className?: string }) {
         </div>
       )}
     </div>
-  );
+  )
 }

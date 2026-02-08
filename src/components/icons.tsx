@@ -33,7 +33,7 @@ import {
   Wallet,
   X,
   Zap,
-} from 'lucide-react';
+} from 'lucide-react'
 
 export const Icons = {
   anchor: Anchor,
@@ -72,8 +72,18 @@ export const Icons = {
   zap: Zap,
   logo: (props: React.SVGProps<SVGSVGElement>) => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" {...props}>
-      <rect width="32" height="32" rx="6" fill="#2563eb"/>
-      <text x="16" y="23" fontFamily="system-ui,sans-serif" fontSize="20" fontWeight="700" fill="white" textAnchor="middle">V</text>
+      <rect width="32" height="32" rx="6" fill="#2563eb" />
+      <text
+        x="16"
+        y="23"
+        fontFamily="system-ui,sans-serif"
+        fontSize="20"
+        fontWeight="700"
+        fill="white"
+        textAnchor="middle"
+      >
+        V
+      </text>
     </svg>
   ),
   x: (props: React.SVGProps<SVGSVGElement>) => (
@@ -88,4 +98,4 @@ export const Icons = {
       <path d="M16.73 10.13a.75.75 0 0 0-.53-.22H1.6a.37.37 0 0 0-.27.64l3.19 3.19a.75.75 0 0 0 .53.22h15.13a.37.37 0 0 0 .27-.64l-3.19-3.19z" />
     </svg>
   ),
-};
+}

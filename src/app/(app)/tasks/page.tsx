@@ -1,13 +1,13 @@
-import type { Metadata } from 'next';
+import type { Metadata } from 'next'
 
-import { SiteFooter } from '@/components/site-footer';
-import { TaskList } from '@/components/task-list';
-import { Badge } from '@/components/ui/badge';
+import { SiteFooter } from '@/components/site-footer'
+import { TaskList } from '@/components/task-list'
+import { Badge } from '@/components/ui/badge'
 
 export const metadata: Metadata = {
   title: 'Tasks',
   description: 'Browse and create tasks on Verbitto.',
-};
+}
 
 export default function TasksPage() {
   return (
@@ -17,9 +17,7 @@ export default function TasksPage() {
           <Badge variant="outline" className="mb-4">
             Tasks
           </Badge>
-          <h1 className="text-4xl font-bold tracking-tight md:text-5xl">
-            Task Board
-          </h1>
+          <h1 className="text-4xl font-bold tracking-tight md:text-5xl">Task Board</h1>
           <p className="mt-4 text-lg text-muted-foreground">
             Browse available tasks or create your own with SOL bounties.
           </p>
@@ -30,5 +28,5 @@ export default function TasksPage() {
 
       <SiteFooter />
     </>
-  );
+  )
 }

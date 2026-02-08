@@ -1,16 +1,16 @@
-'use client';
+'use client'
 
-import { useWallet } from '@solana/wallet-adapter-react';
-import { useWalletModal } from '@solana/wallet-adapter-react-ui';
+import { useWallet } from '@solana/wallet-adapter-react'
+import { useWalletModal } from '@solana/wallet-adapter-react-ui'
 
-import { Button } from '@/components/ui/button';
-import { shortKey } from '@/hooks/use-program';
+import { Button } from '@/components/ui/button'
+import { shortKey } from '@/hooks/use-program'
 
-import { Icons } from './icons';
+import { Icons } from './icons'
 
 export function WalletButton() {
-  const { publicKey, disconnect, connecting } = useWallet();
-  const { setVisible } = useWalletModal();
+  const { publicKey, disconnect, connecting } = useWallet()
+  const { setVisible } = useWalletModal()
 
   if (publicKey) {
     return (
@@ -24,7 +24,7 @@ export function WalletButton() {
         <span className="size-2 rounded-full bg-green-500" />
         {shortKey(publicKey)}
       </Button>
-    );
+    )
   }
 
   return (
@@ -38,5 +38,5 @@ export function WalletButton() {
       <Icons.wallet className="size-3.5" />
       {connecting ? 'Connecting…' : 'Connect'}
     </Button>
-  );
+  )
 }
