@@ -1,0 +1,29 @@
+# Rust / Anchor
+target/
+**/*.rs.bk
+*.so
+*.dylib
+
+# Node
+node_modules/
+dist/
+
+# Test / Anchor
+.anchor/
+test-ledger/
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db

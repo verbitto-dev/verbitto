@@ -1,0 +1,19 @@
+[features]
+seeds = false
+skip-lint = false
+
+[programs.devnet]
+task_escrow = "4r3ciYyag1GhBjep45mTs7nGa92kpYfRj3pqFnDqckP5"
+
+[programs.mainnet]
+task_escrow = "4r3ciYyag1GhBjep45mTs7nGa92kpYfRj3pqFnDqckP5"
+
+[registry]
+url = "https://api.apr.dev"
+
+[provider]
+cluster = "devnet"
+wallet = "~/.config/solana/id.json"
+
+[scripts]
+test = "pnpm exec ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"
