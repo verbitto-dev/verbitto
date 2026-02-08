@@ -1,0 +1,19 @@
+[package]
+name = "task-escrow"
+version = "0.1.0"
+description = "VERBITTO Task Settlement — SOL escrow, disputes, templates"
+edition = "2021"
+license = "Apache-2.0"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+
+[features]
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+cpi = ["no-entrypoint"]
+default = []
+
+[dependencies]
+anchor-lang = "0.30.1"
