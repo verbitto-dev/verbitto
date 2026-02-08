@@ -91,7 +91,7 @@ Expired ◀── (deadline passed, Open or Claimed)
 | Component  | Choice                                      | Notes                                  |
 | ---------- | ------------------------------------------- | -------------------------------------- |
 | Network    | **Solana**                                  | Low cost, high throughput              |
-| Framework  | **Anchor 0.30.1**                           | Type-safe Solana development framework |
+| Framework  | **Anchor 0.31.1**                           | Type-safe Solana development framework |
 | Language   | **Rust** (program) / **TypeScript** (tests) |                                        |
 | Settlement | **Native SOL**                              | No extra token contract required       |
 
@@ -102,7 +102,7 @@ Expired ◀── (deadline passed, Open or Claimed)
 - Node.js 18+ (pnpm)
 - Rust 1.85+ (edition2024 support required by dependencies)
 - Solana CLI 1.18.22
-- Anchor CLI 0.30.1 (use `--no-idl` on Rust >= 1.80)
+- Anchor CLI 0.31.1
 
 ### Initial Setup
 
@@ -116,7 +116,7 @@ Expired ◀── (deadline passed, Open or Claimed)
 pnpm install
 
 # 3. Build Anchor program
-anchor build --no-idl
+anchor build
 ```
 
 ### Quick Commands
@@ -124,7 +124,7 @@ anchor build --no-idl
 ```bash
 
 # Build program
-anchor clean && anchor build --no-idl
+anchor clean && anchor build
 
 # Run tests
 anchor test
@@ -155,7 +155,7 @@ Run the setup script to install Solana toolchain:
 
 These warnings are expected and don't affect the build:
 ```
-WARNING: anchor-lang version(0.30.1) and the current CLI version(0.32.1) don't match.
+WARNING: @coral-xyz/anchor version and the current CLI version don't match.
 ```
 
 The toolchain config in `Anchor.toml` ensures compatibility.
