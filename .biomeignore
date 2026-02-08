@@ -1,9 +1,11 @@
 node_modules
 .next
 .anchor
+.contentlayer
 target
 dist
 build
 public
+docs
 *.tsbuildinfo
 next-env.d.ts

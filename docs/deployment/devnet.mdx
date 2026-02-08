@@ -1,0 +1,119 @@
+---
+title: Devnet Deployment
+description: Step-by-step guide to deploy Verbitto on Solana devnet.
+---
+
+## Prerequisites
+
+- Solana CLI ≥ 1.18
+- Anchor CLI 0.30.1
+- A funded devnet keypair
+
+## Configure Cluster
+
+### Set devnet as default
+
+```bash
+solana config set --url devnet
+```
+
+### Generate or use an existing keypair
+
+```bash
+solana-keygen new --outfile ~/.config/solana/devnet.json
+solana config set --keypair ~/.config/solana/devnet.json
+```
+
+### Fund your wallet
+
+```bash
+solana airdrop 2
+```
+
+Repeat if needed — devnet airdrops are capped at 2 SOL per request.
+
+## Build & Deploy
+
+### Build the program
+
+```bash
+anchor build
+```
+
+This compiles the program and generates the IDL at `target/idl/task_escrow.json`.
+
+### Check the program ID
+
+```bash
+solana address -k target/deploy/task_escrow-keypair.json
+```
+
+Ensure this matches the `declare_id!` in `lib.rs` and `Anchor.toml`.
+
+### Deploy
+
+```bash
+anchor deploy --provider.cluster devnet
+```
+
+<Callout type="info">
+Deployment costs approximately 3–4 SOL for rent-exempt storage. Ensure your wallet has sufficient balance.
+</Callout>
+
+## Initialize Platform
+
+After deployment, the Platform PDA must be initialised before any tasks can be created.
+
+```bash
+anchor test --skip-deploy --provider.cluster devnet
+```
+
+Or call `initialize_platform` directly with your deployment keypair as the authority:
+
+| Parameter | Value | Description |
+|-----------|-------|-------------|
+| `fee_bps` | 250 | 2.5% platform fee |
+| `min_bounty` | 10,000,000 | 0.01 SOL minimum |
+| `dispute_window` | 259,200 | 3 days |
+| `voting_period` | 86,400 | 1 day |
+| `min_votes_needed` | 3 | Quorum |
+| `max_rejections` | 3 | Before auto-dispute |
+| `grace_period` | 86,400 | 1 day |
+| `min_voter_rep` | 100 | Minimum reputation |
+
+## Verify Deployment
+
+| Check | Command |
+|-------|---------|
+| Program exists | `solana program show <PROGRAM_ID>` |
+| Platform PDA | `anchor account task_escrow.Platform <PDA>` |
+| IDL uploaded | `anchor idl fetch <PROGRAM_ID> --provider.cluster devnet` |
+
+<Callout type="info">
+Upload the IDL on-chain so explorers can parse your transactions: `anchor idl init <PROGRAM_ID> -f target/idl/task_escrow.json --provider.cluster devnet`
+</Callout>
+
+## Upgrade Program
+
+To upgrade an existing deployment:
+
+```bash
+anchor build
+anchor upgrade target/deploy/task_escrow.so \
+  --program-id 4r3ciYyag1GhBjep45mTs7nGa92kpYfRj3pqFnDqckP5 \
+  --provider.cluster devnet
+```
+
+<Callout type="warning">
+Only the upgrade authority can upgrade the program. By default this is the deploy keypair. Transfer or revoke the upgrade authority for production deployments.
+</Callout>
+
+## Troubleshooting
+
+| Problem | Solution |
+|---------|----------|
+| Insufficient funds | Run `solana airdrop 2` (max 2 SOL per request) |
+| Program ID mismatch | Update `declare_id!` and Anchor.toml to match the keypair |
+| Buffer account too small | Close the buffer and re-deploy: `solana program close --buffers` |
+| Transaction too large | Use `anchor deploy` which handles chunked writes |
+| RPC rate limit | Use a dedicated RPC provider (Helius, QuickNode, Triton) |

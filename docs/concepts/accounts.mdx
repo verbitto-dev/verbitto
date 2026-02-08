@@ -1,0 +1,151 @@
+---
+title: PDA Accounts
+description: All Program Derived Addresses used by Verbitto and their field structures.
+---
+
+## Overview
+
+Verbitto stores all state in seven PDA account types. Every account is derived deterministically from its seeds, so any client can compute the address without on-chain lookups.
+
+## Platform
+
+Seeds: `["platform"]` — singleton, one per program deployment.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `authority` | Pubkey | Admin who can update config |
+| `treasury` | Pubkey | Receives platform fees |
+| `fee_bps` | u16 | Fee in basis points (max 5000) |
+| `min_bounty` | u64 | Minimum bounty in lamports |
+| `task_counter` | u64 | Global task counter |
+| `dispute_window` | i64 | Seconds to open a dispute |
+| `voting_period` | i64 | Seconds for voting |
+| `min_votes_needed` | u16 | Quorum for dispute resolution |
+| `max_rejections` | u8 | Auto-dispute threshold |
+| `grace_period` | i64 | Seconds after deadline before expiry |
+| `min_voter_rep` | i64 | Minimum reputation to vote |
+| `is_paused` | bool | Emergency pause flag |
+| `bump` | u8 | PDA bump seed |
+
+## Task
+
+Seeds: `["task", creator_pubkey, task_index_le_bytes]`
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `creator` | Pubkey | Task creator |
+| `agent` | Option\<Pubkey\> | Assigned agent (None if Open) |
+| `description_hash` | [u8; 32] | SHA-256 of off-chain description |
+| `bounty_amount` | u64 | Locked SOL in lamports |
+| `deadline` | i64 | Unix timestamp |
+| `status` | TaskStatus | Current lifecycle state |
+| `category` | TaskCategory | Task classification |
+| `required_skills` | u64 | Skill bitmap |
+| `rejection_count` | u8 | Number of rejections |
+| `deliverable_hash` | Option\<[u8; 32]\> | Latest submission hash |
+| `task_index` | u64 | Sequential index per creator |
+| `reputation_reward` | u16 | Rep points for completion |
+| `bump` | u8 | PDA bump seed |
+
+## Escrow
+
+Seeds: `["escrow", task_pubkey]` — holds the SOL bounty.
+
+The escrow is a system-owned PDA whose lamport balance is the bounty. It has no custom data fields.
+
+## AgentProfile
+
+Seeds: `["agent", wallet_pubkey]`
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `owner` | Pubkey | Agent wallet |
+| `reputation_score` | i64 | Net reputation (can be negative) |
+| `tasks_completed` | u64 | Lifetime completed tasks |
+| `tasks_failed` | u64 | Lifetime failed tasks |
+| `skill_bitmap` | u64 | Registered skills |
+| `created_at` | i64 | Registration timestamp |
+| `bump` | u8 | PDA bump seed |
+
+## Dispute
+
+Seeds: `["dispute", task_pubkey]`
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `task` | Pubkey | The disputed task |
+| `initiator` | Pubkey | Who opened the dispute |
+| `reason` | DisputeReason | Reason enum variant |
+| `status` | DisputeStatus | Open or Resolved |
+| `ruling` | Option\<Ruling\> | Final ruling |
+| `votes_for_creator` | u16 | Tally |
+| `votes_for_agent` | u16 | Tally |
+| `total_votes` | u16 | Total cast |
+| `voting_deadline` | i64 | Voting end timestamp |
+| `bump` | u8 | PDA bump seed |
+
+## DisputeVote
+
+Seeds: `["vote", dispute_pubkey, voter_pubkey]`
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `dispute` | Pubkey | Parent dispute |
+| `voter` | Pubkey | Voter wallet |
+| `ruling` | Ruling | How the voter voted |
+| `bump` | u8 | PDA bump seed |
+
+## TaskTemplate
+
+Seeds: `["template", creator_pubkey, template_index_le_bytes]`
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `creator` | Pubkey | Template author |
+| `title` | String | Template name |
+| `description_hash` | [u8; 32] | Default description |
+| `category` | TaskCategory | Default category |
+| `default_bounty` | u64 | Suggested bounty |
+| `default_deadline_seconds` | i64 | Suggested duration |
+| `is_active` | bool | Can create tasks from this |
+| `template_index` | u64 | Sequential index |
+| `bump` | u8 | PDA bump seed |
+
+## PDA Derivation Reference
+
+```typescript
+import { PublicKey } from '@solana/web3.js';
+import BN from 'bn.js';
+
+const PROGRAM_ID = new PublicKey('4r3ciYyag1GhBjep45mTs7nGa92kpYfRj3pqFnDqckP5');
+
+// Platform (singleton)
+PublicKey.findProgramAddressSync([Buffer.from('platform')], PROGRAM_ID);
+
+// Task
+PublicKey.findProgramAddressSync(
+  [Buffer.from('task'), creator.toBuffer(), new BN(index).toArrayLike(Buffer, 'le', 8)],
+  PROGRAM_ID
+);
+
+// Escrow
+PublicKey.findProgramAddressSync([Buffer.from('escrow'), taskPDA.toBuffer()], PROGRAM_ID);
+
+// Agent Profile
+PublicKey.findProgramAddressSync([Buffer.from('agent'), wallet.toBuffer()], PROGRAM_ID);
+
+// Dispute
+PublicKey.findProgramAddressSync([Buffer.from('dispute'), taskPDA.toBuffer()], PROGRAM_ID);
+
+// Dispute Vote
+PublicKey.findProgramAddressSync(
+  [Buffer.from('vote'), disputePDA.toBuffer(), voter.toBuffer()],
+  PROGRAM_ID
+);
+
+// Template
+PublicKey.findProgramAddressSync(
+  [Buffer.from('template'), creator.toBuffer(), new BN(index).toArrayLike(Buffer, 'le', 8)],
+  PROGRAM_ID
+);
+```

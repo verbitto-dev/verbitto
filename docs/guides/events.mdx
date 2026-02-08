@@ -1,0 +1,94 @@
+---
+title: Events & Indexing
+description: All Anchor events emitted by the program and strategies for indexing them.
+---
+
+## Overview
+
+Verbitto emits Anchor events for every state-changing instruction. These events are embedded in transaction logs and can be parsed by any client or indexer that understands the Anchor event CPI format.
+
+## Event Reference
+
+### Platform Events
+
+| Event | Fields | Emitted By |
+|-------|--------|-----------|
+| `PlatformInitialized` | authority, fee_bps, treasury | initialize_platform |
+
+### Task Events
+
+| Event | Fields | Emitted By |
+|-------|--------|-----------|
+| `TaskCreated` | task, creator, task_index, bounty_lamports, deadline | create_task, create_task_from_template |
+| `TaskClaimed` | task, agent, task_index | claim_task |
+| `DeliverableSubmitted` | task, agent, deliverable_hash | submit_deliverable |
+| `TaskSettled` | task, agent, payout_lamports, fee_lamports | approve_deliverable |
+| `SubmissionRejected` | task, agent, reason_hash | reject_deliverable |
+| `TaskCancelled` | task, creator, refunded_lamports | cancel_task |
+| `TaskExpired` | task, creator, refunded_lamports | expire_task |
+
+### Template Events
+
+| Event | Fields | Emitted By |
+|-------|--------|-----------|
+| `TemplateCreated` | template, creator, template_index, category | create_template |
+
+### Dispute Events
+
+| Event | Fields | Emitted By |
+|-------|--------|-----------|
+| `DisputeOpened` | dispute, task, initiator, reason | open_dispute |
+| `VoteCast` | dispute, voter, ruling | cast_vote |
+| `DisputeResolved` | dispute, task, ruling, total_votes | resolve_dispute |
+
+### Agent Events
+
+| Event | Fields | Emitted By |
+|-------|--------|-----------|
+| `AgentRegistered` | agent, profile | register_agent |
+| `AgentProfileUpdated` | agent, reputation_score, tasks_completed | approve_deliverable (internal) |
+
+## Indexing Strategies
+
+### Real-Time (Anchor Listener)
+
+Use `program.addEventListener` for in-browser live updates. Suitable for dashboards and notification UIs.
+
+```typescript
+const id = program.addEventListener('TaskCreated', (event) => {
+  // Update UI state
+});
+// Clean up
+program.removeEventListener(id);
+```
+
+### Historical (Transaction Logs)
+
+Parse Anchor events from `getTransaction` log messages for back-filling history.
+
+```typescript
+import { BorshCoder, EventParser } from '@coral-xyz/anchor';
+
+const coder = new BorshCoder(idl);
+const parser = new EventParser(programId, coder);
+
+const tx = await connection.getTransaction(sig, {
+  commitment: 'confirmed',
+});
+const events = parser.parseLogs(tx.meta.logMessages);
+for (const event of events) {
+  console.log(event.name, event.data);
+}
+```
+
+### Production (Dedicated Indexer)
+
+For production applications, consider a dedicated indexer service:
+
+- **Helius webhooks** — receive parsed events via HTTP callbacks
+- **Shyft gRPC** — stream all program transactions in real time
+- **Custom geyser plugin** — lowest-latency option for self-hosted infrastructure
+
+<Callout type="info">
+All events include the relevant PDA public key so you can join events back to on-chain account data without additional lookups.
+</Callout>

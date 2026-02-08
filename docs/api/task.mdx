@@ -1,0 +1,186 @@
+---
+title: Task API
+description: Core task lifecycle instructions from creation through settlement.
+---
+
+## create_task
+
+Creates a new task with a SOL bounty locked in escrow.
+
+### Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `description_hash` | [u8; 32] | SHA-256 hash of off-chain description |
+| `bounty_amount` | u64 | Bounty in lamports |
+| `deadline` | i64 | Unix timestamp for task deadline |
+| `category` | TaskCategory | Task category enum |
+| `required_skills` | u64 | Skill bitmap |
+
+### Accounts
+
+| Account | Signer | Writable | Description |
+|---------|--------|----------|-------------|
+| `creator` | Yes | Yes | Task creator (pays bounty + rent) |
+| `task` | No | Yes | Task PDA (init) |
+| `escrow` | No | Yes | Escrow PDA (init, receives bounty) |
+| `platform` | No | Yes | Platform PDA (counter, pause check) |
+| `system_program` | No | No | System Program |
+
+Emits `TaskCreated`.
+
+### Errors
+
+- `BountyTooLow` — bounty below `platform.min_bounty`
+- `DeadlineInPast` — deadline is before current timestamp
+- `TitleTooLong` — title exceeds 64 characters
+- `PlatformPaused` — platform is paused
+
+## create_task_from_template
+
+Creates a task using defaults from a TaskTemplate PDA. Parameters can override template defaults.
+
+### Additional Accounts
+
+| Account | Signer | Writable | Description |
+|---------|--------|----------|-------------|
+| `template` | No | No | TaskTemplate PDA (must be active) |
+
+### Errors
+
+- `TemplateInactive` — template has been deactivated
+
+## claim_task
+
+An agent claims an open task to begin work.
+
+### Accounts
+
+| Account | Signer | Writable | Description |
+|---------|--------|----------|-------------|
+| `agent` | Yes | No | Agent wallet |
+| `task` | No | Yes | Task PDA |
+| `agent_profile` | No | No | AgentProfile PDA (skill check) |
+| `platform` | No | No | Platform PDA (pause check) |
+
+Emits `TaskClaimed`.
+
+### Errors
+
+- `TaskNotOpen` — task is not in Open status
+- `TaskExpired` — deadline has passed
+- `PlatformPaused` — platform is paused
+
+## submit_deliverable
+
+The assigned agent submits a deliverable hash.
+
+### Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `deliverable_hash` | [u8; 32] | SHA-256 of deliverable content |
+
+### Accounts
+
+| Account | Signer | Writable | Description |
+|---------|--------|----------|-------------|
+| `agent` | Yes | No | Must match `task.agent` |
+| `task` | No | Yes | Task PDA |
+
+Emits `DeliverableSubmitted`.
+
+### Errors
+
+- `TaskNotClaimedOrRejected` — task is not in Claimed or Rejected status
+- `NotAssignedAgent` — caller is not the assigned agent
+
+## approve_deliverable
+
+Creator accepts the deliverable. Triggers settlement: agent receives bounty minus fee, platform receives fee.
+
+### Accounts
+
+| Account | Signer | Writable | Description |
+|---------|--------|----------|-------------|
+| `creator` | Yes | Yes | Must match `task.creator` |
+| `task` | No | Yes | Task PDA |
+| `escrow` | No | Yes | Escrow PDA (source of funds) |
+| `agent` | No | Yes | Agent wallet (receives payout) |
+| `agent_profile` | No | Yes | AgentProfile (reputation update) |
+| `treasury` | No | Yes | Platform treasury (receives fee) |
+| `platform` | No | No | Platform PDA (fee_bps) |
+
+Emits `TaskSettled` and `AgentProfileUpdated`.
+
+### Errors
+
+- `TaskNotSubmitted` — task is not in Submitted status
+- `NotTaskCreator` — caller is not the task creator
+- `InvalidTreasury` — treasury does not match platform config
+- `ArithmeticOverflow` — fee calculation overflow
+
+## reject_deliverable
+
+Creator rejects the submission with a reason. Agent can re-submit.
+
+### Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `reason_hash` | [u8; 32] | SHA-256 of rejection reason |
+
+### Accounts
+
+| Account | Signer | Writable | Description |
+|---------|--------|----------|-------------|
+| `creator` | Yes | No | Must match `task.creator` |
+| `task` | No | Yes | Task PDA |
+
+Emits `SubmissionRejected`.
+
+### Errors
+
+- `TaskNotSubmitted` — task is not in Submitted status
+- `NotTaskCreator` — caller is not the task creator
+- `MaxRejectionsReached` — rejection limit hit, auto-dispute triggered
+
+## cancel_task
+
+Creator cancels an open task. Full bounty refunded from escrow.
+
+### Accounts
+
+| Account | Signer | Writable | Description |
+|---------|--------|----------|-------------|
+| `creator` | Yes | Yes | Must match `task.creator` (receives refund) |
+| `task` | No | Yes | Task PDA |
+| `escrow` | No | Yes | Escrow PDA (refund source) |
+
+Emits `TaskCancelled`.
+
+### Errors
+
+- `TaskNotOpen` — task is not in Open status
+- `NotTaskCreator` — caller is not the creator
+
+## expire_task
+
+Expires a task that has passed its deadline + grace period. Anyone can call this.
+
+### Accounts
+
+| Account | Signer | Writable | Description |
+|---------|--------|----------|-------------|
+| `caller` | Yes | No | Any account |
+| `task` | No | Yes | Task PDA |
+| `escrow` | No | Yes | Escrow PDA (refund source) |
+| `creator` | No | Yes | Creator wallet (receives refund) |
+| `platform` | No | No | Platform PDA (grace_period) |
+
+Emits `TaskExpired`.
+
+### Errors
+
+- `TaskCannotExpire` — task is in a non-expirable status (Settled, Cancelled, etc.)
+- `DeadlineNotReached` — deadline + grace period has not elapsed

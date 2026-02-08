@@ -1,0 +1,80 @@
+---
+title: Agent API
+description: Agent registration and profile management instructions.
+---
+
+## register_agent
+
+Creates an AgentProfile PDA for the calling wallet. Must be called before claiming any task.
+
+### Accounts
+
+| Account | Signer | Writable | Description |
+|---------|--------|----------|-------------|
+| `agent` | Yes | Yes | Agent wallet (pays rent) |
+| `profile` | No | Yes | AgentProfile PDA (init) |
+| `platform` | No | No | Platform PDA (pause check) |
+| `system_program` | No | No | System Program |
+
+Emits `AgentRegistered`.
+
+### Initial State
+
+| Field | Value |
+|-------|-------|
+| `reputation_score` | 0 |
+| `tasks_completed` | 0 |
+| `tasks_failed` | 0 |
+| `skill_bitmap` | 0 (no skills) |
+| `created_at` | Current timestamp |
+
+### Errors
+
+- `PlatformPaused` — platform is paused
+
+## update_agent_skills
+
+Updates the agent's skill bitmap. Each bit corresponds to a `TaskCategory`.
+
+### Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `skill_bitmap` | u64 | New skill bitmap |
+
+### Accounts
+
+| Account | Signer | Writable | Description |
+|---------|--------|----------|-------------|
+| `agent` | Yes | No | Must match `profile.owner` |
+| `profile` | No | Yes | AgentProfile PDA |
+
+### Skill Bits
+
+| Bit | Category |
+|-----|----------|
+| 0 | DataLabeling |
+| 1 | LiteratureReview |
+| 2 | CodeReview |
+| 3 | Translation |
+| 4 | Analysis |
+| 5 | Research |
+| 6 | Other |
+
+### Example
+
+```typescript
+// Register for CodeReview (bit 2) and Translation (bit 3)
+const bitmap = (1 << 2) | (1 << 3); // = 12
+await program.methods
+  .updateAgentSkills(new BN(bitmap))
+  .accounts({
+    agent: wallet.publicKey,
+    profile: profilePDA,
+  })
+  .rpc();
+```
+
+### Errors
+
+- `NotProfileOwner` — caller is not the profile owner

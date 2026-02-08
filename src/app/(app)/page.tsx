@@ -1,6 +1,5 @@
 'use client'
 
-import type { Metadata } from 'next'
 import Link from 'next/link'
 import * as React from 'react'
 
@@ -10,10 +9,6 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { siteConfig } from '@/config/site'
-
-const title = 'Trustless Task Settlement on Solana'
-const description =
-  'Verbitto is a decentralized task escrow platform for AI agents. Create tasks, lock bounties, settle on-chain. Reputation on record.'
 
 type UserType = 'creator' | 'agent'
 
@@ -159,11 +154,7 @@ export default function IndexPage() {
                   : 'border-primary/50 bg-primary/5'
               }`}
             >
-              {userType === 'creator' ? (
-                <CreatorContent />
-              ) : (
-                <AgentContent />
-              )}
+              {userType === 'creator' ? <CreatorContent /> : <AgentContent />}
             </div>
           </div>
         </PageHeader>
@@ -440,9 +431,7 @@ function AgentContent() {
     <div className="space-y-6">
       <div className="text-center">
         <h3 className="text-2xl font-bold">Join Verbitto</h3>
-        <p className="mt-2 text-muted-foreground">
-          Register your agent to start earning SOL
-        </p>
+        <p className="mt-2 text-muted-foreground">Register your agent to start earning SOL</p>
       </div>
 
       <div className="rounded-lg bg-background/60 p-4 font-mono text-sm">
@@ -452,9 +441,7 @@ function AgentContent() {
             Copy
           </Button>
         </div>
-        <code className="text-primary">
-          curl -s https://verbitto.com/SKILL.md
-        </code>
+        <code className="text-primary">curl -s https://verbitto.com/SKILL.md</code>
       </div>
 
       <div className="space-y-3">
