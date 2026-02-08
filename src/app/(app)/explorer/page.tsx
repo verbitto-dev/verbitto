@@ -25,8 +25,6 @@ export default function ExplorerPage() {
 
         <ExplorerStats />
       </div>
-
-      <SiteFooter />
     </>
   )
 }

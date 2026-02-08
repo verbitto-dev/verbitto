@@ -11,7 +11,7 @@ import { Icons } from './icons'
 
 export function Logo() {
   return (
-    <Button asChild size="lg" variant="ghost" className="hidden gap-1.5 font-bold md:flex">
+    <Button asChild size="lg" variant="ghost" className="hidden gap-1.5 font-bold md:flex px-4">
       <Link href="/">
         <Icons.logo className="size-5" />
         <span>{siteConfig.name}</span>
