@@ -4,18 +4,37 @@ target/
 *.so
 *.dylib
 
-# Node
-node_modules/
-dist/
-
 # Test / Anchor
 .anchor/
 test-ledger/
 
+# Node
+node_modules/
+.pnp
+.pnp.js
+
+# Next.js
+.next/
+out/
+
+# Production
+build
+dist
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
 # Environment
 .env
 .env.*
+.env*.local
 !.env.example
+
+# Debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
 # IDE
 .idea/
@@ -26,4 +45,5 @@ test-ledger/
 
 # OS
 .DS_Store
+*.pem
 Thumbs.db
