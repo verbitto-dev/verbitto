@@ -25,10 +25,12 @@ describe("task-escrow", () => {
     // PDAs
     let platformPda: PublicKey;
     let platformBump: number;
+    let creatorCounterPda: PublicKey;
     let agentProfilePda: PublicKey;
     let voter1ProfilePda: PublicKey;
     let voter2ProfilePda: PublicKey;
     let voter3ProfilePda: PublicKey;
+    let creatorTaskCount = 0;
 
     const FEE_BPS = 250; // 2.5%
     const MIN_BOUNTY = 0.01 * LAMPORTS_PER_SOL;
@@ -61,6 +63,12 @@ describe("task-escrow", () => {
         );
         [voter3ProfilePda] = PublicKey.findProgramAddressSync(
             [Buffer.from("agent"), voter3.publicKey.toBuffer()],
+            program.programId
+        );
+
+        // Derive creator counter PDA
+        [creatorCounterPda] = PublicKey.findProgramAddressSync(
+            [Buffer.from("creator"), creator.publicKey.toBuffer()],
             program.programId
         );
 
@@ -158,8 +166,7 @@ describe("task-escrow", () => {
         let taskPda: PublicKey;
 
         it("creates a task with SOL escrow", async () => {
-            const platform = await program.account.platform.fetch(platformPda);
-            const taskIndex = platform.taskCount;
+            const taskIndex = new anchor.BN(creatorTaskCount);
 
             [taskPda] = PublicKey.findProgramAddressSync(
                 [
@@ -181,17 +188,21 @@ describe("task-escrow", () => {
                     title,
                     Array.from(descHash) as any,
                     new anchor.BN(bounty),
+                    new anchor.BN(creatorTaskCount),
                     new anchor.BN(deadline),
                     new anchor.BN(50) // reputation reward
                 )
                 .accounts({
                     task: taskPda,
                     platform: platformPda,
+                    creatorCounter: creatorCounterPda,
                     creator: creator.publicKey,
                     systemProgram: SystemProgram.programId,
                 })
                 .signers([creator])
                 .rpc();
+
+            creatorTaskCount++;
 
             const task = await program.account.task.fetch(taskPda);
             expect(task.title).to.equal(title);
@@ -289,8 +300,7 @@ describe("task-escrow", () => {
         let taskPda: PublicKey;
 
         it("creator cancels an open task and gets refund", async () => {
-            const platform = await program.account.platform.fetch(platformPda);
-            const taskIndex = platform.taskCount;
+            const taskIndex = new anchor.BN(creatorTaskCount);
             const bounty = 0.5 * LAMPORTS_PER_SOL;
 
             [taskPda] = PublicKey.findProgramAddressSync(
@@ -309,17 +319,21 @@ describe("task-escrow", () => {
                     "Cancellable task",
                     Array.from(Buffer.alloc(32, 3)) as any,
                     new anchor.BN(bounty),
+                    new anchor.BN(creatorTaskCount),
                     new anchor.BN(deadline),
                     new anchor.BN(10)
                 )
                 .accounts({
                     task: taskPda,
                     platform: platformPda,
+                    creatorCounter: creatorCounterPda,
                     creator: creator.publicKey,
                     systemProgram: SystemProgram.programId,
                 })
                 .signers([creator])
                 .rpc();
+
+            creatorTaskCount++;
 
             const creatorBefore = await provider.connection.getBalance(
                 creator.publicKey
@@ -387,8 +401,7 @@ describe("task-escrow", () => {
         });
 
         it("creates a task from template", async () => {
-            const platform = await program.account.platform.fetch(platformPda);
-            const taskIndex = platform.taskCount;
+            const taskIndex = new anchor.BN(creatorTaskCount);
 
             const [taskPda] = PublicKey.findProgramAddressSync(
                 [
@@ -405,17 +418,21 @@ describe("task-escrow", () => {
                 .createTaskFromTemplate(
                     new anchor.BN(0), // use default bounty from template
                     new anchor.BN(deadline),
-                    new anchor.BN(30)
+                    new anchor.BN(30),
+                    new anchor.BN(creatorTaskCount)
                 )
                 .accounts({
                     task: taskPda,
                     template: templatePda,
                     platform: platformPda,
+                    creatorCounter: creatorCounterPda,
                     creator: creator.publicKey,
                     systemProgram: SystemProgram.programId,
                 })
                 .signers([creator])
                 .rpc();
+
+            creatorTaskCount++;
 
             const task = await program.account.task.fetch(taskPda);
             expect(task.title).to.equal("Literature Review Template");
@@ -434,8 +451,7 @@ describe("task-escrow", () => {
 
         it("full dispute flow: open → vote → resolve (AgentWins)", async () => {
             // 1. Create & claim & submit
-            const platform = await program.account.platform.fetch(platformPda);
-            const taskIndex = platform.taskCount;
+            const taskIndex = new anchor.BN(creatorTaskCount);
             const bounty = 2 * LAMPORTS_PER_SOL;
 
             [taskPda] = PublicKey.findProgramAddressSync(
@@ -454,17 +470,21 @@ describe("task-escrow", () => {
                     "Disputed task",
                     Array.from(Buffer.alloc(32, 5)) as any,
                     new anchor.BN(bounty),
+                    new anchor.BN(creatorTaskCount),
                     new anchor.BN(deadline),
                     new anchor.BN(100)
                 )
                 .accounts({
                     task: taskPda,
                     platform: platformPda,
+                    creatorCounter: creatorCounterPda,
                     creator: creator.publicKey,
                     systemProgram: SystemProgram.programId,
                 })
                 .signers([creator])
                 .rpc();
+
+            creatorTaskCount++;
 
             await program.methods
                 .claimTask()
@@ -595,8 +615,7 @@ describe("task-escrow", () => {
             await provider.connection.confirmTransaction(sig);
 
             // Create a fresh task for negative tests
-            const platform = await program.account.platform.fetch(platformPda);
-            taskIndex = platform.taskCount;
+            taskIndex = new anchor.BN(creatorTaskCount);
 
             [taskPda] = PublicKey.findProgramAddressSync(
                 [
@@ -614,22 +633,25 @@ describe("task-escrow", () => {
                     "Negative test task",
                     Array.from(Buffer.alloc(32, 10)) as any,
                     new anchor.BN(1 * LAMPORTS_PER_SOL),
+                    new anchor.BN(creatorTaskCount),
                     new anchor.BN(deadline),
                     new anchor.BN(50)
                 )
                 .accounts({
                     task: taskPda,
                     platform: platformPda,
+                    creatorCounter: creatorCounterPda,
                     creator: creator.publicKey,
                     systemProgram: SystemProgram.programId,
                 })
                 .signers([creator])
                 .rpc();
+
+            creatorTaskCount++;
         });
 
         it("rejects task creation with bounty below minimum", async () => {
-            const platform = await program.account.platform.fetch(platformPda);
-            const idx = platform.taskCount;
+            const idx = new anchor.BN(creatorTaskCount);
             const [badTaskPda] = PublicKey.findProgramAddressSync(
                 [
                     Buffer.from("task"),
@@ -645,12 +667,14 @@ describe("task-escrow", () => {
                         "Too cheap",
                         Array.from(Buffer.alloc(32, 11)) as any,
                         new anchor.BN(1), // 1 lamport — below minimum
+                        new anchor.BN(creatorTaskCount),
                         new anchor.BN(Math.floor(Date.now() / 1000) + 3600),
                         new anchor.BN(10)
                     )
                     .accounts({
                         task: badTaskPda,
                         platform: platformPda,
+                        creatorCounter: creatorCounterPda,
                         creator: creator.publicKey,
                         systemProgram: SystemProgram.programId,
                     })
@@ -663,8 +687,7 @@ describe("task-escrow", () => {
         });
 
         it("rejects task creation with deadline in the past", async () => {
-            const platform = await program.account.platform.fetch(platformPda);
-            const idx = platform.taskCount;
+            const idx = new anchor.BN(creatorTaskCount);
             const [badTaskPda] = PublicKey.findProgramAddressSync(
                 [
                     Buffer.from("task"),
@@ -680,12 +703,14 @@ describe("task-escrow", () => {
                         "Past deadline",
                         Array.from(Buffer.alloc(32, 12)) as any,
                         new anchor.BN(0.1 * LAMPORTS_PER_SOL),
+                        new anchor.BN(creatorTaskCount),
                         new anchor.BN(1000000), // way in the past
                         new anchor.BN(10)
                     )
                     .accounts({
                         task: badTaskPda,
                         platform: platformPda,
+                        creatorCounter: creatorCounterPda,
                         creator: creator.publicKey,
                         systemProgram: SystemProgram.programId,
                     })
@@ -698,8 +723,7 @@ describe("task-escrow", () => {
         });
 
         it("rejects task creation with title > 64 chars", async () => {
-            const platform = await program.account.platform.fetch(platformPda);
-            const idx = platform.taskCount;
+            const idx = new anchor.BN(creatorTaskCount);
             const [badTaskPda] = PublicKey.findProgramAddressSync(
                 [
                     Buffer.from("task"),
@@ -715,12 +739,14 @@ describe("task-escrow", () => {
                         "A".repeat(65), // too long
                         Array.from(Buffer.alloc(32, 13)) as any,
                         new anchor.BN(0.1 * LAMPORTS_PER_SOL),
+                        new anchor.BN(creatorTaskCount),
                         new anchor.BN(Math.floor(Date.now() / 1000) + 3600),
                         new anchor.BN(10)
                     )
                     .accounts({
                         task: badTaskPda,
                         platform: platformPda,
+                        creatorCounter: creatorCounterPda,
                         creator: creator.publicKey,
                         systemProgram: SystemProgram.programId,
                     })
@@ -926,7 +952,7 @@ describe("task-escrow", () => {
             const platform = await program.account.platform.fetch(platformPda);
             expect(platform.isPaused).to.be.true;
 
-            const idx = platform.taskCount;
+            const idx = new anchor.BN(creatorTaskCount);
             const [taskPda] = PublicKey.findProgramAddressSync(
                 [
                     Buffer.from("task"),
@@ -942,12 +968,14 @@ describe("task-escrow", () => {
                         "Paused task",
                         Array.from(Buffer.alloc(32, 20)) as any,
                         new anchor.BN(0.1 * LAMPORTS_PER_SOL),
+                        new anchor.BN(creatorTaskCount),
                         new anchor.BN(Math.floor(Date.now() / 1000) + 3600),
                         new anchor.BN(10)
                     )
                     .accounts({
                         task: taskPda,
                         platform: platformPda,
+                        creatorCounter: creatorCounterPda,
                         creator: creator.publicKey,
                         systemProgram: SystemProgram.programId,
                     })
@@ -1030,8 +1058,7 @@ describe("task-escrow", () => {
         let taskPda: PublicKey;
 
         before(async () => {
-            const platform = await program.account.platform.fetch(platformPda);
-            const taskIndex = platform.taskCount;
+            const taskIndex = new anchor.BN(creatorTaskCount);
             const bounty = 0.5 * LAMPORTS_PER_SOL;
 
             [taskPda] = PublicKey.findProgramAddressSync(
@@ -1050,17 +1077,21 @@ describe("task-escrow", () => {
                     "Open task for dispute test",
                     Array.from(Buffer.alloc(32, 30)) as any,
                     new anchor.BN(bounty),
+                    new anchor.BN(creatorTaskCount),
                     new anchor.BN(deadline),
                     new anchor.BN(10)
                 )
                 .accounts({
                     task: taskPda,
                     platform: platformPda,
+                    creatorCounter: creatorCounterPda,
                     creator: creator.publicKey,
                     systemProgram: SystemProgram.programId,
                 })
                 .signers([creator])
                 .rpc();
+
+            creatorTaskCount++;
         });
 
         it("rejects dispute on non-submitted/rejected task (open)", async () => {

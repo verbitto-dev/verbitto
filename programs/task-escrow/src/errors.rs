@@ -68,4 +68,8 @@ pub enum VerbittoError {
     NotPlatformAuthority,
     #[msg("Arithmetic overflow in calculation")]
     ArithmeticOverflow,
+    #[msg("Maximum rejection limit reached — task auto-disputed")]
+    MaxRejectionsReached,
+    #[msg("Task index does not match creator counter")]
+    InvalidTaskIndex,
 }

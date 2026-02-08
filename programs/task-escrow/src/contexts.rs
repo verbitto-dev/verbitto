@@ -71,7 +71,7 @@ pub struct UpdateAgentSkills<'info> {
 }
 
 #[derive(Accounts)]
-#[instruction(title: String, description_hash: [u8; 32], bounty_lamports: u64)]
+#[instruction(title: String, description_hash: [u8; 32], bounty_lamports: u64, task_index: u64)]
 pub struct CreateTask<'info> {
     #[account(
         init,
@@ -80,11 +80,20 @@ pub struct CreateTask<'info> {
         seeds = [
             b"task",
             creator.key().as_ref(),
-            &platform.task_count.to_le_bytes(),
+            &task_index.to_le_bytes(),
         ],
         bump,
     )]
     pub task: Account<'info, Task>,
+
+    #[account(
+        init_if_needed,
+        payer = creator,
+        space = 8 + CreatorCounter::INIT_SPACE,
+        seeds = [b"creator", creator.key().as_ref()],
+        bump,
+    )]
+    pub creator_counter: Account<'info, CreatorCounter>,
 
     #[account(
         mut,
@@ -100,6 +109,7 @@ pub struct CreateTask<'info> {
 }
 
 #[derive(Accounts)]
+#[instruction(bounty_lamports: u64, deadline: i64, reputation_reward: i64, task_index: u64)]
 pub struct CreateTaskFromTemplate<'info> {
     #[account(
         init,
@@ -108,11 +118,20 @@ pub struct CreateTaskFromTemplate<'info> {
         seeds = [
             b"task",
             creator.key().as_ref(),
-            &platform.task_count.to_le_bytes(),
+            &task_index.to_le_bytes(),
         ],
         bump,
     )]
     pub task: Account<'info, Task>,
+
+    #[account(
+        init_if_needed,
+        payer = creator,
+        space = 8 + CreatorCounter::INIT_SPACE,
+        seeds = [b"creator", creator.key().as_ref()],
+        bump,
+    )]
+    pub creator_counter: Account<'info, CreatorCounter>,
 
     #[account(
         mut,

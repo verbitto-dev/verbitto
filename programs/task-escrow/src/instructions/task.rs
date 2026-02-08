@@ -12,6 +12,7 @@ pub fn create_task(
     title: String,
     description_hash: [u8; 32],
     bounty_lamports: u64,
+    task_index: u64,
     deadline: i64,
     reputation_reward: i64,
 ) -> Result<()> {
@@ -42,7 +43,14 @@ pub fn create_task(
         bounty_lamports,
     )?;
 
-    let task_index = platform.task_count;
+    // Use per-creator counter (validated via PDA seed match)
+    let counter = &mut ctx.accounts.creator_counter;
+    require!(task_index == counter.task_count, VerbittoError::InvalidTaskIndex);
+    counter.task_count += 1;
+    counter.authority = ctx.accounts.creator.key();
+    counter.bump = ctx.bumps.creator_counter;
+
+    // Global stat (still useful for analytics but not for PDA seeds)
     platform.task_count += 1;
 
     let task_key = ctx.accounts.task.key();
@@ -61,6 +69,7 @@ pub fn create_task(
     task.description_hash = description_hash;
     task.deliverable_hash = [0u8; 32];
     task.template_index = 0;
+    task.rejection_count = 0;
     task.bump = ctx.bumps.task;
 
     emit!(TaskCreated {
@@ -80,6 +89,7 @@ pub fn create_task_from_template(
     bounty_lamports: u64,
     deadline: i64,
     reputation_reward: i64,
+    task_index: u64,
 ) -> Result<()> {
     let platform = &mut ctx.accounts.platform;
     let template = &mut ctx.accounts.template;
@@ -114,7 +124,14 @@ pub fn create_task_from_template(
         bounty,
     )?;
 
-    let task_index = platform.task_count;
+    // Use per-creator counter (validated via PDA seed match)
+    let counter = &mut ctx.accounts.creator_counter;
+    require!(task_index == counter.task_count, VerbittoError::InvalidTaskIndex);
+    counter.task_count += 1;
+    counter.authority = ctx.accounts.creator.key();
+    counter.bump = ctx.bumps.creator_counter;
+
+    // Global stat
     platform.task_count += 1;
     template.times_used += 1;
 
@@ -134,6 +151,7 @@ pub fn create_task_from_template(
     task.description_hash = template.description_hash;
     task.deliverable_hash = [0u8; 32];
     task.template_index = template.template_index + 1; // 1-indexed, 0 = no template
+    task.rejection_count = 0;
     task.bump = ctx.bumps.task;
 
     emit!(TaskCreated {
@@ -268,8 +286,13 @@ pub fn approve_and_settle(ctx: Context<ApproveAndSettle>) -> Result<()> {
     Ok(())
 }
 
+/// Maximum number of rejections before a task is auto-disputed.
+const MAX_REJECTIONS: u8 = 3;
+
 /// Creator rejects a submitted deliverable.
 /// Agent can resubmit or open a dispute.
+/// After MAX_REJECTIONS (3), the task automatically enters Disputed status
+/// to prevent indefinite rejection loops.
 pub fn reject_submission(ctx: Context<RejectSubmission>, reason_hash: [u8; 32]) -> Result<()> {
     let task_key = ctx.accounts.task.key();
     let creator_key = ctx.accounts.creator.key();
@@ -280,7 +303,14 @@ pub fn reject_submission(ctx: Context<RejectSubmission>, reason_hash: [u8; 32]) 
     );
     require!(task.creator == creator_key, VerbittoError::NotTaskCreator);
 
-    task.status = TaskStatus::Rejected;
+    task.rejection_count += 1;
+
+    if task.rejection_count >= MAX_REJECTIONS {
+        // Auto-escalate to disputed after too many rejections
+        task.status = TaskStatus::Disputed;
+    } else {
+        task.status = TaskStatus::Rejected;
+    }
 
     emit!(SubmissionRejected {
         task: task_key,

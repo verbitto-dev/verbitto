@@ -110,6 +110,7 @@ pub mod task_escrow {
         title: String,
         description_hash: [u8; 32],
         bounty_lamports: u64,
+        task_index: u64,
         deadline: i64,
         reputation_reward: i64,
     ) -> Result<()> {
@@ -118,6 +119,7 @@ pub mod task_escrow {
             title,
             description_hash,
             bounty_lamports,
+            task_index,
             deadline,
             reputation_reward,
         )
@@ -128,8 +130,9 @@ pub mod task_escrow {
         bounty_lamports: u64,
         deadline: i64,
         reputation_reward: i64,
+        task_index: u64,
     ) -> Result<()> {
-        instructions::create_task_from_template(ctx, bounty_lamports, deadline, reputation_reward)
+        instructions::create_task_from_template(ctx, bounty_lamports, deadline, reputation_reward, task_index)
     }
 
     pub fn claim_task(ctx: Context<ClaimTask>) -> Result<()> {

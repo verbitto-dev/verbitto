@@ -140,14 +140,17 @@ pub fn resolve_dispute(ctx: Context<ResolveDispute>) -> Result<()> {
         VerbittoError::InsufficientVotes
     );
 
-    // Determine ruling (simple majority)
-    let ruling = if dispute.votes_for_creator >= dispute.votes_for_agent
-        && dispute.votes_for_creator >= dispute.votes_for_split
+    // Determine ruling (strict majority; ties default to Split for fairness)
+    let ruling = if dispute.votes_for_creator > dispute.votes_for_agent
+        && dispute.votes_for_creator > dispute.votes_for_split
     {
         Ruling::CreatorWins
-    } else if dispute.votes_for_agent >= dispute.votes_for_split {
+    } else if dispute.votes_for_agent > dispute.votes_for_creator
+        && dispute.votes_for_agent > dispute.votes_for_split
+    {
         Ruling::AgentWins
     } else {
+        // Any tie defaults to Split — the fairest neutral outcome
         Ruling::Split
     };
 

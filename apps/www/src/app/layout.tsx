@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   creator: siteConfig.author,
   description: siteConfig.descriptionEn,
   icons: {
-    icon: '/favicon.ico',
+    icon: '/favicon.svg',
   },
   keywords: [
     'VERBITTO',

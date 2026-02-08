@@ -67,6 +67,8 @@ pub struct Task {
     pub deliverable_hash: [u8; 32],
     /// Template index (1-indexed, 0 = no template)
     pub template_index: u64,
+    /// Number of times this task's submission has been rejected
+    pub rejection_count: u8,
     /// PDA bump
     pub bump: u8,
 }
@@ -138,6 +140,19 @@ pub struct ArbitratorVote {
     pub ruling: Ruling,
     /// When vote was cast
     pub voted_at: i64,
+    /// PDA bump
+    pub bump: u8,
+}
+
+/// Per-creator task counter to eliminate global task_count contention.
+/// PDA: [b"creator", authority]
+#[account]
+#[derive(InitSpace)]
+pub struct CreatorCounter {
+    /// Creator wallet
+    pub authority: Pubkey,
+    /// Creator-local sequential task counter
+    pub task_count: u64,
     /// PDA bump
     pub bump: u8,
 }

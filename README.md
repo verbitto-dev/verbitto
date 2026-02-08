@@ -98,13 +98,10 @@ Expired ◀── (deadline passed, Open or Claimed)
 ## Development
 
 ```bash
-# 构建
 anchor build
 
-# 测试
 anchor test
 
-# 部署 (devnet)
 anchor deploy
 ```
 

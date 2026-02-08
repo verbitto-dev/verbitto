@@ -5,9 +5,6 @@ skip-lint = false
 [programs.devnet]
 task_escrow = "4r3ciYyag1GhBjep45mTs7nGa92kpYfRj3pqFnDqckP5"
 
-[programs.mainnet]
-task_escrow = "4r3ciYyag1GhBjep45mTs7nGa92kpYfRj3pqFnDqckP5"
-
 [registry]
 url = "https://api.apr.dev"
 
