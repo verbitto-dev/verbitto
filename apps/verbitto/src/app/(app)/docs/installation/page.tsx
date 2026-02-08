@@ -12,8 +12,8 @@ import {
 } from '@/components/doc-primitives';
 
 export const metadata: Metadata = {
-  title: 'Installation — VERBITTO Docs',
-  description: 'Set up your development environment for VERBITTO.',
+  title: 'Installation — Verbitto Docs',
+  description: 'Set up your development environment for Verbitto.',
 };
 
 const toc = [
@@ -36,7 +36,7 @@ export default function InstallationPage() {
     >
       <H2 id="prerequisites">Prerequisites</H2>
       <p className="mt-4 leading-7">
-        VERBITTO requires the following tools. If you already have them
+        Verbitto requires the following tools. If you already have them
         installed, skip to{' '}
         <a href="#clone-the-repository" className="font-medium underline underline-offset-4">
           Clone the Repository
@@ -46,7 +46,7 @@ export default function InstallationPage() {
 
       <H3 id="install-rust">Install Rust</H3>
       <p className="mt-4 leading-7">
-        Install Rust via <InlineCode>rustup</InlineCode>. VERBITTO requires
+        Install Rust via <InlineCode>rustup</InlineCode>. Verbitto requires
         Rust 1.75+.
       </p>
       <CodeBlock title="Terminal">
@@ -67,7 +67,7 @@ solana --version`}
 
       <H3 id="install-anchor">Install Anchor</H3>
       <p className="mt-4 leading-7">
-        VERBITTO uses Anchor 0.30.1. Install via <InlineCode>avm</InlineCode>{' '}
+        Verbitto uses Anchor 0.30.1. Install via <InlineCode>avm</InlineCode>{' '}
         (Anchor Version Manager):
       </p>
       <CodeBlock title="Terminal">
@@ -114,7 +114,7 @@ solana airdrop 2`}
 
       <H2 id="frontend-setup">Frontend Setup</H2>
       <p className="mt-4 leading-7">
-        The VERBITTO frontend is a Next.js app located in{' '}
+        The Verbitto frontend is a Next.js app located in{' '}
         <InlineCode>apps/www</InlineCode>:
       </p>
       <CodeBlock title="Terminal">

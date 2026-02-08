@@ -1,39 +1,49 @@
+import Link from 'next/link';
+
+import { Icons } from '@/components/icons';
+import { ModeSwitcher } from '@/components/mode-switcher';
 import { siteConfig } from '@/config/site';
 
 export function SiteFooter() {
   return (
-    <footer className="border-t border-border/40 py-6 md:px-8 md:py-0">
-      <div className="container mx-auto flex flex-col items-center justify-between gap-4 md:h-24 md:flex-row">
-        <p className="text-balance text-center text-sm leading-loose text-muted-foreground md:text-left">
-          Built by{' '}
-          <a
-            className="font-medium underline underline-offset-4"
+    <footer className="border-border/40 border-t py-6 dark:border-border">
+      <div className="mx-auto flex max-w-screen-2xl items-center justify-between px-4 xl:px-6">
+        <div className="flex items-center justify-between px-4 xl:px-6 gap-6">
+          <p className="text-sm text-muted-foreground">
+            &copy; {new Date().getFullYear()} {siteConfig.author}. All rights reserved.
+          </p>
+
+          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+            <Link href="/terms" className="transition-colors hover:text-foreground">
+              Terms
+            </Link>
+            <Link href="/privacy" className="transition-colors hover:text-foreground">
+              Privacy
+            </Link>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-4">
+          <Link
+            href={siteConfig.links.twitter}
+            rel="noreferrer"
+            target="_blank"
+            className="text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <Icons.x className="size-4" />
+            <span className="sr-only">X</span>
+          </Link>
+          <Link
             href={siteConfig.links.github}
             rel="noreferrer"
             target="_blank"
+            className="text-muted-foreground transition-colors hover:text-foreground"
           >
-            {siteConfig.author}
-          </a>
-          . Powered by{' '}
-          <a
-            className="font-medium underline underline-offset-4"
-            href="https://solana.com"
-            rel="noreferrer"
-            target="_blank"
-          >
-            Solana
-          </a>
-          . Source on{' '}
-          <a
-            className="font-medium underline underline-offset-4"
-            href={siteConfig.links.github}
-            rel="noreferrer"
-            target="_blank"
-          >
-            GitHub
-          </a>
-          .
-        </p>
+            <Icons.gitHub className="size-4" />
+            <span className="sr-only">GitHub</span>
+          </Link>
+          {/* <ModeSwitcher /> */}
+        </div>
       </div>
     </footer>
   );

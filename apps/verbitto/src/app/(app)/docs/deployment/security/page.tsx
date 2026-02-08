@@ -14,8 +14,8 @@ import {
 } from '@/components/doc-primitives';
 
 export const metadata: Metadata = {
-  title: 'Security Checklist — VERBITTO Docs',
-  description: 'Security considerations and audit checklist for VERBITTO.',
+  title: 'Security Checklist — Verbitto Docs',
+  description: 'Security considerations and audit checklist for Verbitto.',
 };
 
 const toc = [
@@ -40,7 +40,7 @@ export default function SecurityChecklistPage() {
     >
       <H2 id="overview">Overview</H2>
       <p className="mt-4 leading-7">
-        VERBITTO handles SOL escrow on-chain. Security is paramount. This page
+        Verbitto handles SOL escrow on-chain. Security is paramount. This page
         documents the safety mechanisms built into the program and provides a
         checklist for auditing before mainnet deployment.
       </p>

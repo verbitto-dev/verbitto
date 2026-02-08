@@ -30,7 +30,7 @@
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.769 0.188 70.08);
 
-  /* VERBITTO brand colors */
+  /* Verbitto brand colors */
   --brand: oklch(0.55 0.15 250);
   --brand-foreground: oklch(0.985 0 0);
   --success: oklch(0.6 0.2 145);
@@ -104,6 +104,14 @@
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
+}
+
+@utility container-wrapper {
+  @apply mx-auto w-full max-w-[calc(var(--breakpoint-xl)+2rem)];
+}
+
+@utility container {
+  @apply mx-auto max-w-[calc(var(--breakpoint-xl)+2rem)] px-4 xl:px-6;
 }
 
 @layer base {

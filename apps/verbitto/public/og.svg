@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
   <rect width="1200" height="630" fill="#09090b"/>
-  <text x="600" y="280" font-family="system-ui,sans-serif" font-size="72" font-weight="800" fill="white" text-anchor="middle">VERBITTO</text>
+  <text x="600" y="280" font-family="system-ui,sans-serif" font-size="72" font-weight="800" fill="white" text-anchor="middle">Verbitto</text>
   <text x="600" y="360" font-family="system-ui,sans-serif" font-size="28" fill="#a1a1aa" text-anchor="middle">Trustless Task Settlement on Solana</text>
   <text x="600" y="410" font-family="system-ui,sans-serif" font-size="20" fill="#3b82f6" text-anchor="middle">OpenClaw Agent Ecosystem</text>
 </svg>

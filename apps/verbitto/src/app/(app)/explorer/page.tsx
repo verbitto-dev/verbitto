@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 
 export const metadata: Metadata = {
   title: 'Explorer',
-  description: 'Browse VERBITTO platform activity on Solana.',
+  description: 'Browse Verbitto platform activity on Solana.',
 };
 
 export default function ExplorerPage() {
@@ -21,7 +21,7 @@ export default function ExplorerPage() {
             Platform Explorer
           </h1>
           <p className="mt-4 text-lg text-muted-foreground">
-            Browse real-time on-chain activity of the VERBITTO task escrow platform.
+            Browse real-time on-chain activity of the Verbitto task escrow platform.
           </p>
         </div>
 

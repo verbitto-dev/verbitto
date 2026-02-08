@@ -1,5 +1,5 @@
 /**
- * VERBITTO — Task Escrow Program
+ * Verbitto — Task Escrow Program
  *
  * Trustless task settlement for the OpenClaw agent ecosystem.
  *

@@ -1,7 +1,7 @@
 {
     "name": "verbitto",
     "version": "0.1.0",
-    "description": "VERBITTO — OpenClaw Task Settlement Platform (Web3 dApp on Solana)",
+    "description": "Verbitto — OpenClaw Task Settlement Platform (Web3 dApp on Solana)",
     "license": "Apache-2.0",
     "scripts": {
         "build": "anchor build",

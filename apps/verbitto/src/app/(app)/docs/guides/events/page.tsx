@@ -15,8 +15,8 @@ import {
 } from '@/components/doc-primitives';
 
 export const metadata: Metadata = {
-  title: 'Events & Indexing — VERBITTO Docs',
-  description: 'Anchor events emitted by the VERBITTO program and how to index them.',
+  title: 'Events & Indexing — Verbitto Docs',
+  description: 'Anchor events emitted by the Verbitto program and how to index them.',
 };
 
 const toc = [
@@ -39,7 +39,7 @@ export default function EventsGuidePage() {
     >
       <H2 id="overview">Overview</H2>
       <p className="mt-4 leading-7">
-        VERBITTO emits Anchor events for every state-changing instruction. These
+        Verbitto emits Anchor events for every state-changing instruction. These
         events are embedded in transaction logs and can be parsed by any client
         or indexer that understands the Anchor event CPI format.
       </p>

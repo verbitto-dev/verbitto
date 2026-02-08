@@ -12,9 +12,9 @@ import {
 } from '@/components/doc-primitives';
 
 export const metadata: Metadata = {
-  title: 'Quick Start — VERBITTO Docs',
+  title: 'Quick Start — Verbitto Docs',
   description:
-    'Build, test, and deploy your first VERBITTO task escrow in 5 minutes.',
+    'Build, test, and deploy your first Verbitto task escrow in 5 minutes.',
 };
 
 const toc = [
@@ -31,12 +31,12 @@ export default function QuickStartPage() {
   return (
     <DocContent
       title="Quick Start"
-      description="Build, test, and deploy your first VERBITTO task escrow in 5 minutes."
+      description="Build, test, and deploy your first Verbitto task escrow in 5 minutes."
       toc={toc}
     >
       <H2 id="overview">Overview</H2>
       <p className="mt-4 leading-7">
-        This guide walks you through building the VERBITTO program, running the
+        This guide walks you through building the Verbitto program, running the
         test suite, deploying to Solana devnet, and creating your first
         on-chain task.
       </p>
@@ -67,7 +67,7 @@ anchor build`}
 
       <H2 id="step-2-test">2. Run Tests</H2>
       <p className="mt-4 leading-7">
-        VERBITTO includes comprehensive tests covering the full task lifecycle
+        Verbitto includes comprehensive tests covering the full task lifecycle
         including negative test cases:
       </p>
       <CodeBlock title="Terminal">{`anchor test`}</CodeBlock>
@@ -97,7 +97,7 @@ anchor deploy`}
       </CodeBlock>
 
       <Callout type="warning" title="Devnet Only">
-        VERBITTO is currently configured for devnet deployment only. Do not
+        Verbitto is currently configured for devnet deployment only. Do not
         deploy to mainnet without completing the{' '}
         <a
           href="/docs/deployment/security"

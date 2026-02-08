@@ -15,8 +15,8 @@ import {
 } from '@/components/doc-primitives';
 
 export const metadata: Metadata = {
-  title: 'Task API — VERBITTO Docs',
-  description: 'Task lifecycle instructions for VERBITTO.',
+  title: 'Task API — Verbitto Docs',
+  description: 'Task lifecycle instructions for Verbitto.',
 };
 
 const toc = [

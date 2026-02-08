@@ -12,8 +12,8 @@ import {
 } from '@/components/doc-primitives';
 
 export const metadata: Metadata = {
-  title: 'Frontend Integration — VERBITTO Docs',
-  description: 'Connect your frontend to the VERBITTO on-chain program.',
+  title: 'Frontend Integration — Verbitto Docs',
+  description: 'Connect your frontend to the Verbitto on-chain program.',
 };
 
 const toc = [
@@ -29,12 +29,12 @@ export default function FrontendGuidePage() {
   return (
     <DocContent
       title="Frontend Integration"
-      description="Connect a React / Next.js app to the VERBITTO program."
+      description="Connect a React / Next.js app to the Verbitto program."
       toc={toc}
     >
       <H2 id="wallet-setup">Wallet Setup</H2>
       <p className="mt-4 leading-7">
-        VERBITTO uses <InlineCode>@solana/wallet-adapter-react</InlineCode> for
+        Verbitto uses <InlineCode>@solana/wallet-adapter-react</InlineCode> for
         wallet connectivity. Wrap your app with the required providers.
       </p>
       <CodeBlock title="providers.tsx">{`import { WalletAdapterNetwork } from '@solana/wallet-adapter-base';
@@ -92,7 +92,7 @@ export function useProgram() {
 
       <H2 id="deriving-pdas">Deriving PDAs</H2>
       <p className="mt-4 leading-7">
-        All VERBITTO accounts are Program Derived Addresses. Use deterministic
+        All Verbitto accounts are Program Derived Addresses. Use deterministic
         seeds to locate them.
       </p>
       <CodeBlock title="pdas.ts">{`import { PublicKey } from '@solana/web3.js';

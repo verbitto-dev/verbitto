@@ -15,8 +15,8 @@ import {
 } from '@/components/doc-primitives';
 
 export const metadata: Metadata = {
-  title: 'Platform API — VERBITTO Docs',
-  description: 'Platform management instructions for VERBITTO.',
+  title: 'Platform API — Verbitto Docs',
+  description: 'Platform management instructions for Verbitto.',
 };
 
 const toc = [
@@ -30,7 +30,7 @@ export default function PlatformApiPage() {
   return (
     <DocContent
       title="Platform API"
-      description="Instructions for initializing and managing the VERBITTO platform."
+      description="Instructions for initializing and managing the Verbitto platform."
       toc={toc}
     >
       <H2 id="initialize-platform">initialize_platform</H2>

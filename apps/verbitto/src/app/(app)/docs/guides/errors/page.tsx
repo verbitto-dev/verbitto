@@ -14,8 +14,8 @@ import {
 } from '@/components/doc-primitives';
 
 export const metadata: Metadata = {
-  title: 'Error Handling — VERBITTO Docs',
-  description: 'Complete error code reference for the VERBITTO program.',
+  title: 'Error Handling — Verbitto Docs',
+  description: 'Complete error code reference for the Verbitto program.',
 };
 
 const toc = [
@@ -71,7 +71,7 @@ export default function ErrorsGuidePage() {
     >
       <H2 id="overview">Overview</H2>
       <p className="mt-4 leading-7">
-        The VERBITTO program defines <strong>{errors.length}</strong> custom
+        The Verbitto program defines <strong>{errors.length}</strong> custom
         error codes under the <InlineCode>VerbittoError</InlineCode> enum.
         Anchor assigns each variant a numeric code starting at 6000.
       </p>

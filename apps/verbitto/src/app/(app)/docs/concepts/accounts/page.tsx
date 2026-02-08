@@ -15,8 +15,8 @@ import {
 } from '@/components/doc-primitives';
 
 export const metadata: Metadata = {
-  title: 'PDA Accounts — VERBITTO Docs',
-  description: 'On-chain account structures and PDA derivation in VERBITTO.',
+  title: 'PDA Accounts — Verbitto Docs',
+  description: 'On-chain account structures and PDA derivation in Verbitto.',
 };
 
 const toc = [
@@ -35,12 +35,12 @@ export default function AccountsPage() {
   return (
     <DocContent
       title="PDA Accounts"
-      description="On-chain account structures and PDA derivation in VERBITTO."
+      description="On-chain account structures and PDA derivation in Verbitto."
       toc={toc}
     >
       <H2 id="overview">Overview</H2>
       <p className="mt-4 leading-7">
-        VERBITTO uses seven Program Derived Address (PDA) account types. Each
+        Verbitto uses seven Program Derived Address (PDA) account types. Each
         account is deterministically derived from seeds, ensuring uniqueness
         and allowing clients to compute addresses without on-chain lookups.
       </p>

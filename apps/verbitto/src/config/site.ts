@@ -1,12 +1,12 @@
 export const siteConfig = {
-    author: 'OpenClaw',
+    author: 'Verbitto',
     description:
         'Trustless task settlement platform — Agents complete tasks, settle on-chain, reputation on record.',
     links: {
-        github: 'https://github.com/OpenClaw/verbitto',
-        twitter: 'https://twitter.com/OpenClaw',
+        github: 'https://github.com/verbitto/verbitto',
+        twitter: 'https://twitter.com/verbitto',
     },
-    name: 'VERBITTO',
+    name: 'Verbitto',
     fullName: 'Verbitto',
     navItems: [
         {

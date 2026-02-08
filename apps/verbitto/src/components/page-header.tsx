@@ -10,12 +10,12 @@ function PageHeader({
   return (
     <section
       className={cn(
-        'flex flex-col items-start gap-2 py-8 md:py-10 lg:py-12',
+        'flex flex-col items-center gap-4 py-8 text-center md:py-12 lg:py-16',
         className
       )}
       {...props}
     >
-      <div className="container mx-auto">{children}</div>
+      <div className="container flex w-full flex-col items-center">{children}</div>
     </section>
   );
 }
@@ -27,7 +27,7 @@ function PageHeaderHeading({
   return (
     <h1
       className={cn(
-        'font-bold text-3xl leading-tight tracking-tighter md:text-5xl lg:text-6xl lg:leading-[1.1]',
+        'font-bold text-5xl leading-[1.1] tracking-tighter md:text-6xl lg:text-7xl lg:leading-[1.05]',
         className
       )}
       {...props}
@@ -42,7 +42,7 @@ function PageHeaderDescription({
   return (
     <Balance
       className={cn(
-        'max-w-2xl text-balance font-light text-foreground text-lg md:text-xl',
+        'max-w-2xl text-balance text-center text-muted-foreground text-lg',
         className
       )}
       {...props}

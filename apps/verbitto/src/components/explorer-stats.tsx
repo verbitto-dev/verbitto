@@ -129,7 +129,7 @@ export function ExplorerStats() {
               Platform Not Initialized
             </CardTitle>
             <CardDescription className="text-center max-w-md">
-              The VERBITTO platform has not been initialized on devnet yet.
+              The Verbitto platform has not been initialized on devnet yet.
               Deploy the program and run initialize_platform to see live stats.
             </CardDescription>
           </CardContent>

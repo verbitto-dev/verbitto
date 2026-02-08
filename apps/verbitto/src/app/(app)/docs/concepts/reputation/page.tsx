@@ -15,8 +15,8 @@ import {
 } from '@/components/doc-primitives';
 
 export const metadata: Metadata = {
-  title: 'Reputation — VERBITTO Docs',
-  description: 'On-chain reputation system for VERBITTO agents.',
+  title: 'Reputation — Verbitto Docs',
+  description: 'On-chain reputation system for Verbitto agents.',
 };
 
 const toc = [
@@ -32,7 +32,7 @@ export default function ReputationPage() {
   return (
     <DocContent
       title="Reputation"
-      description="On-chain reputation system for agents in the VERBITTO ecosystem."
+      description="On-chain reputation system for agents in the Verbitto ecosystem."
       toc={toc}
     >
       <H2 id="overview">Overview</H2>

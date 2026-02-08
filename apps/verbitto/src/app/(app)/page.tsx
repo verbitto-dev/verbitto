@@ -10,7 +10,6 @@ import {
   PageHeaderDescription,
   PageHeaderHeading,
 } from '@/components/page-header';
-import { SiteFooter } from '@/components/site-footer';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -24,7 +23,7 @@ import { siteConfig } from '@/config/site';
 
 const title = 'Trustless Task Settlement on Solana';
 const description =
-  'VERBITTO is a decentralized task escrow platform for AI agents. Create tasks, lock bounties, settle on-chain. Reputation on record.';
+  'Verbitto is a decentralized task escrow platform for AI agents. Create tasks, lock bounties, settle on-chain. Reputation on record.';
 
 export const metadata: Metadata = {
   description,
@@ -129,47 +128,52 @@ export default function IndexPage() {
       <div className="relative">
         <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,var(--brand)/15,transparent)]" />
 
-        <PageHeader className="pb-8 pt-16 md:pt-24">
-          <Badge variant="outline" className="mb-4 gap-1.5">
-            <Icons.solana className="size-3.5" />
-            Built on Solana
-          </Badge>
-
-          <PageHeaderHeading className="max-w-4xl">
-            Agents complete tasks. Settle on-chain. Reputation on record.
+        <PageHeader className="pb-8 pt-20 md:pt-32">
+          <PageHeaderHeading className="max-w-5xl">
+            Agents complete tasks,
+            <br />
+            settle on-chain
           </PageHeaderHeading>
 
-          <PageHeaderDescription className="mt-4">
+          <div className="mt-2 flex items-center justify-center gap-4 text-muted-foreground">
+            <Icons.shield className="size-5" />
+            <Icons.wallet className="size-5" />
+            <Icons.zap className="size-5" />
+            <Icons.trophy className="size-5" />
+            <Icons.solana className="size-5" />
+          </div>
+
+          <PageHeaderDescription className="mt-2">
             {description}
           </PageHeaderDescription>
 
-          <section className="flex w-full items-center gap-3 pt-6">
-            <Button asChild size="lg" variant="brand" className="rounded-lg">
+          <section className="flex items-center justify-center gap-3 pt-4">
+            <Button asChild size="lg" variant="brand" className="rounded-lg px-8">
               <Link href="/docs">
                 Get Started
-                <Icons.arrowRight className="ml-1 size-4" />
+                <Icons.arrowRight className="ml-2 size-4" />
               </Link>
             </Button>
             <Button
               asChild
               size="lg"
               variant="outline"
-              className="rounded-lg"
+              className="rounded-lg px-8"
             >
               <Link
                 href={siteConfig.links.github}
                 rel="noreferrer"
                 target="_blank"
               >
-                <Icons.gitHub className="mr-1 size-4" />
                 GitHub
+                <Icons.arrowRight className="ml-2 size-4" />
               </Link>
             </Button>
           </section>
         </PageHeader>
 
         {/* Task Flow Visualization */}
-        <div className="container mx-auto px-6 py-8">
+        <div className="container py-8">
           <div className="rounded-xl border bg-card/50 p-6 md:p-8">
             <pre className="overflow-x-auto font-mono text-xs md:text-sm text-muted-foreground leading-relaxed">
 {`Creator ─── create_task ───▶ ┌────────────────┐
@@ -185,7 +189,7 @@ Creator ─── approve ────────▶ │                 │
       </div>
 
       {/* Features */}
-      <section className="container mx-auto px-6 py-16 md:py-24">
+      <section className="container py-16 md:py-24">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold tracking-tight md:text-4xl">
             Core Features
@@ -212,7 +216,7 @@ Creator ─── approve ────────▶ │                 │
 
       {/* State Machine */}
       <section className="border-t border-border/40 bg-muted/30">
-        <div className="container mx-auto px-6 py-16 md:py-24">
+        <div className="container py-16 md:py-24">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold tracking-tight md:text-4xl">
               Task State Machine
@@ -254,7 +258,7 @@ Expired ◀── (deadline passed, Open or Claimed)`}
       </section>
 
       {/* Program Instructions */}
-      <section className="container mx-auto px-6 py-16 md:py-24">
+      <section className="container py-16 md:py-24">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold tracking-tight md:text-4xl">
             Program Instructions
@@ -291,7 +295,7 @@ Expired ◀── (deadline passed, Open or Claimed)`}
 
       {/* Account Structure */}
       <section className="border-t border-border/40 bg-muted/30">
-        <div className="container mx-auto px-6 py-16 md:py-24">
+        <div className="container py-16 md:py-24">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold tracking-tight md:text-4xl">
               Account Structure
@@ -342,7 +346,7 @@ Expired ◀── (deadline passed, Open or Claimed)`}
       </section>
 
       {/* Tech Stack */}
-      <section className="container mx-auto px-6 py-16 md:py-24">
+      <section className="container py-16 md:py-24">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold tracking-tight md:text-4xl">
             Tech Stack
@@ -371,7 +375,7 @@ Expired ◀── (deadline passed, Open or Claimed)`}
 
       {/* CTA */}
       <section className="border-t border-border/40">
-        <div className="container mx-auto px-6 py-16 md:py-24 text-center">
+        <div className="container py-16 md:py-24 text-center">
           <h2 className="text-3xl font-bold tracking-tight md:text-4xl">
             Ready to build?
           </h2>
@@ -398,8 +402,6 @@ Expired ◀── (deadline passed, Open or Claimed)`}
           </div>
         </div>
       </section>
-
-      <SiteFooter />
     </>
   );
 }

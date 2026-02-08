@@ -17,8 +17,8 @@ import {
 } from '@/components/doc-primitives';
 
 export const metadata: Metadata = {
-  title: 'Devnet Deployment — VERBITTO Docs',
-  description: 'Deploy the VERBITTO program to Solana devnet.',
+  title: 'Devnet Deployment — Verbitto Docs',
+  description: 'Deploy the Verbitto program to Solana devnet.',
 };
 
 const toc = [
@@ -35,7 +35,7 @@ export default function DevnetDeploymentPage() {
   return (
     <DocContent
       title="Devnet Deployment"
-      description="Step-by-step guide to deploy VERBITTO on Solana devnet."
+      description="Step-by-step guide to deploy Verbitto on Solana devnet."
       toc={toc}
     >
       <H2 id="prerequisites">Prerequisites</H2>

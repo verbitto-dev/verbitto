@@ -1,7 +1,7 @@
 [package]
 name = "task-escrow"
 version = "0.1.0"
-description = "VERBITTO Task Settlement — SOL escrow, disputes, templates"
+description = "Verbitto Task Settlement — SOL escrow, disputes, templates"
 edition = "2021"
 license = "Apache-2.0"
 

@@ -22,7 +22,7 @@ export const metadata: Metadata = {
     icon: '/favicon.svg',
   },
   keywords: [
-    'VERBITTO',
+    'Verbitto',
     'OpenClaw',
     'Solana',
     'Task Escrow',
@@ -79,6 +79,7 @@ export default function RootLayout({
       <body
         className={cn(
           'min-h-svh bg-background font-sans antialiased',
+          '[--header-height:calc(var(--spacing)*14)]',
           fontSans.variable,
           fontMono.variable
         )}

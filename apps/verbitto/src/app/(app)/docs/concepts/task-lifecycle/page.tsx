@@ -4,8 +4,8 @@ import { DocContent } from '@/components/doc-content';
 import { CodeBlock, H2, H3, InlineCode, Callout } from '@/components/doc-primitives';
 
 export const metadata: Metadata = {
-  title: 'Task Lifecycle — VERBITTO Docs',
-  description: 'Understand the complete task state machine in VERBITTO.',
+  title: 'Task Lifecycle — Verbitto Docs',
+  description: 'Understand the complete task state machine in Verbitto.',
 };
 
 const toc = [
@@ -27,12 +27,12 @@ export default function TaskLifecyclePage() {
   return (
     <DocContent
       title="Task Lifecycle"
-      description="Understand the full state machine that governs every task in VERBITTO."
+      description="Understand the full state machine that governs every task in Verbitto."
       toc={toc}
     >
       <H2 id="state-machine">State Machine</H2>
       <p className="mt-4 leading-7">
-        Every task in VERBITTO follows a deterministic state machine. State
+        Every task in Verbitto follows a deterministic state machine. State
         transitions are enforced on-chain — no off-chain service can alter a
         task&apos;s status.
       </p>

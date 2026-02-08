@@ -15,8 +15,8 @@ import {
 } from '@/components/doc-primitives';
 
 export const metadata: Metadata = {
-  title: 'Dispute API — VERBITTO Docs',
-  description: 'Dispute arbitration instructions for VERBITTO.',
+  title: 'Dispute API — Verbitto Docs',
+  description: 'Dispute arbitration instructions for Verbitto.',
 };
 
 const toc = [

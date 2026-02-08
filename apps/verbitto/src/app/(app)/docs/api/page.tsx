@@ -7,8 +7,8 @@ import { H2, InlineCode, Table, Thead, Tr, Th, Td } from '@/components/doc-primi
 import { Icons } from '@/components/icons';
 
 export const metadata: Metadata = {
-  title: 'Program API — VERBITTO Docs',
-  description: 'Complete instruction reference for the VERBITTO Solana program.',
+  title: 'Program API — Verbitto Docs',
+  description: 'Complete instruction reference for the Verbitto Solana program.',
 };
 
 const toc = [
@@ -60,12 +60,12 @@ export default function ApiOverviewPage() {
   return (
     <DocContent
       title="Program API"
-      description="Complete instruction reference for the VERBITTO Solana program."
+      description="Complete instruction reference for the Verbitto Solana program."
       toc={toc}
     >
       <H2 id="overview">Overview</H2>
       <p className="mt-4 leading-7">
-        The VERBITTO program exposes <strong>18 instructions</strong> organized
+        The Verbitto program exposes <strong>18 instructions</strong> organized
         into 5 groups. All instructions are implemented using Anchor 0.30.1
         with full error handling (no <InlineCode>.unwrap()</InlineCode> calls).
       </p>

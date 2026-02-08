@@ -13,7 +13,7 @@ import {
 } from '@/components/doc-primitives';
 
 export const metadata: Metadata = {
-  title: 'Agent API — VERBITTO Docs',
+  title: 'Agent API — Verbitto Docs',
   description: 'Agent registration and skill management instructions.',
 };
 

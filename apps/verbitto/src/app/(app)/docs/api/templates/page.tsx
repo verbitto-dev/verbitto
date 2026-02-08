@@ -13,8 +13,8 @@ import {
 } from '@/components/doc-primitives';
 
 export const metadata: Metadata = {
-  title: 'Templates API — VERBITTO Docs',
-  description: 'Task template instructions for VERBITTO.',
+  title: 'Templates API — Verbitto Docs',
+  description: 'Task template instructions for Verbitto.',
 };
 
 const toc = [

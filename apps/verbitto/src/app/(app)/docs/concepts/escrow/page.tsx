@@ -4,8 +4,8 @@ import { DocContent } from '@/components/doc-content';
 import { CodeBlock, H2, H3, InlineCode, Callout } from '@/components/doc-primitives';
 
 export const metadata: Metadata = {
-  title: 'SOL Escrow — VERBITTO Docs',
-  description: 'How VERBITTO locks and releases SOL bounties using PDAs.',
+  title: 'SOL Escrow — Verbitto Docs',
+  description: 'How Verbitto locks and releases SOL bounties using PDAs.',
 };
 
 const toc = [
@@ -22,12 +22,12 @@ export default function EscrowPage() {
   return (
     <DocContent
       title="SOL Escrow"
-      description="How VERBITTO locks and releases SOL bounties using Program Derived Addresses."
+      description="How Verbitto locks and releases SOL bounties using Program Derived Addresses."
       toc={toc}
     >
       <H2 id="how-escrow-works">How Escrow Works</H2>
       <p className="mt-4 leading-7">
-        VERBITTO uses native SOL as the escrow currency — no SPL tokens or
+        Verbitto uses native SOL as the escrow currency — no SPL tokens or
         wrapper contracts needed. When a creator publishes a task, the bounty
         amount is transferred from the creator&apos;s wallet into the Task PDA.
         The funds are locked and can only be released through program
@@ -35,7 +35,7 @@ export default function EscrowPage() {
       </p>
 
       <Callout type="info" title="No Token Accounts">
-        Since VERBITTO uses native SOL (lamports), there are no token accounts,
+        Since Verbitto uses native SOL (lamports), there are no token accounts,
         mints, or associated token accounts involved. This simplifies the
         account structure and reduces transaction costs.
       </Callout>

@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 
 export const metadata: Metadata = {
   title: 'Tasks',
-  description: 'Browse and create tasks on VERBITTO.',
+  description: 'Browse and create tasks on Verbitto.',
 };
 
 export default function TasksPage() {

@@ -11,7 +11,7 @@ import { Icons } from './icons';
 
 export function Logo() {
   return (
-    <Button asChild size="sm" variant="ghost" className="gap-1.5 font-bold">
+    <Button asChild size="lg" variant="ghost" className="hidden gap-1.5 font-bold md:flex">
       <Link href="/">
         <Icons.logo className="size-5" />
         <span>{siteConfig.name}</span>
@@ -26,7 +26,7 @@ export function MainNav({ className }: { className?: string }) {
   return (
     <nav className={cn('items-center gap-0.5', className)}>
       {siteConfig.navItems.map((item) => (
-        <Button key={item.href} asChild size="sm" variant="ghost">
+        <Button key={item.href} asChild size="default" variant="ghost">
           <Link
             className={cn(pathname === item.href && 'text-primary')}
             href={item.href}
