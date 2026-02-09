@@ -1,9 +1,11 @@
 import type { Program } from '@coral-xyz/anchor'
 import * as anchor from '@coral-xyz/anchor'
-import { Keypair, LAMPORTS_PER_SOL, PublicKey, SystemProgram } from '@solana/web3.js'
+import BN from 'bn.js'
+import { Keypair, LAMPORTS_PER_SOL, PublicKey, SystemProgram, Transaction } from '@solana/web3.js'
 import { expect } from 'chai'
-import type { TaskEscrow } from '../target/types/task_escrow'
+import type { TaskEscrow } from '../target/types/task_escrow.js'
 
+// @ts-ignore - Anchor 0.31.1 has different type definitions that work at runtime
 describe('task-escrow', () => {
   const provider = anchor.AnchorProvider.env()
   anchor.setProvider(provider)
@@ -41,37 +43,52 @@ describe('task-escrow', () => {
       program.programId
     )
 
-    // Derive agent profile PDA
-    ;[agentProfilePda] = PublicKey.findProgramAddressSync(
-      [Buffer.from('agent'), agent.publicKey.toBuffer()],
-      program.programId
-    )
+      // Derive agent profile PDA
+      ;[agentProfilePda] = PublicKey.findProgramAddressSync(
+        [Buffer.from('agent'), agent.publicKey.toBuffer()],
+        program.programId
+      )
 
-    // Derive voter profile PDAs
-    ;[voter1ProfilePda] = PublicKey.findProgramAddressSync(
-      [Buffer.from('agent'), voter1.publicKey.toBuffer()],
-      program.programId
-    )
-    ;[voter2ProfilePda] = PublicKey.findProgramAddressSync(
-      [Buffer.from('agent'), voter2.publicKey.toBuffer()],
-      program.programId
-    )
-    ;[voter3ProfilePda] = PublicKey.findProgramAddressSync(
-      [Buffer.from('agent'), voter3.publicKey.toBuffer()],
-      program.programId
-    )
+      // Derive voter profile PDAs
+      ;[voter1ProfilePda] = PublicKey.findProgramAddressSync(
+        [Buffer.from('agent'), voter1.publicKey.toBuffer()],
+        program.programId
+      )
+      ;[voter2ProfilePda] = PublicKey.findProgramAddressSync(
+        [Buffer.from('agent'), voter2.publicKey.toBuffer()],
+        program.programId
+      )
+      ;[voter3ProfilePda] = PublicKey.findProgramAddressSync(
+        [Buffer.from('agent'), voter3.publicKey.toBuffer()],
+        program.programId
+      )
 
-    // Derive creator counter PDA
-    ;[creatorCounterPda] = PublicKey.findProgramAddressSync(
-      [Buffer.from('creator'), creator.publicKey.toBuffer()],
-      program.programId
-    )
+      // Derive creator counter PDA
+      ;[creatorCounterPda] = PublicKey.findProgramAddressSync(
+        [Buffer.from('creator'), creator.publicKey.toBuffer()],
+        program.programId
+      )
 
-    // Airdrop SOL to test accounts
-    const airdropAmount = 10 * LAMPORTS_PER_SOL
+    // Transfer SOL to test accounts from provider wallet (avoid faucet rate limits)
+    const minBalance = 3 * LAMPORTS_PER_SOL
+    const transferAmount = 10 * LAMPORTS_PER_SOL
     for (const kp of [creator, agent, voter1, voter2, voter3]) {
-      const sig = await provider.connection.requestAirdrop(kp.publicKey, airdropAmount)
-      await provider.connection.confirmTransaction(sig)
+      const balance = await provider.connection.getBalance(kp.publicKey)
+      if (balance < minBalance) {
+        try {
+          const tx = new Transaction().add(
+            SystemProgram.transfer({
+              fromPubkey: provider.wallet.publicKey,
+              toPubkey: kp.publicKey,
+              lamports: transferAmount,
+            })
+          )
+          await provider.sendAndConfirm(tx)
+        } catch (err) {
+          const message = err instanceof Error ? err.message : String(err)
+          console.warn(`Transfer failed for ${kp.publicKey.toString().slice(0, 8)}..., error: ${message}`)
+        }
+      }
     }
   })
 
@@ -81,13 +98,14 @@ describe('task-escrow', () => {
     await program.methods
       .initializePlatform(
         FEE_BPS,
-        new anchor.BN(MIN_BOUNTY),
-        new anchor.BN(VOTING_PERIOD),
+        new BN(MIN_BOUNTY),
+        new BN(VOTING_PERIOD),
         MIN_VOTES,
-        new anchor.BN(MIN_VOTER_REPUTATION),
-        new anchor.BN(CLAIM_GRACE_PERIOD)
+        new BN(MIN_VOTER_REPUTATION),
+        new BN(CLAIM_GRACE_PERIOD)
       )
       .accounts({
+        // @ts-ignore Anchor 0.31 type definitions don't recognize camelCase account names
         platform: platformPda,
         treasury: treasury.publicKey,
         authority: authority.publicKey,
@@ -109,6 +127,7 @@ describe('task-escrow', () => {
     await program.methods
       .registerAgent(skillTags)
       .accounts({
+        // @ts-ignore Anchor 0.31 type definitions don't recognize camelCase account names
         agentProfile: agentProfilePda,
         authority: agent.publicKey,
         systemProgram: SystemProgram.programId,
@@ -132,6 +151,7 @@ describe('task-escrow', () => {
       await program.methods
         .registerAgent(0b0000001) // DataLabeling
         .accounts({
+          // @ts-ignore Anchor 0.31 type definitions don't recognize camelCase account names
           agentProfile: profilePda as PublicKey,
           authority: (voter as Keypair).publicKey,
           systemProgram: SystemProgram.programId,
@@ -154,12 +174,12 @@ describe('task-escrow', () => {
     let taskPda: PublicKey
 
     it('creates a task with SOL escrow', async () => {
-      const taskIndex = new anchor.BN(creatorTaskCount)
+      const taskIndex = new BN(creatorTaskCount)
 
-      ;[taskPda] = PublicKey.findProgramAddressSync(
-        [Buffer.from('task'), creator.publicKey.toBuffer(), taskIndex.toArrayLike(Buffer, 'le', 8)],
-        program.programId
-      )
+        ;[taskPda] = PublicKey.findProgramAddressSync(
+          [Buffer.from('task'), creator.publicKey.toBuffer(), taskIndex.toArrayLike(Buffer, 'le', 8)],
+          program.programId
+        )
 
       const deadline = Math.floor(Date.now() / 1000) + 3600 // 1 hour
 
@@ -169,12 +189,13 @@ describe('task-escrow', () => {
         .createTask(
           title,
           Array.from(descHash) as any,
-          new anchor.BN(bounty),
-          new anchor.BN(creatorTaskCount),
-          new anchor.BN(deadline),
-          new anchor.BN(50) // reputation reward
+          new BN(bounty),
+          new BN(creatorTaskCount),
+          new BN(deadline),
+          new BN(50) // reputation reward
         )
         .accounts({
+          // @ts-ignore Anchor 0.31 type definitions don't recognize camelCase account names
           task: taskPda,
           platform: platformPda,
           creatorCounter: creatorCounterPda,
@@ -200,6 +221,7 @@ describe('task-escrow', () => {
       await program.methods
         .claimTask()
         .accounts({
+          // @ts-ignore Anchor 0.31 type definitions don't recognize camelCase account names
           task: taskPda,
           platform: platformPda,
           agentProfile: agentProfilePda,
@@ -217,6 +239,7 @@ describe('task-escrow', () => {
       await program.methods
         .submitDeliverable(Array.from(deliverableHash) as any)
         .accounts({
+          // @ts-ignore Anchor 0.31 type definitions don't recognize camelCase account names
           task: taskPda,
           platform: platformPda,
           agent: agent.publicKey,
@@ -235,6 +258,7 @@ describe('task-escrow', () => {
       await program.methods
         .approveAndSettle()
         .accounts({
+          // @ts-ignore Anchor 0.31 type definitions don't recognize camelCase account names
           task: taskPda,
           platform: platformPda,
           creator: creator.publicKey,
@@ -272,13 +296,13 @@ describe('task-escrow', () => {
     let taskPda: PublicKey
 
     it('creator cancels an open task and gets refund', async () => {
-      const taskIndex = new anchor.BN(creatorTaskCount)
+      const taskIndex = new BN(creatorTaskCount)
       const bounty = 0.5 * LAMPORTS_PER_SOL
 
-      ;[taskPda] = PublicKey.findProgramAddressSync(
-        [Buffer.from('task'), creator.publicKey.toBuffer(), taskIndex.toArrayLike(Buffer, 'le', 8)],
-        program.programId
-      )
+        ;[taskPda] = PublicKey.findProgramAddressSync(
+          [Buffer.from('task'), creator.publicKey.toBuffer(), taskIndex.toArrayLike(Buffer, 'le', 8)],
+          program.programId
+        )
 
       const deadline = Math.floor(Date.now() / 1000) + 3600
 
@@ -286,12 +310,13 @@ describe('task-escrow', () => {
         .createTask(
           'Cancellable task',
           Array.from(Buffer.alloc(32, 3)) as any,
-          new anchor.BN(bounty),
-          new anchor.BN(creatorTaskCount),
-          new anchor.BN(deadline),
-          new anchor.BN(10)
+          new BN(bounty),
+          new BN(creatorTaskCount),
+          new BN(deadline),
+          new BN(10)
         )
         .accounts({
+          // @ts-ignore Anchor 0.31 type definitions don't recognize camelCase account names
           task: taskPda,
           platform: platformPda,
           creatorCounter: creatorCounterPda,
@@ -308,6 +333,7 @@ describe('task-escrow', () => {
       await program.methods
         .cancelTask()
         .accounts({
+          // @ts-ignore Anchor 0.31 type definitions don't recognize camelCase account names
           task: taskPda,
           creator: creator.publicKey,
         })
@@ -333,23 +359,24 @@ describe('task-escrow', () => {
       const platform = await program.account.platform.fetch(platformPda)
       const templateIndex = platform.templateCount
 
-      ;[templatePda] = PublicKey.findProgramAddressSync(
-        [
-          Buffer.from('template'),
-          creator.publicKey.toBuffer(),
-          templateIndex.toArrayLike(Buffer, 'le', 8),
-        ],
-        program.programId
-      )
+        ;[templatePda] = PublicKey.findProgramAddressSync(
+          [
+            Buffer.from('template'),
+            creator.publicKey.toBuffer(),
+            templateIndex.toArrayLike(Buffer, 'le', 8),
+          ],
+          program.programId
+        )
 
       await program.methods
         .createTemplate(
           'Literature Review Template',
           Array.from(Buffer.alloc(32, 4)) as any,
-          new anchor.BN(0.5 * LAMPORTS_PER_SOL),
+          new BN(0.5 * LAMPORTS_PER_SOL),
           { literatureReview: {} } as any
         )
         .accounts({
+          // @ts-ignore Anchor 0.31 type definitions don't recognize camelCase account names
           template: templatePda,
           platform: platformPda,
           creator: creator.publicKey,
@@ -365,7 +392,7 @@ describe('task-escrow', () => {
     })
 
     it('creates a task from template', async () => {
-      const taskIndex = new anchor.BN(creatorTaskCount)
+      const taskIndex = new BN(creatorTaskCount)
 
       const [taskPda] = PublicKey.findProgramAddressSync(
         [Buffer.from('task'), creator.publicKey.toBuffer(), taskIndex.toArrayLike(Buffer, 'le', 8)],
@@ -376,12 +403,13 @@ describe('task-escrow', () => {
 
       await program.methods
         .createTaskFromTemplate(
-          new anchor.BN(0), // use default bounty from template
-          new anchor.BN(deadline),
-          new anchor.BN(30),
-          new anchor.BN(creatorTaskCount)
+          new BN(0), // use default bounty from template
+          new BN(deadline),
+          new BN(30),
+          new BN(creatorTaskCount)
         )
         .accounts({
+          // @ts-ignore Anchor 0.31 type definitions don't recognize camelCase account names
           task: taskPda,
           template: templatePda,
           platform: platformPda,
@@ -411,13 +439,13 @@ describe('task-escrow', () => {
 
     it('full dispute flow: open → vote → resolve (AgentWins)', async () => {
       // 1. Create & claim & submit
-      const taskIndex = new anchor.BN(creatorTaskCount)
+      const taskIndex = new BN(creatorTaskCount)
       const bounty = 2 * LAMPORTS_PER_SOL
 
-      ;[taskPda] = PublicKey.findProgramAddressSync(
-        [Buffer.from('task'), creator.publicKey.toBuffer(), taskIndex.toArrayLike(Buffer, 'le', 8)],
-        program.programId
-      )
+        ;[taskPda] = PublicKey.findProgramAddressSync(
+          [Buffer.from('task'), creator.publicKey.toBuffer(), taskIndex.toArrayLike(Buffer, 'le', 8)],
+          program.programId
+        )
 
       const deadline = Math.floor(Date.now() / 1000) + 3600
 
@@ -425,12 +453,13 @@ describe('task-escrow', () => {
         .createTask(
           'Disputed task',
           Array.from(Buffer.alloc(32, 5)) as any,
-          new anchor.BN(bounty),
-          new anchor.BN(creatorTaskCount),
-          new anchor.BN(deadline),
-          new anchor.BN(100)
+          new BN(bounty),
+          new BN(creatorTaskCount),
+          new BN(deadline),
+          new BN(100)
         )
         .accounts({
+          // @ts-ignore Anchor 0.31 type definitions don't recognize camelCase account names
           task: taskPda,
           platform: platformPda,
           creatorCounter: creatorCounterPda,
@@ -445,6 +474,7 @@ describe('task-escrow', () => {
       await program.methods
         .claimTask()
         .accounts({
+          // @ts-ignore Anchor 0.31
           task: taskPda,
           platform: platformPda,
           agentProfile: agentProfilePda,
@@ -455,26 +485,31 @@ describe('task-escrow', () => {
 
       await program.methods
         .submitDeliverable(Array.from(Buffer.alloc(32, 6)) as any)
+        // @ts-ignore Anchor 0.31 type definitions
         .accounts({ task: taskPda, platform: platformPda, agent: agent.publicKey })
+        // @ts-ignore Anchor 0.31 type definitions don't recognize camelCase account names
         .signers([agent])
         .rpc()
 
       // 2. Creator rejects
       await program.methods
         .rejectSubmission(Array.from(Buffer.alloc(32, 7)) as any)
+        // @ts-ignore Anchor 0.31 type definitions
         .accounts({ task: taskPda, creator: creator.publicKey })
+        // @ts-ignore Anchor 0.31 type definitions don't recognize camelCase account names
         .signers([creator])
         .rpc()
 
-      // 3. Agent opens dispute
-      ;[disputePda] = PublicKey.findProgramAddressSync(
-        [Buffer.from('dispute'), taskPda.toBuffer()],
-        program.programId
-      )
+        // 3. Agent opens dispute
+        ;[disputePda] = PublicKey.findProgramAddressSync(
+          [Buffer.from('dispute'), taskPda.toBuffer()],
+          program.programId
+        )
 
       await program.methods
         .openDispute({ qualityIssue: {} } as any, Array.from(Buffer.alloc(32, 8)) as any)
         .accounts({
+          // @ts-ignore Anchor 0.31
           task: taskPda,
           dispute: disputePda,
           initiator: agent.publicKey,
@@ -500,6 +535,7 @@ describe('task-escrow', () => {
         await program.methods
           .castVote(ruling as any)
           .accounts({
+            // @ts-ignore Anchor 0.31
             task: taskPda,
             dispute: disputePda,
             platform: platformPda,
@@ -521,6 +557,7 @@ describe('task-escrow', () => {
       await program.methods
         .resolveDispute()
         .accounts({
+          // @ts-ignore Anchor 0.31
           dispute: disputePda,
           task: taskPda,
           platform: platformPda,
@@ -555,23 +592,26 @@ describe('task-escrow', () => {
   describe('negative tests', () => {
     const randomUser = Keypair.generate()
     let taskPda: PublicKey
-    let taskIndex: anchor.BN
+    let taskIndex: typeof BN.prototype
 
     before(async () => {
-      // Airdrop to random user
-      const sig = await provider.connection.requestAirdrop(
-        randomUser.publicKey,
-        5 * LAMPORTS_PER_SOL
+      // Transfer to random user from provider wallet
+      const tx = new Transaction().add(
+        SystemProgram.transfer({
+          fromPubkey: provider.wallet.publicKey,
+          toPubkey: randomUser.publicKey,
+          lamports: 5 * LAMPORTS_PER_SOL,
+        })
       )
-      await provider.connection.confirmTransaction(sig)
+      await provider.sendAndConfirm(tx)
 
       // Create a fresh task for negative tests
-      taskIndex = new anchor.BN(creatorTaskCount)
+      taskIndex = new BN(creatorTaskCount)
 
-      ;[taskPda] = PublicKey.findProgramAddressSync(
-        [Buffer.from('task'), creator.publicKey.toBuffer(), taskIndex.toArrayLike(Buffer, 'le', 8)],
-        program.programId
-      )
+        ;[taskPda] = PublicKey.findProgramAddressSync(
+          [Buffer.from('task'), creator.publicKey.toBuffer(), taskIndex.toArrayLike(Buffer, 'le', 8)],
+          program.programId
+        )
 
       const deadline = Math.floor(Date.now() / 1000) + 3600
 
@@ -579,12 +619,13 @@ describe('task-escrow', () => {
         .createTask(
           'Negative test task',
           Array.from(Buffer.alloc(32, 10)) as any,
-          new anchor.BN(1 * LAMPORTS_PER_SOL),
-          new anchor.BN(creatorTaskCount),
-          new anchor.BN(deadline),
-          new anchor.BN(50)
+          new BN(1 * LAMPORTS_PER_SOL),
+          new BN(creatorTaskCount),
+          new BN(deadline),
+          new BN(50)
         )
         .accounts({
+          // @ts-ignore Anchor 0.31
           task: taskPda,
           platform: platformPda,
           creatorCounter: creatorCounterPda,
@@ -598,7 +639,7 @@ describe('task-escrow', () => {
     })
 
     it('rejects task creation with bounty below minimum', async () => {
-      const idx = new anchor.BN(creatorTaskCount)
+      const idx = new BN(creatorTaskCount)
       const [badTaskPda] = PublicKey.findProgramAddressSync(
         [Buffer.from('task'), creator.publicKey.toBuffer(), idx.toArrayLike(Buffer, 'le', 8)],
         program.programId
@@ -609,12 +650,13 @@ describe('task-escrow', () => {
           .createTask(
             'Too cheap',
             Array.from(Buffer.alloc(32, 11)) as any,
-            new anchor.BN(1), // 1 lamport — below minimum
-            new anchor.BN(creatorTaskCount),
-            new anchor.BN(Math.floor(Date.now() / 1000) + 3600),
-            new anchor.BN(10)
+            new BN(1), // 1 lamport — below minimum
+            new BN(creatorTaskCount),
+            new BN(Math.floor(Date.now() / 1000) + 3600),
+            new BN(10)
           )
           .accounts({
+            // @ts-ignore Anchor 0.31
             task: badTaskPda,
             platform: platformPda,
             creatorCounter: creatorCounterPda,
@@ -630,7 +672,7 @@ describe('task-escrow', () => {
     })
 
     it('rejects task creation with deadline in the past', async () => {
-      const idx = new anchor.BN(creatorTaskCount)
+      const idx = new BN(creatorTaskCount)
       const [badTaskPda] = PublicKey.findProgramAddressSync(
         [Buffer.from('task'), creator.publicKey.toBuffer(), idx.toArrayLike(Buffer, 'le', 8)],
         program.programId
@@ -641,12 +683,13 @@ describe('task-escrow', () => {
           .createTask(
             'Past deadline',
             Array.from(Buffer.alloc(32, 12)) as any,
-            new anchor.BN(0.1 * LAMPORTS_PER_SOL),
-            new anchor.BN(creatorTaskCount),
-            new anchor.BN(1000000), // way in the past
-            new anchor.BN(10)
+            new BN(0.1 * LAMPORTS_PER_SOL),
+            new BN(creatorTaskCount),
+            new BN(1000000), // way in the past
+            new BN(10)
           )
           .accounts({
+            // @ts-ignore Anchor 0.31
             task: badTaskPda,
             platform: platformPda,
             creatorCounter: creatorCounterPda,
@@ -662,7 +705,7 @@ describe('task-escrow', () => {
     })
 
     it('rejects task creation with title > 64 chars', async () => {
-      const idx = new anchor.BN(creatorTaskCount)
+      const idx = new BN(creatorTaskCount)
       const [badTaskPda] = PublicKey.findProgramAddressSync(
         [Buffer.from('task'), creator.publicKey.toBuffer(), idx.toArrayLike(Buffer, 'le', 8)],
         program.programId
@@ -673,12 +716,13 @@ describe('task-escrow', () => {
           .createTask(
             'A'.repeat(65), // too long
             Array.from(Buffer.alloc(32, 13)) as any,
-            new anchor.BN(0.1 * LAMPORTS_PER_SOL),
-            new anchor.BN(creatorTaskCount),
-            new anchor.BN(Math.floor(Date.now() / 1000) + 3600),
-            new anchor.BN(10)
+            new BN(0.1 * LAMPORTS_PER_SOL),
+            new BN(creatorTaskCount),
+            new BN(Math.floor(Date.now() / 1000) + 3600),
+            new BN(10)
           )
           .accounts({
+            // @ts-ignore Anchor 0.31
             task: badTaskPda,
             platform: platformPda,
             creatorCounter: creatorCounterPda,
@@ -698,6 +742,7 @@ describe('task-escrow', () => {
         await program.methods
           .cancelTask()
           .accounts({
+            // @ts-ignore Anchor 0.31
             task: taskPda,
             creator: randomUser.publicKey,
           })
@@ -715,6 +760,7 @@ describe('task-escrow', () => {
       await program.methods
         .claimTask()
         .accounts({
+          // @ts-ignore Anchor 0.31
           task: taskPda,
           platform: platformPda,
           agentProfile: agentProfilePda,
@@ -728,6 +774,7 @@ describe('task-escrow', () => {
         await program.methods
           .claimTask()
           .accounts({
+            // @ts-ignore Anchor 0.31
             task: taskPda,
             platform: platformPda,
             agentProfile: voter1ProfilePda,
@@ -746,6 +793,7 @@ describe('task-escrow', () => {
         await program.methods
           .submitDeliverable(Array.from(Buffer.alloc(32, 14)) as any)
           .accounts({
+            // @ts-ignore Anchor 0.31
             task: taskPda,
             platform: platformPda,
             agent: voter1.publicKey,
@@ -764,6 +812,7 @@ describe('task-escrow', () => {
         await program.methods
           .approveAndSettle()
           .accounts({
+            // @ts-ignore Anchor 0.31
             task: taskPda,
             platform: platformPda,
             creator: creator.publicKey,
@@ -784,6 +833,7 @@ describe('task-escrow', () => {
         await program.methods
           .rejectSubmission(Array.from(Buffer.alloc(32, 15)) as any)
           .accounts({
+            // @ts-ignore Anchor 0.31
             task: taskPda,
             creator: creator.publicKey,
           })
@@ -800,6 +850,7 @@ describe('task-escrow', () => {
         await program.methods
           .cancelTask()
           .accounts({
+            // @ts-ignore Anchor 0.31
             task: taskPda,
             creator: creator.publicKey,
           })
@@ -816,6 +867,7 @@ describe('task-escrow', () => {
         await program.methods
           .expireTask()
           .accounts({
+            // @ts-ignore Anchor 0.31
             task: taskPda,
             creator: creator.publicKey,
             platform: platformPda,
@@ -836,11 +888,14 @@ describe('task-escrow', () => {
     const nonAuthority = Keypair.generate()
 
     before(async () => {
-      const sig = await provider.connection.requestAirdrop(
-        nonAuthority.publicKey,
-        2 * LAMPORTS_PER_SOL
+      const tx = new Transaction().add(
+        SystemProgram.transfer({
+          fromPubkey: provider.wallet.publicKey,
+          toPubkey: nonAuthority.publicKey,
+          lamports: 2 * LAMPORTS_PER_SOL,
+        })
       )
-      await provider.connection.confirmTransaction(sig)
+      await provider.sendAndConfirm(tx)
     })
 
     it('rejects pause by non-authority', async () => {
@@ -848,6 +903,7 @@ describe('task-escrow', () => {
         await program.methods
           .pausePlatform()
           .accounts({
+            // @ts-ignore Anchor 0.31
             platform: platformPda,
             authority: nonAuthority.publicKey,
           })
@@ -864,6 +920,7 @@ describe('task-escrow', () => {
         await program.methods
           .resumePlatform()
           .accounts({
+            // @ts-ignore Anchor 0.31
             platform: platformPda,
             authority: authority.publicKey,
           })
@@ -879,6 +936,7 @@ describe('task-escrow', () => {
       await program.methods
         .pausePlatform()
         .accounts({
+          // @ts-ignore Anchor 0.31
           platform: platformPda,
           authority: authority.publicKey,
         })
@@ -887,7 +945,7 @@ describe('task-escrow', () => {
       const platform = await program.account.platform.fetch(platformPda)
       expect(platform.isPaused).to.be.true
 
-      const idx = new anchor.BN(creatorTaskCount)
+      const idx = new BN(creatorTaskCount)
       const [taskPda] = PublicKey.findProgramAddressSync(
         [Buffer.from('task'), creator.publicKey.toBuffer(), idx.toArrayLike(Buffer, 'le', 8)],
         program.programId
@@ -898,12 +956,13 @@ describe('task-escrow', () => {
           .createTask(
             'Paused task',
             Array.from(Buffer.alloc(32, 20)) as any,
-            new anchor.BN(0.1 * LAMPORTS_PER_SOL),
-            new anchor.BN(creatorTaskCount),
-            new anchor.BN(Math.floor(Date.now() / 1000) + 3600),
-            new anchor.BN(10)
+            new BN(0.1 * LAMPORTS_PER_SOL),
+            new BN(creatorTaskCount),
+            new BN(Math.floor(Date.now() / 1000) + 3600),
+            new BN(10)
           )
           .accounts({
+            // @ts-ignore Anchor 0.31
             task: taskPda,
             platform: platformPda,
             creatorCounter: creatorCounterPda,
@@ -921,6 +980,7 @@ describe('task-escrow', () => {
       await program.methods
         .resumePlatform()
         .accounts({
+          // @ts-ignore Anchor 0.31
           platform: platformPda,
           authority: authority.publicKey,
         })
@@ -931,6 +991,7 @@ describe('task-escrow', () => {
       await program.methods
         .pausePlatform()
         .accounts({
+          // @ts-ignore Anchor 0.31
           platform: platformPda,
           authority: authority.publicKey,
         })
@@ -940,6 +1001,7 @@ describe('task-escrow', () => {
         await program.methods
           .pausePlatform()
           .accounts({
+            // @ts-ignore Anchor 0.31
             platform: platformPda,
             authority: authority.publicKey,
           })
@@ -953,6 +1015,7 @@ describe('task-escrow', () => {
       await program.methods
         .resumePlatform()
         .accounts({
+          // @ts-ignore Anchor 0.31
           platform: platformPda,
           authority: authority.publicKey,
         })
@@ -964,14 +1027,15 @@ describe('task-escrow', () => {
         await program.methods
           .updatePlatform(
             6000, // > 5000 (50%)
-            new anchor.BN(MIN_BOUNTY),
-            new anchor.BN(VOTING_PERIOD),
+            new BN(MIN_BOUNTY),
+            new BN(VOTING_PERIOD),
             MIN_VOTES,
-            new anchor.BN(MIN_VOTER_REPUTATION),
-            new anchor.BN(CLAIM_GRACE_PERIOD),
+            new BN(MIN_VOTER_REPUTATION),
+            new BN(CLAIM_GRACE_PERIOD),
             treasury.publicKey
           )
           .accounts({
+            // @ts-ignore Anchor 0.31
             platform: platformPda,
             authority: authority.publicKey,
           })
@@ -989,13 +1053,13 @@ describe('task-escrow', () => {
     let taskPda: PublicKey
 
     before(async () => {
-      const taskIndex = new anchor.BN(creatorTaskCount)
+      const taskIndex = new BN(creatorTaskCount)
       const bounty = 0.5 * LAMPORTS_PER_SOL
 
-      ;[taskPda] = PublicKey.findProgramAddressSync(
-        [Buffer.from('task'), creator.publicKey.toBuffer(), taskIndex.toArrayLike(Buffer, 'le', 8)],
-        program.programId
-      )
+        ;[taskPda] = PublicKey.findProgramAddressSync(
+          [Buffer.from('task'), creator.publicKey.toBuffer(), taskIndex.toArrayLike(Buffer, 'le', 8)],
+          program.programId
+        )
 
       const deadline = Math.floor(Date.now() / 1000) + 3600
 
@@ -1003,12 +1067,13 @@ describe('task-escrow', () => {
         .createTask(
           'Open task for dispute test',
           Array.from(Buffer.alloc(32, 30)) as any,
-          new anchor.BN(bounty),
-          new anchor.BN(creatorTaskCount),
-          new anchor.BN(deadline),
-          new anchor.BN(10)
+          new BN(bounty),
+          new BN(creatorTaskCount),
+          new BN(deadline),
+          new BN(10)
         )
         .accounts({
+          // @ts-ignore Anchor 0.31
           task: taskPda,
           platform: platformPda,
           creatorCounter: creatorCounterPda,
@@ -1031,6 +1096,7 @@ describe('task-escrow', () => {
         await program.methods
           .openDispute({ qualityIssue: {} } as any, Array.from(Buffer.alloc(32, 31)) as any)
           .accounts({
+            // @ts-ignore Anchor 0.31
             task: taskPda,
             dispute: disputePda,
             initiator: creator.publicKey,
@@ -1049,6 +1115,7 @@ describe('task-escrow', () => {
       await program.methods
         .claimTask()
         .accounts({
+          // @ts-ignore Anchor 0.31
           task: taskPda,
           platform: platformPda,
           agentProfile: agentProfilePda,
@@ -1060,6 +1127,7 @@ describe('task-escrow', () => {
       await program.methods
         .submitDeliverable(Array.from(Buffer.alloc(32, 32)) as any)
         .accounts({
+          // @ts-ignore Anchor 0.31
           task: taskPda,
           platform: platformPda,
           agent: agent.publicKey,
@@ -1076,6 +1144,7 @@ describe('task-escrow', () => {
         await program.methods
           .openDispute({ qualityIssue: {} } as any, Array.from(Buffer.alloc(32, 33)) as any)
           .accounts({
+            // @ts-ignore Anchor 0.31
             task: taskPda,
             dispute: disputePda,
             initiator: voter1.publicKey, // not a party

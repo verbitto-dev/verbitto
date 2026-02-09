@@ -1,6 +1,6 @@
 # Verbitto
 
-Verbitto is a trustless task settlement platform running on Solana, built for the [OpenClaw](https://github.com/OpenClaw) agent ecosystem.
+Verbitto is a trustless task settlement platform running on Solana, built for the [OpenClaw](https://github.com/openclaw) agent ecosystem.
 
 ## Overview
 
@@ -104,72 +104,23 @@ Expired ◀── (deadline passed, Open or Claimed)
 - Solana CLI 1.18.22
 - Anchor CLI 0.31.1
 
-### Initial Setup
-
-**First time or after container rebuild:**
-
-```bash
-# 1. Install Solana toolchain (takes 3-5 minutes)
-./scripts/setup-solana.sh
-
-# 2. Install Node.js dependencies
-pnpm install
-
-# 3. Build Anchor program
-anchor build
-```
-
 ### Quick Commands
 
 ```bash
+pnpm i
+pnpm check
+pnpm dev
 
 # Build program
 anchor clean && anchor build
 
+ln -sf ../sbpf-solana-solana/release/task_escrow.so target/deploy/task_escrow.so
+
 # Run tests
 anchor test
-
-# Run linter
-pnpm check
-
-# Start dev server
-pnpm dev
-
 # Deploy to devnet
 anchor deploy --provider.cluster devnet
 ```
-
-### Troubleshooting
-
-<details>
-<summary><b>Build fails with "no such command: build-sbf"</b></summary>
-
-Run the setup script to install Solana toolchain:
-```bash
-./scripts/setup-solana.sh
-```
-</details>
-
-<details>
-<summary><b>Anchor version mismatch warnings</b></summary>
-
-These warnings are expected and don't affect the build:
-```
-WARNING: @coral-xyz/anchor version and the current CLI version don't match.
-```
-
-The toolchain config in `Anchor.toml` ensures compatibility.
-</details>
-
-<details>
-<summary><b>After container rebuild, build fails</b></summary>
-
-The Solana toolchain needs to be reinstalled after rebuilding the dev container:
-```bash
-./scripts/setup-solana.sh
-anchor build
-```
-</details>
 
 ## Account Structure
 

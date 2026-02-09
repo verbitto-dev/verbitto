@@ -31,7 +31,7 @@ pub mod state;
 use contexts::*;
 use state::*;
 
-declare_id!("Cib6nrq5N6U5BazKhgEd5TTr5GiKX9x1gzAzFKbQmTUc");
+declare_id!("2bDVLd9FZHmCMb9WkkQaAEWtCB48Adzcd13Prf8UxkdB");
 
 // ============================================================
 // Program — thin delegation layer
