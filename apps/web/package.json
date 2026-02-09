@@ -1,0 +1,45 @@
+{
+    "name": "@verbitto/web",
+    "version": "0.1.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "contentlayer": "contentlayer2 build",
+        "dev": "contentlayer2 dev & next dev",
+        "build": "contentlayer2 build && next build",
+        "start": "next start",
+        "typecheck": "tsc --noEmit"
+    },
+    "dependencies": {
+        "@radix-ui/react-separator": "^1.1.1",
+        "@radix-ui/react-slot": "^1.1.1",
+        "@solana/wallet-adapter-base": "^0.9.27",
+        "@solana/wallet-adapter-react": "^0.15.39",
+        "@solana/wallet-adapter-react-ui": "^0.9.39",
+        "@solana/wallet-adapter-wallets": "^0.19.37",
+        "@solana/web3.js": "^1.98.4",
+        "@verbitto/program": "workspace:*",
+        "class-variance-authority": "^0.7.1",
+        "clsx": "^2.1.1",
+        "contentlayer2": "^0.5.8",
+        "lucide-react": "^0.468.0",
+        "next": "^15.1.0",
+        "next-contentlayer2": "^0.5.8",
+        "next-themes": "^0.4.4",
+        "react": "^19.0.0",
+        "react-dom": "^19.0.0",
+        "react-wrap-balancer": "^1.1.1",
+        "rehype-autolink-headings": "^7.1.0",
+        "rehype-slug": "^6.0.0",
+        "remark-gfm": "^4.0.1",
+        "tailwind-merge": "^2.6.0"
+    },
+    "devDependencies": {
+        "@tailwindcss/postcss": "^4.0.0",
+        "@types/node": "^22.10.0",
+        "@types/react": "^19.0.0",
+        "@types/react-dom": "^19.0.0",
+        "tailwindcss": "^4.0.0",
+        "typescript": "^5.7.0"
+    }
+}
