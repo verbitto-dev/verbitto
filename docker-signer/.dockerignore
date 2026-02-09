@@ -1,0 +1,10 @@
+node_modules
+npm-debug.log
+.git
+.gitignore
+*.md
+!package.json
+!verbitto-signer.js
+signer.log
+wallet.json
+.env

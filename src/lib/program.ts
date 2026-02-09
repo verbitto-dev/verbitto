@@ -37,6 +37,22 @@ export function getCreatorCounterPda(creator: PublicKey): PublicKey {
   return pda
 }
 
+export function getDisputePda(task: PublicKey): PublicKey {
+  const [pda] = PublicKey.findProgramAddressSync(
+    [Buffer.from('dispute'), task.toBuffer()],
+    PROGRAM_ID
+  )
+  return pda
+}
+
+export function getVotePda(dispute: PublicKey, voter: PublicKey): PublicKey {
+  const [pda] = PublicKey.findProgramAddressSync(
+    [Buffer.from('vote'), dispute.toBuffer(), voter.toBuffer()],
+    PROGRAM_ID
+  )
+  return pda
+}
+
 // ============================================================
 // Account discriminators (first 8 bytes of sha256("account:<Name>"))
 // Anchor convention
