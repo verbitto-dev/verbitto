@@ -5,9 +5,9 @@
   "description": "Verbitto — Decentralized Task Escrow Platform on Solana",
   "type": "module",
   "scripts": {
-    "dev": "pnpm --filter @verbitto/web dev",
+    "dev": "concurrently \"pnpm dev:web\" \"pnpm dev:api\"",
     "dev:api": "pnpm --filter @verbitto/api dev",
-    "dev:all": "concurrently \"pnpm dev\" \"pnpm dev:api\"",
+    "dev:web": "pnpm --filter @verbitto/web dev",
     "build": "pnpm -r build",
     "build:web": "pnpm --filter @verbitto/web build",
     "build:api": "pnpm --filter @verbitto/api build",

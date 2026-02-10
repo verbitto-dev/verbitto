@@ -1,3 +1,4 @@
+import 'dotenv/config'
 import { serve } from '@hono/node-server'
 import { swaggerUI } from '@hono/swagger-ui'
 import { OpenAPIHono } from '@hono/zod-openapi'
@@ -43,7 +44,7 @@ app.doc('/api/v1/openapi.json', {
   },
   servers: [
     {
-      url: process.env.API_BASE_URL || 'http://localhost:3001',
+      url: process.env.API_BASE_URL || 'http://localhost:5000',
       description: 'API Server',
     },
   ],
@@ -57,10 +58,14 @@ app.get('/', (c) => {
   return c.redirect('/api/v1/docs')
 })
 
-const port = parseInt(process.env.API_PORT || '3001', 10)
+const port = parseInt(process.env.API_PORT || '5000', 10)
 
 serve({
   fetch: app.fetch,
   port,
 })
 
+console.log(`🚀 API Server running at:`)
+console.log(`   - Local:   http://localhost:${port}`)
+console.log(`   - Docs:    http://localhost:${port}/api/v1/docs`)
+console.log(`   - OpenAPI: http://localhost:${port}/api/v1/openapi.json`)
