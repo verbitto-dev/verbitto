@@ -7,7 +7,6 @@ import {
   Transaction,
   type TransactionInstruction,
 } from '@solana/web3.js'
-import BN from 'bn.js'
 import {
   getAgentProfilePda,
   getCreatorCounterPda,
@@ -17,6 +16,7 @@ import {
   getVotePda,
   PROGRAM_ID,
 } from '@verbitto/program'
+import BN from 'bn.js'
 import { getConnection } from '../lib/solana.js'
 import { ErrorSchema } from '../schemas/common.js'
 import {

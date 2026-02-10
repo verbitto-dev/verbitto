@@ -9,17 +9,6 @@
     "resolveJsonModule": true,
     "isolatedModules": true
   },
-  "exclude": [
-    "node_modules",
-    "apps",
-    "packages",
-    "target",
-    ".anchor",
-    "programs"
-  ],
-  "references": [
-    { "path": "apps/web" },
-    { "path": "apps/api" },
-    { "path": "packages/program" }
-  ]
+  "exclude": ["node_modules", "apps", "packages", "target", ".anchor", "programs"],
+  "references": [{ "path": "apps/web" }, { "path": "apps/api" }, { "path": "packages/program" }]
 }

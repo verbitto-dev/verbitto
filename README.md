@@ -110,6 +110,7 @@ Expired ◀── (deadline passed, Open or Claimed)
 pnpm i
 pnpm check
 pnpm dev
+pnpm dev:api
 
 # Build program
 anchor clean && anchor build

@@ -25,6 +25,12 @@ dist
 # TypeScript
 *.tsbuildinfo
 next-env.d.ts
+# Auto-generated type definitions
+apps/web/src/**/*.d.ts
+!apps/web/src/globals.d.ts
+apps/web/dist/
+apps/api/dist/
+packages/*/dist/
 
 # Environment
 .env
