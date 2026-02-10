@@ -104,6 +104,28 @@ Expired ◀── (deadline passed, Open or Claimed)
 - Solana CLI 1.18.22
 - Anchor CLI 0.31.1
 
+### Security Status
+
+The project uses `pnpm.overrides` to enforce secure versions of vulnerable dependencies:
+- ✅ Fixed: axios (high), lodash (moderate), diff (low)
+- ⚠️ Known issue: elliptic (low) - no patched version available, from @solana/wallet-adapter-torus
+
+Run `pnpm audit` to check current vulnerability status.
+
+### Testing Requirements
+
+**Important:** Tests must run on a local Solana validator, not devnet.
+
+- ✅ Use: `anchor test` (recommended)
+  - Automatically manages local validator lifecycle
+  - Deploys program and funds test accounts
+  - Runs complete test suite
+  
+- ❌ Avoid: `pnpm test` (direct)
+  - Requires manual validator setup
+  - Needs pre-funded wallet on the target network
+  - Will fail on devnet without proper wallet configuration
+
 ### Quick Commands
 
 ```bash
@@ -117,8 +139,17 @@ anchor clean && anchor build
 
 ln -sf ../sbpf-solana-solana/release/task_escrow.so target/deploy/task_escrow.so
 
-# Run tests
+# Run tests (requires local validator)
 anchor test
+
+# Note: Direct `pnpm test` will fail on devnet without funded wallets
+# Always use `anchor test` which automatically:
+# - Starts a local Solana test validator
+# - Deploys the program
+# - Funds test accounts automatically
+# - Runs the test suite
+# - Cleans up the validator after tests
+
 # Deploy to devnet
 anchor deploy --provider.cluster devnet
 ```
