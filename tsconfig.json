@@ -10,5 +10,5 @@
     "isolatedModules": true
   },
   "exclude": ["node_modules", "apps", "packages", "target", ".anchor", "programs"],
-  "references": [{ "path": "apps/web" }, { "path": "apps/api" }, { "path": "packages/program" }]
+  "references": [{ "path": "apps/api" }, { "path": "packages/program" }]
 }

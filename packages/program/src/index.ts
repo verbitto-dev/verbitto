@@ -4,7 +4,12 @@ import { PublicKey } from '@solana/web3.js'
 // Program ID & PDA helpers
 // ============================================================
 
-export const PROGRAM_ID = new PublicKey('4r3ciYyag1GhBjep45mTs7nGa92kpYfRj3pqFnDqckP5')
+// Read from environment variable, fallback to devnet deployment
+const PROGRAM_ID_STRING =
+  (typeof process !== 'undefined' && process.env?.SOLANA_PROGRAM_ID) ||
+  'Coxgjx4UMQZPRdDZT9CAdrvt4TMTyUKH79ziJiNFHk8S' // Default: current devnet deployment
+
+export const PROGRAM_ID = new PublicKey(PROGRAM_ID_STRING)
 
 export function getPlatformPda(): PublicKey {
   const [pda] = PublicKey.findProgramAddressSync([Buffer.from('platform')], PROGRAM_ID)

@@ -1,3 +1,5 @@
+import { existsSync, readFileSync, writeFileSync } from 'node:fs'
+import { join } from 'node:path'
 import type { Program } from '@coral-xyz/anchor'
 import * as anchor from '@coral-xyz/anchor'
 import { Keypair, LAMPORTS_PER_SOL, PublicKey, SystemProgram, Transaction } from '@solana/web3.js'
@@ -5,19 +7,69 @@ import BN from 'bn.js'
 import { expect } from 'chai'
 import type { TaskEscrow } from '../target/types/task_escrow.js'
 
-// @ts-expect-error - Anchor 0.31.1 has different type definitions that work at runtime
+function loadOrGenerateWallet(name: string): Keypair {
+  const walletFile = join(process.cwd(), 'tests', 'test-wallets.json')
+
+  let wallets: Record<string, number[]> = {}
+  if (existsSync(walletFile)) {
+    try {
+      const data = JSON.parse(readFileSync(walletFile, 'utf-8'))
+      wallets = data.wallets || {}
+    } catch (err) {
+      console.warn(`Could not load test wallets: ${err}`)
+    }
+  }
+
+  // Load existing wallet or generate new one
+  let keypair: Keypair
+  if (wallets[name]) {
+    keypair = Keypair.fromSecretKey(Uint8Array.from(wallets[name]))
+    console.log(`✓ Reusing test wallet: ${name} (${keypair.publicKey.toString().slice(0, 8)}...)`)
+  } else {
+    keypair = Keypair.generate()
+    wallets[name] = Array.from(keypair.secretKey)
+
+    // Save to file
+    try {
+      writeFileSync(
+        walletFile,
+        JSON.stringify(
+          {
+            description: 'Test wallets - DO NOT commit to git (add to .gitignore)',
+            version: 1,
+            wallets,
+          },
+          null,
+          2
+        )
+      )
+      console.log(
+        `✓ Generated & saved test wallet: ${name} (${keypair.publicKey.toString().slice(0, 8)}...)`
+      )
+    } catch (err) {
+      console.warn(`Could not save test wallet ${name}: ${err}`)
+    }
+  }
+
+  return keypair
+}
+
 describe('task-escrow', () => {
   const provider = anchor.AnchorProvider.env()
   anchor.setProvider(provider)
 
   const program = anchor.workspace.TaskEscrow as Program<TaskEscrow>
   const authority = provider.wallet
-  const treasury = Keypair.generate()
-  const creator = Keypair.generate()
-  const agent = Keypair.generate()
-  const voter1 = Keypair.generate()
-  const voter2 = Keypair.generate()
-  const voter3 = Keypair.generate()
+
+  // Use persistent test wallets (saved to tests/test-wallets.json)
+  // First run: generates new wallets and funds them (costs ~4 SOL)
+  // Future runs: reuses same wallets (costs ~0.1 SOL for tx fees only!)
+  const treasury = loadOrGenerateWallet('treasury')
+  const creator = loadOrGenerateWallet('creator')
+  const agent = loadOrGenerateWallet('agent')
+  const voter1 = loadOrGenerateWallet('voter1')
+  const voter2 = loadOrGenerateWallet('voter2')
+  const voter3 = loadOrGenerateWallet('voter3')
 
   // PDAs
   let platformPda: PublicKey
@@ -70,8 +122,9 @@ describe('task-escrow', () => {
     )
 
     // Transfer SOL to test accounts from provider wallet (avoid faucet rate limits)
-    const minBalance = 3 * LAMPORTS_PER_SOL
-    const transferAmount = 10 * LAMPORTS_PER_SOL
+    // Minimal amounts optimized for devnet airdrop limits (5 SOL/day)
+    const minBalance = 0.1 * LAMPORTS_PER_SOL // Only transfer if balance < 0.1 SOL
+    const transferAmount = 0.5 * LAMPORTS_PER_SOL // Transfer 0.5 SOL per account (enough for tests)
     for (const kp of [creator, agent, voter1, voter2, voter3]) {
       const balance = await provider.connection.getBalance(kp.publicKey)
       if (balance < minBalance) {
@@ -260,7 +313,7 @@ describe('task-escrow', () => {
       await program.methods
         .approveAndSettle()
         .accounts({
-          // @ts-expect-error Anchor 0.31 type definitions don't recognize camelCase account names
+          // @ts-expect-error - Anchor 0.31 type definitions issue
           task: taskPda,
           platform: platformPda,
           creator: creator.publicKey,
@@ -335,7 +388,7 @@ describe('task-escrow', () => {
       await program.methods
         .cancelTask()
         .accounts({
-          // @ts-expect-error Anchor 0.31 type definitions don't recognize camelCase account names
+          // @ts-expect-error - Anchor 0.31 type definitions issue
           task: taskPda,
           creator: creator.publicKey,
         })
@@ -378,7 +431,7 @@ describe('task-escrow', () => {
           { literatureReview: {} } as any
         )
         .accounts({
-          // @ts-expect-error Anchor 0.31 type definitions don't recognize camelCase account names
+          // @ts-expect-error - Anchor 0.31 type definitions issue
           template: templatePda,
           platform: platformPda,
           creator: creator.publicKey,
@@ -487,18 +540,20 @@ describe('task-escrow', () => {
 
       await program.methods
         .submitDeliverable(Array.from(Buffer.alloc(32, 6)) as any)
-        // @ts-expect-error Anchor 0.31 type definitions
-        .accounts({ task: taskPda, platform: platformPda, agent: agent.publicKey })
-        // @ts-expect-error Anchor 0.31 type definitions don't recognize camelCase account names
+        .accounts({
+          // @ts-expect-error - Anchor 0.31 type definitions issue
+          task: taskPda,
+          platform: platformPda,
+          agent: agent.publicKey,
+        })
         .signers([agent])
         .rpc()
 
       // 2. Creator rejects
       await program.methods
         .rejectSubmission(Array.from(Buffer.alloc(32, 7)) as any)
-        // @ts-expect-error Anchor 0.31 type definitions
+        // @ts-expect-error - Anchor 0.31 type definitions issue
         .accounts({ task: taskPda, creator: creator.publicKey })
-        // @ts-expect-error Anchor 0.31 type definitions don't recognize camelCase account names
         .signers([creator])
         .rpc()
 
@@ -511,7 +566,7 @@ describe('task-escrow', () => {
       await program.methods
         .openDispute({ qualityIssue: {} } as any, Array.from(Buffer.alloc(32, 8)) as any)
         .accounts({
-          // @ts-expect-error Anchor 0.31
+          // @ts-expect-error - Anchor 0.31 type definitions issue
           task: taskPda,
           dispute: disputePda,
           initiator: agent.publicKey,
@@ -537,7 +592,7 @@ describe('task-escrow', () => {
         await program.methods
           .castVote(ruling as any)
           .accounts({
-            // @ts-expect-error Anchor 0.31
+            // @ts-expect-error - Anchor 0.31 type definitions issue
             task: taskPda,
             dispute: disputePda,
             platform: platformPda,
@@ -559,7 +614,7 @@ describe('task-escrow', () => {
       await program.methods
         .resolveDispute()
         .accounts({
-          // @ts-expect-error Anchor 0.31
+          // @ts-expect-error - Anchor 0.31 type definitions issue
           dispute: disputePda,
           task: taskPda,
           platform: platformPda,
@@ -776,7 +831,7 @@ describe('task-escrow', () => {
         await program.methods
           .claimTask()
           .accounts({
-            // @ts-expect-error Anchor 0.31
+            // @ts-expect-error - Anchor 0.31 type definitions issue
             task: taskPda,
             platform: platformPda,
             agentProfile: voter1ProfilePda,
@@ -795,7 +850,7 @@ describe('task-escrow', () => {
         await program.methods
           .submitDeliverable(Array.from(Buffer.alloc(32, 14)) as any)
           .accounts({
-            // @ts-expect-error Anchor 0.31
+            // @ts-expect-error - Anchor 0.31 type definitions issue
             task: taskPda,
             platform: platformPda,
             agent: voter1.publicKey,
@@ -905,7 +960,6 @@ describe('task-escrow', () => {
         await program.methods
           .pausePlatform()
           .accounts({
-            // @ts-expect-error Anchor 0.31
             platform: platformPda,
             authority: nonAuthority.publicKey,
           })
@@ -922,7 +976,6 @@ describe('task-escrow', () => {
         await program.methods
           .resumePlatform()
           .accounts({
-            // @ts-expect-error Anchor 0.31
             platform: platformPda,
             authority: authority.publicKey,
           })
@@ -938,7 +991,6 @@ describe('task-escrow', () => {
       await program.methods
         .pausePlatform()
         .accounts({
-          // @ts-expect-error Anchor 0.31
           platform: platformPda,
           authority: authority.publicKey,
         })
@@ -982,7 +1034,6 @@ describe('task-escrow', () => {
       await program.methods
         .resumePlatform()
         .accounts({
-          // @ts-expect-error Anchor 0.31
           platform: platformPda,
           authority: authority.publicKey,
         })
@@ -993,7 +1044,6 @@ describe('task-escrow', () => {
       await program.methods
         .pausePlatform()
         .accounts({
-          // @ts-expect-error Anchor 0.31
           platform: platformPda,
           authority: authority.publicKey,
         })
@@ -1003,7 +1053,6 @@ describe('task-escrow', () => {
         await program.methods
           .pausePlatform()
           .accounts({
-            // @ts-expect-error Anchor 0.31
             platform: platformPda,
             authority: authority.publicKey,
           })
@@ -1017,7 +1066,6 @@ describe('task-escrow', () => {
       await program.methods
         .resumePlatform()
         .accounts({
-          // @ts-expect-error Anchor 0.31
           platform: platformPda,
           authority: authority.publicKey,
         })
@@ -1037,7 +1085,6 @@ describe('task-escrow', () => {
             treasury.publicKey
           )
           .accounts({
-            // @ts-expect-error Anchor 0.31
             platform: platformPda,
             authority: authority.publicKey,
           })

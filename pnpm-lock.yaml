@@ -47,6 +47,9 @@ importers:
       concurrently:
         specifier: ^9.2.1
         version: 9.2.1
+      dotenv:
+        specifier: ^17.2.4
+        version: 17.2.4
       mocha:
         specifier: ^11.7.5
         version: 11.7.5
@@ -199,6 +202,10 @@ importers:
       '@solana/web3.js':
         specifier: ^1.98.4
         version: 1.98.4(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)
+    devDependencies:
+      '@types/node':
+        specifier: ^22.10.0
+        version: 22.19.10
 
 packages:
 

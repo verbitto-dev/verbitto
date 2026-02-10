@@ -1,0 +1,21 @@
+# Compiled output
+dist/
+*.js
+*.d.ts
+*.map
+!src/**/*.ts
+
+# Dependencies
+node_modules/
+
+# Environment
+.env
+.env.local
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db

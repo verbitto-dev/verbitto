@@ -6,6 +6,7 @@ import { cors } from 'hono/cors'
 import { logger } from 'hono/logger'
 import { prettyJSON } from 'hono/pretty-json'
 import agentsRoutes from './routes/agents.js'
+import idlRoutes from './routes/idl.js'
 import platformRoutes from './routes/platform.js'
 import tasksRoutes from './routes/tasks.js'
 import txRoutes from './routes/tx.js'
@@ -33,6 +34,7 @@ app.route('/api/v1/platform', platformRoutes)
 app.route('/api/v1/tasks', tasksRoutes)
 app.route('/api/v1/agents', agentsRoutes)
 app.route('/api/v1/tx', txRoutes)
+app.route('/api/v1/idl', idlRoutes)
 
 // OpenAPI JSON
 app.doc('/api/v1/openapi.json', {
