@@ -350,3 +350,88 @@ function parseOneTransaction(tx: unknown): IndexedEvent[] {
 
     return []
 }
+
+// ────────────────────────────────────────────────────────────
+// Instruction data parser: extract title from create_task ix
+// ────────────────────────────────────────────────────────────
+
+/** Anchor instruction discriminator = sha256("global:<method_name>")[0..8] */
+function ixDiscriminator(name: string): Buffer {
+    return Buffer.from(
+        createHash('sha256').update(`global:${name}`).digest().subarray(0, 8),
+    )
+}
+
+const CREATE_TASK_DISC = ixDiscriminator('create_task')
+const CREATE_TASK_FROM_TEMPLATE_DISC = ixDiscriminator('create_task_from_template')
+
+/**
+ * Extract task titles from create_task instruction data in a transaction.
+ * Returns a map of task PDA address → title string.
+ *
+ * Works with versioned transactions (maxSupportedTransactionVersion: 0).
+ */
+export function extractTitlesFromTx(
+    tx: {
+        transaction: { message: { compiledInstructions?: Array<{ programIdIndex: number; data: Uint8Array; accountKeyIndexes?: number[] }>; instructions?: Array<{ programIdIndex: number; data: string; accounts?: number[] }>; staticAccountKeys?: Array<{ toBase58(): string }>; accountKeys?: Array<{ toBase58(): string }> } }
+    },
+): Map<string, string> {
+    const titles = new Map<string, string>()
+
+    const msg = tx.transaction.message
+    const accountKeys = (msg.staticAccountKeys ?? msg.accountKeys ?? []) as Array<{ toBase58(): string }>
+
+    // Find our program's index in account keys
+    const programIdx = accountKeys.findIndex((k) => k.toBase58() === PROGRAM_ID)
+    if (programIdx === -1) return titles
+
+    // Handle compiled instructions (versioned tx) and legacy instructions
+    const instructions = msg.compiledInstructions ?? msg.instructions ?? []
+
+    for (const ix of instructions) {
+        if (ix.programIdIndex !== programIdx) continue
+
+        let ixData: Buffer
+        if (ix.data instanceof Uint8Array) {
+            ixData = Buffer.from(ix.data)
+        } else if (typeof ix.data === 'string') {
+            // Legacy format: base58 encoded
+            ixData = Buffer.from(ix.data, 'base64')
+        } else {
+            continue
+        }
+
+        if (ixData.length < 12) continue // need at least disc(8) + title_len(4)
+
+        const disc = ixData.subarray(0, 8)
+        const isCreateTask = disc.equals(CREATE_TASK_DISC)
+        const isFromTemplate = disc.equals(CREATE_TASK_FROM_TEMPLATE_DISC)
+        if (!isCreateTask && !isFromTemplate) continue
+
+        try {
+            // create_task args: title(String), description_hash([u8;32]), ...
+            // Borsh String = u32 LE length + utf8 bytes
+            const titleLen = ixData.readUInt32LE(8)
+            if (titleLen > 64 || titleLen === 0) continue // sanity
+            if (ixData.length < 12 + titleLen) continue
+            const title = ixData.subarray(12, 12 + titleLen).toString('utf8')
+
+            // We need the task account from the instruction's accounts list.
+            // Anchor account order for CreateTask: [task, creator_counter, platform, creator, system_program]
+            // Task PDA is at index 0 in the instruction accounts.
+            const accountIndexes = (ix as { accountKeyIndexes?: number[] }).accountKeyIndexes ??
+                (ix as { accounts?: number[] }).accounts ?? []
+            if (accountIndexes.length > 0) {
+                const taskAccIdx = accountIndexes[0]
+                if (taskAccIdx < accountKeys.length) {
+                    const taskAddr = accountKeys[taskAccIdx].toBase58()
+                    titles.set(taskAddr, title)
+                }
+            }
+        } catch {
+            // Parsing failed, skip
+        }
+    }
+
+    return titles
+}

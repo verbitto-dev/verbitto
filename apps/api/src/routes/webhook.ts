@@ -50,7 +50,7 @@ app.post('/helius', async (c) => {
     try {
         const payload = await c.req.json()
         const events = parseHeliusPayload(payload)
-        const ingested = ingestEvents(events)
+        const ingested = await ingestEvents(events)
 
         console.log(
             `[Webhook] Received ${Array.isArray(payload) ? payload.length : 1} txn(s), ` +
@@ -72,8 +72,8 @@ app.post('/helius', async (c) => {
 // GET /status — indexer health / stats
 // ────────────────────────────────────────────────────────────
 
-app.get('/status', (c) => {
-    const stats = getIndexerStats()
+app.get('/status', async (c) => {
+    const stats = await getIndexerStats()
     return c.json({
         ok: true,
         ...stats,
@@ -85,10 +85,10 @@ app.get('/status', (c) => {
 // GET /events — recent events (for debugging)
 // ────────────────────────────────────────────────────────────
 
-app.get('/events', (c) => {
+app.get('/events', async (c) => {
     const limitStr = c.req.query('limit')
     const limit = Math.min(parseInt(limitStr ?? '50', 10), 200)
-    return c.json({ events: getRecentEvents(limit) })
+    return c.json({ events: await getRecentEvents(limit) })
 })
 
 export default app

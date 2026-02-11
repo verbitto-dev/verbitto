@@ -5,6 +5,7 @@ import { z } from '@hono/zod-openapi'
 export const HistoricalTaskSchema = z
     .object({
         address: z.string().openapi({ example: '8qbHbw2BbbTHBW1sbeqakYXVKRQM8Ne7pLK7m6CVfeR9' }),
+        title: z.string().openapi({ example: 'Build a Solana dApp' }),
         creator: z.string().openapi({ example: 'Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS' }),
         taskIndex: z.string().openapi({ example: '3' }),
         bountyLamports: z.string().openapi({ example: '1000000000' }),

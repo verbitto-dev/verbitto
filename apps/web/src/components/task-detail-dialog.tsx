@@ -2,7 +2,7 @@
 
 import { useAnchorWallet, useConnection, useWallet } from '@solana/wallet-adapter-react'
 import { Program, AnchorProvider } from '@coral-xyz/anchor'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { toast } from 'sonner'
 
 import { Badge } from '@/components/ui/badge'
@@ -19,6 +19,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Icons } from '@/components/icons'
 import { formatDeadline, lamportsToSol, shortKey } from '@/hooks/use-program'
 import { STATUS_VARIANTS, type TaskAccount, type TaskStatus, getPlatformPda, getAgentProfilePda, decodePlatform } from '@/lib/program'
+import { fetchDescription } from '@/lib/api'
 import IDL from '../../public/idl.json'
 
 interface TaskDetailDialogProps {
@@ -36,6 +37,22 @@ export function TaskDetailDialog({ task, open, onOpenChange, onRefresh }: TaskDe
   const [error, setError] = useState<string | null>(null)
   const [deliverableText, setDeliverableText] = useState('')
   const [rejectReasonText, setRejectReasonText] = useState('')
+  const [descriptionContent, setDescriptionContent] = useState<string | null>(null)
+
+  // Fetch description content from API when dialog opens
+  useEffect(() => {
+    if (!open || !task) {
+      setDescriptionContent(null)
+      return
+    }
+    const hashHex = Buffer.from(task.descriptionHash).toString('hex')
+    const isZero = task.descriptionHash.every((b) => b === 0)
+    if (isZero) return
+
+    fetchDescription(hashHex).then((desc) => {
+      if (desc) setDescriptionContent(desc.content)
+    })
+  }, [open, task])
 
   if (!task) return null
 
@@ -366,7 +383,9 @@ export function TaskDetailDialog({ task, open, onOpenChange, onRefresh }: TaskDe
         <DialogHeader>
           <DialogTitle className="text-xl">{task.title || 'Untitled Task'}</DialogTitle>
           <div className="flex items-center gap-2 flex-wrap text-sm text-muted-foreground">
-            <span>Task #{task.taskIndex.toString()}</span>
+            <span title={`Creator PDA Index: Task #${task.taskIndex.toString()} by this creator`}>
+              PDA #{task.taskIndex.toString()}
+            </span>
             <span>•</span>
             <Badge variant={STATUS_VARIANTS[task.status as TaskStatus] ?? 'outline'} className="text-xs">
               {task.status}
@@ -436,16 +455,26 @@ export function TaskDetailDialog({ task, open, onOpenChange, onRefresh }: TaskDe
           {/* Description Hash */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <p className="text-sm text-muted-foreground">Description Hash (SHA-256)</p>
+              <p className="text-sm text-muted-foreground">Description</p>
             </div>
-            <p className="font-mono text-xs break-all bg-muted p-3 rounded">
-              {Buffer.from(task.descriptionHash).toString('hex') ||
-                '0000000000000000000000000000000000000000000000000000000000000000'}
-            </p>
-            <p className="text-xs text-muted-foreground">
-              📝 在当前演示中，这是任务描述文本的SHA-256哈希值。
-              在生产环境中，完整描述会存储在IPFS或Arweave上，此哈希用于验证内容完整性。
-            </p>
+            {descriptionContent ? (
+              <div className="bg-muted p-3 rounded space-y-2">
+                <p className="text-sm whitespace-pre-wrap">{descriptionContent}</p>
+                <p className="font-mono text-[10px] text-muted-foreground break-all">
+                  SHA-256: {Buffer.from(task.descriptionHash).toString('hex')}
+                </p>
+              </div>
+            ) : (
+              <>
+                <p className="font-mono text-xs break-all bg-muted p-3 rounded">
+                  {Buffer.from(task.descriptionHash).toString('hex') ||
+                    '0000000000000000000000000000000000000000000000000000000000000000'}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Full description text not available. Only the on-chain SHA-256 hash is shown.
+                </p>
+              </>
+            )}
           </div>
 
           {task.deliverableHash.some((b) => b !== 0) && (
@@ -455,7 +484,7 @@ export function TaskDetailDialog({ task, open, onOpenChange, onRefresh }: TaskDe
                 {Buffer.from(task.deliverableHash).toString('hex')}
               </p>
               <p className="text-xs text-muted-foreground">
-                代理人提交的交付成果内容哈希
+                SHA-256 hash of the deliverable content submitted by the agent.
               </p>
             </div>
           )}

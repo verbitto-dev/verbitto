@@ -16,6 +16,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
 import { formatDeadline, lamportsToSol, shortKey, useTasks, useHistoricalTasks, type HistoricalTask } from '@/hooks/use-program'
+import { triggerBackfill } from '@/lib/api'
 import { STATUS_VARIANTS, type TaskStatus, type TaskAccount } from '@/lib/program'
 
 const TASKS_PER_PAGE = 9
@@ -47,7 +48,7 @@ function historicalToTaskAccount(h: HistoricalTask): TaskAccount {
     createdAt: BigInt(h.createdAt || 0),
     settledAt: BigInt(h.closedAt || 0),
     reputationReward: 0n,
-    title: `Task #${h.taskIndex || '?'}`,
+    title: h.title || `Task #${h.taskIndex != null && h.taskIndex !== '' ? h.taskIndex : '?'}`,
     descriptionHash: new Uint8Array(32),
     deliverableHash: new Uint8Array(32),
     templateIndex: 0n,
@@ -206,6 +207,25 @@ export function TaskList() {
     setTimeout(() => setSelectedTask(null), 200)
   }
 
+  const [syncing, setSyncing] = useState(false)
+
+  const handleSyncHistory = useCallback(async () => {
+    setSyncing(true)
+    try {
+      const result = await triggerBackfill(500)
+      if (result.eventsIngested > 0) {
+        toast.success(`Synced ${result.eventsIngested} events (${result.signaturesScanned} txns scanned)`)
+        refetchHist()
+      } else {
+        toast.info(`Scanned ${result.signaturesScanned} transactions — no new events found`)
+      }
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Sync failed')
+    } finally {
+      setSyncing(false)
+    }
+  }, [refetchHist])
+
   return (
     <>
       {/* Action buttons and filters */}
@@ -269,6 +289,26 @@ export function TaskList() {
           >
             <Icons.refresh className="size-4" />
           </Button>
+
+          {/* Sync history from RPC */}
+          <div className="relative group">
+            <Button
+              variant="outline"
+              className="rounded-lg"
+              disabled={syncing}
+              onClick={handleSyncHistory}
+            >
+              {syncing
+                ? <Icons.loader className="mr-1 size-4 animate-spin" />
+                : <Icons.databaseSync className="mr-1 size-4" />
+              }
+              {syncing ? 'Syncing…' : 'Sync History'}
+            </Button>
+            <div className="absolute right-0 top-full mt-2 w-72 rounded-lg border bg-popover p-3 text-xs text-muted-foreground shadow-md opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50">
+              <p className="font-medium text-foreground mb-1">Sync closed task history</p>
+              <p>Tasks in terminal states (Cancelled, Expired, Approved) have their on-chain PDA accounts closed and cannot be queried directly. Click to scan transaction history and recover this data.</p>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -378,7 +418,10 @@ export function TaskList() {
             <CardDescription className="text-center max-w-md">
               {statusFilter !== 'All' || templateFilter ? (
                 <>
-                  No tasks found with the current filters. Try adjusting your filter criteria.
+                  No tasks found with the current filters.
+                  {TERMINAL_STATUSES.has(statusFilter) && (
+                    <> {statusFilter} tasks have their on-chain PDA accounts closed. Sync from transaction history to recover.</>
+                  )}
                 </>
               ) : (
                 <>
@@ -386,6 +429,20 @@ export function TaskList() {
                 </>
               )}
             </CardDescription>
+            {TERMINAL_STATUSES.has(statusFilter) && (
+              <Button
+                variant="brand"
+                disabled={syncing}
+                onClick={handleSyncHistory}
+                className="mt-4 rounded-lg"
+              >
+                {syncing
+                  ? <Icons.loader className="mr-1 size-4 animate-spin" />
+                  : <Icons.databaseSync className="mr-1 size-4" />
+                }
+                {syncing ? 'Syncing…' : 'Sync History'}
+              </Button>
+            )}
             {(statusFilter !== 'All' || templateFilter) && (
               <Button
                 variant="outline"

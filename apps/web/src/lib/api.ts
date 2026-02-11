@@ -16,6 +16,7 @@ const API_BASE =
 
 export interface HistoricalTask {
     address: string
+    title: string
     creator: string
     taskIndex: string
     bountyLamports: string
@@ -92,6 +93,84 @@ export async function fetchHistoricalTask(
 export async function fetchIndexerStats(): Promise<IndexerStats | null> {
     try {
         const res = await fetch(`${API_BASE}/api/v1/history/stats`)
+        if (!res.ok) return null
+        return await res.json()
+    } catch {
+        return null
+    }
+}
+
+// ── Backfill ──
+
+export interface BackfillResult {
+    ok: boolean
+    signaturesScanned: number
+    transactionsFetched: number
+    eventsParsed: number
+    eventsIngested: number
+    errors: number
+    durationMs: number
+}
+
+/**
+ * Trigger an RPC backfill to populate the event store with
+ * historical transactions that the Helius webhook may have missed.
+ */
+export async function triggerBackfill(limit?: number): Promise<BackfillResult> {
+    const res = await fetch(`${API_BASE}/api/v1/history/backfill`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ limit: limit ?? 500 }),
+    })
+
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: 'Unknown error' }))
+        throw new Error(err.error || `Backfill failed (${res.status})`)
+    }
+
+    return res.json()
+}
+
+// ── Descriptions ──
+
+export interface TaskDescription {
+    descriptionHash: string
+    content: string
+    taskAddress: string | null
+    creator: string | null
+}
+
+/**
+ * Store a task description in the API database (pre-IPFS).
+ */
+export async function storeDescription(params: {
+    descriptionHash: string
+    content: string
+    taskAddress?: string
+    creator?: string
+}): Promise<TaskDescription> {
+    const res = await fetch(`${API_BASE}/api/v1/descriptions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(params),
+    })
+
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: 'Unknown error' }))
+        throw new Error(err.error || `Failed to store description (${res.status})`)
+    }
+
+    return res.json()
+}
+
+/**
+ * Fetch a task description by its SHA-256 hash.
+ */
+export async function fetchDescription(
+    hash: string,
+): Promise<TaskDescription | null> {
+    try {
+        const res = await fetch(`${API_BASE}/api/v1/descriptions/${hash}`)
         if (!res.ok) return null
         return await res.json()
     } catch {

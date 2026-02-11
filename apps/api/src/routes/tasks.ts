@@ -78,12 +78,12 @@ app.openapi(listTasksRoute, async (c) => {
     const offset = parseInt(query.offset ?? '0', 10)
 
     // Build RPC-level memcmp filters for efficiency
-    const rpcFilters: Array<{ memcmp: { offset: number; bytes: string; encoding?: string } }> = [
+    const rpcFilters: Array<{ memcmp: { offset: number; bytes: string; encoding?: 'base58' | 'base64' } }> = [
       {
         memcmp: {
           offset: 0,
           bytes: DISCRIMINATOR.Task.toString('base64'),
-          encoding: 'base64',
+          encoding: 'base64' as const,
         },
       },
     ]
@@ -99,7 +99,7 @@ app.openapi(listTasksRoute, async (c) => {
         memcmp: {
           offset: 56,
           bytes: Buffer.from([STATUS_BYTE_MAP[statusFilter]]).toString('base64'),
-          encoding: 'base64',
+          encoding: 'base64' as const,
         },
       })
     }

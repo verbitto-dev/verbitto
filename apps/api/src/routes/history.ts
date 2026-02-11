@@ -17,6 +17,7 @@ import {
     getEventsByTask,
     getIndexerStats,
 } from '../lib/event-store.js'
+import { backfillFromRpc } from '../lib/backfill.js'
 import { ErrorSchema } from '../schemas/common.js'
 import {
     HistoricalTasksListSchema,
@@ -31,10 +32,11 @@ const app = new OpenAPIHono()
 // Serializer
 // ────────────────────────────────────────────────────────────
 
-function serializeHistoricalTask(t: ReturnType<typeof getHistoricalTask>) {
+function serializeHistoricalTask(t: Awaited<ReturnType<typeof getHistoricalTask>>) {
     if (!t) return null
     return {
         address: t.address,
+        title: t.title,
         creator: t.creator,
         taskIndex: t.taskIndex,
         bountyLamports: t.bountyLamports,
@@ -81,7 +83,7 @@ const listHistoricalRoute = createRoute({
 app.openapi(listHistoricalRoute, async (c) => {
     try {
         const q = c.req.query()
-        const result = queryHistoricalTasks({
+        const result = await queryHistoricalTasks({
             status: q.status,
             creator: q.creator,
             agent: q.agent,
@@ -128,7 +130,7 @@ const getHistoricalTaskRoute = createRoute({
 // @ts-expect-error - Hono OpenAPI type inference limitation
 app.openapi(getHistoricalTaskRoute, async (c) => {
     const address = c.req.param('address')
-    const task = getHistoricalTask(address)
+    const task = await getHistoricalTask(address)
 
     if (!task) {
         return c.json({ error: 'Task not found in history index' }, 404)
@@ -159,7 +161,7 @@ const statsRoute = createRoute({
 })
 
 app.openapi(statsRoute, async (c) => {
-    const stats = getIndexerStats()
+    const stats = await getIndexerStats()
     return c.json({
         ...stats,
         approvedCount: stats.byStatus['Approved'] ?? 0,
@@ -167,6 +169,36 @@ app.openapi(statsRoute, async (c) => {
         expiredCount: stats.byStatus['Expired'] ?? 0,
         disputeResolvedCount: stats.byStatus['DisputeResolved'] ?? 0,
     })
+})
+
+// ────────────────────────────────────────────────────────────
+// POST /backfill — scan RPC transaction history to populate event store
+// ────────────────────────────────────────────────────────────
+
+let backfillRunning = false
+
+app.post('/backfill', async (c) => {
+    if (backfillRunning) {
+        return c.json({ error: 'Backfill already in progress' }, 409)
+    }
+
+    backfillRunning = true
+    try {
+        const body = await c.req.json().catch(() => ({}))
+        const limit = typeof body.limit === 'number' ? body.limit : undefined
+
+        const result = await backfillFromRpc({ limit })
+
+        return c.json({ ok: true, ...result })
+    } catch (err) {
+        console.error('[Backfill] Error:', err)
+        return c.json(
+            { error: err instanceof Error ? err.message : 'Backfill failed' },
+            500,
+        )
+    } finally {
+        backfillRunning = false
+    }
 })
 
 export default app

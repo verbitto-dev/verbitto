@@ -19,6 +19,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Icons } from '@/components/icons'
 import { PROGRAM_ID, getPlatformPda, getTaskPda, getCreatorCounterPda } from '@/lib/program'
+import { storeDescription } from '@/lib/api'
 import IDL from '../../public/idl.json'
 
 interface CreateTaskDialogProps {
@@ -135,6 +136,25 @@ export function CreateTaskDialog({ open, onOpenChange, onSuccess }: CreateTaskDi
         skipPreflight: false,
         commitment: 'confirmed',
       })
+
+      // Store description text in API database (pre-IPFS)
+      if (description) {
+        const hashHex = Array.from(descriptionHashArray)
+          .map((b) => b.toString(16).padStart(2, '0'))
+          .join('')
+        try {
+          await storeDescription({
+            descriptionHash: hashHex,
+            content: description,
+            taskAddress: taskPda.toBase58(),
+            creator: publicKey.toBase58(),
+          })
+        } catch (err) {
+          // Non-critical: description is stored on-chain as hash,
+          // API storage is a convenience feature
+          console.warn('Failed to store description text:', err)
+        }
+      }
 
       // Reset form
       setTitle('')

@@ -13,12 +13,17 @@ import tasksRoutes from './routes/tasks.js'
 import txRoutes from './routes/tx.js'
 import webhookRoutes from './routes/webhook.js'
 import historyRoutes from './routes/history.js'
+import descriptionsRoutes from './routes/descriptions.js'
 import { loadStore } from './lib/event-store.js'
+import { testConnection } from './db/index.js'
+import { migrateDb } from './db/migrate.js'
 
 const app = new OpenAPIHono()
 
-// Load event store from disk on startup
-loadStore()
+// Initialize database and load event store
+await testConnection()
+await migrateDb()
+await loadStore()
 
 // Middleware
 app.use('*', logger())
@@ -55,6 +60,7 @@ app.route('/api/v1/tx', txRoutes)
 app.route('/api/v1/idl', idlRoutes)
 app.route('/api/v1/webhook', webhookRoutes)
 app.route('/api/v1/history', historyRoutes)
+app.route('/api/v1/descriptions', descriptionsRoutes)
 
 // OpenAPI JSON
 app.doc('/api/v1/openapi.json', {

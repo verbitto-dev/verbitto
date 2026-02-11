@@ -1,14 +1,15 @@
 /**
- * Event Store — file-backed persistence for indexed Anchor events.
+ * Event Store — PostgreSQL-backed persistence for indexed Anchor events.
  *
- * Maintains an in-memory Map keyed by task address for fast lookups.
- * Periodically flushes to a JSON file on disk so data survives restarts.
+ * Uses Drizzle ORM for database operations.
+ * Maintains in-memory caches for fast reads, synced from DB on startup.
  *
  * Design: append-only log of IndexedEvent + derived HistoricalTask projection.
  */
 
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
-import { dirname, join } from 'node:path'
+import { eq, desc, and, sql } from 'drizzle-orm'
+import { db } from '../db/index.js'
+import { indexedEvents, historicalTasks, taskTitles } from '../db/schema.js'
 
 // ────────────────────────────────────────────────────────────
 // Types
@@ -34,6 +35,8 @@ export interface IndexedEvent {
 export interface HistoricalTask {
     /** Task PDA base58 */
     address: string
+    /** Task title from create_task instruction data */
+    title: string
     creator: string
     taskIndex: string
     bountyLamports: string
@@ -56,90 +59,55 @@ export interface HistoricalTask {
 }
 
 // ────────────────────────────────────────────────────────────
-// Persistence path
+// In-memory caches (populated from DB on startup)
 // ────────────────────────────────────────────────────────────
 
-const DATA_DIR = join(
-    process.env.DATA_DIR || join(process.cwd(), 'data'),
-)
-const EVENTS_FILE = join(DATA_DIR, 'events.json')
-const TASKS_FILE = join(DATA_DIR, 'historical-tasks.json')
-
-function ensureDir() {
-    if (!existsSync(DATA_DIR)) mkdirSync(DATA_DIR, { recursive: true })
-}
-
-// ────────────────────────────────────────────────────────────
-// In-memory state
-// ────────────────────────────────────────────────────────────
-
-/** All raw events, newest first */
-let events: IndexedEvent[] = []
-
-/** task address → HistoricalTask (only terminal tasks) */
-const taskMap = new Map<string, HistoricalTask>()
-
-/** Set of processed signatures to avoid duplicates */
+/** Set of processed dedup keys to avoid re-inserting */
 const processedSigs = new Set<string>()
 
 /** task address → list of events (used to build HistoricalTask) */
 const taskEventsMap = new Map<string, IndexedEvent[]>()
 
+/** task address → title (from instruction data or DB) */
+const titleMap = new Map<string, string>()
+
 // ────────────────────────────────────────────────────────────
-// Load / Save
+// Load from DB on startup
 // ────────────────────────────────────────────────────────────
 
-export function loadStore() {
-    ensureDir()
+export async function loadStore(): Promise<void> {
     try {
-        if (existsSync(EVENTS_FILE)) {
-            const raw = JSON.parse(readFileSync(EVENTS_FILE, 'utf-8')) as IndexedEvent[]
-            events = raw
-            for (const e of raw) {
-                processedSigs.add(e.signature)
-                const taskAddr = e.data.task
-                if (taskAddr) {
-                    const list = taskEventsMap.get(taskAddr) ?? []
-                    list.push(e)
-                    taskEventsMap.set(taskAddr, list)
-                }
+        // Load all events into memory for projection
+        const rows = await db.select().from(indexedEvents).orderBy(desc(indexedEvents.blockTime))
+        for (const row of rows) {
+            const dedupeKey = row.id
+            processedSigs.add(dedupeKey)
+
+            const evt: IndexedEvent = {
+                signature: row.signature,
+                slot: row.slot,
+                blockTime: row.blockTime,
+                eventName: row.eventName,
+                data: row.data as Record<string, string>,
             }
-            console.log(`[EventStore] Loaded ${events.length} events from disk`)
-        }
-    } catch (err) {
-        console.error('[EventStore] Failed to load events:', err)
-    }
 
-    try {
-        if (existsSync(TASKS_FILE)) {
-            const raw = JSON.parse(readFileSync(TASKS_FILE, 'utf-8')) as HistoricalTask[]
-            for (const t of raw) {
-                taskMap.set(t.address, t)
+            const taskAddr = row.taskAddress
+            if (taskAddr) {
+                const list = taskEventsMap.get(taskAddr) ?? []
+                list.push(evt)
+                taskEventsMap.set(taskAddr, list)
             }
-            console.log(`[EventStore] Loaded ${taskMap.size} historical tasks from disk`)
         }
+        console.log(`[EventStore] Loaded ${rows.length} events from DB`)
+
+        // Load titles
+        const titleRows = await db.select().from(taskTitles)
+        for (const row of titleRows) {
+            titleMap.set(row.taskAddress, row.title)
+        }
+        console.log(`[EventStore] Loaded ${titleRows.length} task titles from DB`)
     } catch (err) {
-        console.error('[EventStore] Failed to load historical tasks:', err)
-    }
-}
-
-let flushTimer: ReturnType<typeof setTimeout> | null = null
-
-function scheduleSave() {
-    if (flushTimer) return
-    flushTimer = setTimeout(() => {
-        flushTimer = null
-        saveStore()
-    }, 2_000)
-}
-
-export function saveStore() {
-    ensureDir()
-    try {
-        writeFileSync(EVENTS_FILE, JSON.stringify(events, null, 2))
-        writeFileSync(TASKS_FILE, JSON.stringify([...taskMap.values()], null, 2))
-    } catch (err) {
-        console.error('[EventStore] Failed to save:', err)
+        console.error('[EventStore] Failed to load from DB:', err)
     }
 }
 
@@ -158,8 +126,9 @@ const TERMINAL_EVENTS = new Set([
  * Ingest a batch of parsed events from a single transaction.
  * Returns the number of *new* events actually stored.
  */
-export function ingestEvents(batch: IndexedEvent[]): number {
+export async function ingestEvents(batch: IndexedEvent[]): Promise<number> {
     let added = 0
+    const toInsert: Array<typeof indexedEvents.$inferInsert> = []
 
     for (const evt of batch) {
         // Deduplicate by signature+eventName (a tx may emit multiple events)
@@ -167,10 +136,9 @@ export function ingestEvents(batch: IndexedEvent[]): number {
         if (processedSigs.has(dedupeKey)) continue
         processedSigs.add(dedupeKey)
 
-        events.unshift(evt) // newest first
         added++
 
-        // Track per-task event list
+        // Track per-task event list in memory
         const taskAddr = evt.data.task
         if (taskAddr) {
             const list = taskEventsMap.get(taskAddr) ?? []
@@ -178,30 +146,43 @@ export function ingestEvents(batch: IndexedEvent[]): number {
             taskEventsMap.set(taskAddr, list)
         }
 
-        // Build / update historical task on terminal events
-        if (TERMINAL_EVENTS.has(evt.eventName) && taskAddr) {
-            projectHistoricalTask(taskAddr, evt)
+        toInsert.push({
+            id: dedupeKey,
+            signature: evt.signature,
+            slot: evt.slot,
+            blockTime: evt.blockTime,
+            eventName: evt.eventName,
+            data: evt.data,
+            taskAddress: taskAddr ?? null,
+        })
+    }
+
+    // Batch insert to DB
+    if (toInsert.length > 0) {
+        try {
+            await db.insert(indexedEvents).values(toInsert).onConflictDoNothing()
+        } catch (err) {
+            console.error('[EventStore] Failed to insert events:', err)
         }
     }
 
-    if (added > 0) scheduleSave()
     return added
 }
 
 /**
  * Build a HistoricalTask record from the terminal event + earlier events.
  */
-function projectHistoricalTask(taskAddr: string, terminalEvent: IndexedEvent) {
+function projectHistoricalTask(taskAddr: string, terminalEvent: IndexedEvent): HistoricalTask {
     const allEvents = taskEventsMap.get(taskAddr) ?? [terminalEvent]
 
-    // Find TaskCreated event for metadata
     const createdEvt = allEvents.find((e) => e.eventName === 'TaskCreated')
     const claimedEvt = allEvents.find((e) => e.eventName === 'TaskClaimed')
 
     const finalStatus = mapTerminalStatus(terminalEvent.eventName)
 
-    const historical: HistoricalTask = {
+    return {
         address: taskAddr,
+        title: titleMap.get(taskAddr) ?? '',
         creator: createdEvt?.data.creator ?? terminalEvent.data.creator ?? '',
         taskIndex: createdEvt?.data.task_index ?? '',
         bountyLamports: createdEvt?.data.bounty_lamports ?? '0',
@@ -215,8 +196,74 @@ function projectHistoricalTask(taskAddr: string, terminalEvent: IndexedEvent) {
         closedAt: terminalEvent.blockTime,
         events: allEvents.sort((a, b) => a.blockTime - b.blockTime),
     }
+}
 
-    taskMap.set(taskAddr, historical)
+/**
+ * Re-project all historical tasks from event trails and upsert to DB.
+ */
+export async function rebuildHistoricalTasks(): Promise<void> {
+    let rebuilt = 0
+
+    for (const [taskAddr, evts] of taskEventsMap.entries()) {
+        const terminalEvt = evts.find((e) => TERMINAL_EVENTS.has(e.eventName))
+        if (!terminalEvt) continue
+
+        const ht = projectHistoricalTask(taskAddr, terminalEvt)
+        try {
+            await db.insert(historicalTasks).values({
+                address: ht.address,
+                title: ht.title,
+                creator: ht.creator,
+                taskIndex: ht.taskIndex,
+                bountyLamports: ht.bountyLamports,
+                deadline: ht.deadline,
+                finalStatus: ht.finalStatus,
+                agent: ht.agent,
+                payoutLamports: ht.payoutLamports,
+                feeLamports: ht.feeLamports,
+                refundedLamports: ht.refundedLamports,
+                createdAt: ht.createdAt,
+                closedAt: ht.closedAt,
+            }).onConflictDoUpdate({
+                target: historicalTasks.address,
+                set: {
+                    title: ht.title,
+                    creator: ht.creator,
+                    taskIndex: ht.taskIndex,
+                    bountyLamports: ht.bountyLamports,
+                    deadline: ht.deadline,
+                    finalStatus: ht.finalStatus,
+                    agent: ht.agent,
+                    payoutLamports: ht.payoutLamports,
+                    feeLamports: ht.feeLamports,
+                    refundedLamports: ht.refundedLamports,
+                    createdAt: ht.createdAt,
+                    closedAt: ht.closedAt,
+                },
+            })
+            rebuilt++
+        } catch (err) {
+            console.error(`[EventStore] Failed to upsert historical task ${taskAddr}:`, err)
+        }
+    }
+
+    console.log(`[EventStore] Rebuilt ${rebuilt} historical task projections`)
+}
+
+/**
+ * Store a task title extracted from instruction data.
+ */
+export async function setTaskTitle(taskAddr: string, title: string): Promise<void> {
+    titleMap.set(taskAddr, title)
+    try {
+        await db.insert(taskTitles).values({ taskAddress: taskAddr, title })
+            .onConflictDoUpdate({
+                target: taskTitles.taskAddress,
+                set: { title },
+            })
+    } catch (err) {
+        console.error('[EventStore] Failed to save task title:', err)
+    }
 }
 
 function mapTerminalStatus(eventName: string): HistoricalTask['finalStatus'] {
@@ -246,36 +293,90 @@ export interface HistoryQuery {
     offset?: number
 }
 
-export function queryHistoricalTasks(q: HistoryQuery) {
-    let results = [...taskMap.values()]
+export async function queryHistoricalTasks(q: HistoryQuery) {
+    const conditions = []
+    if (q.status) conditions.push(eq(historicalTasks.finalStatus, q.status as HistoricalTask['finalStatus']))
+    if (q.creator) conditions.push(eq(historicalTasks.creator, q.creator))
+    if (q.agent) conditions.push(eq(historicalTasks.agent, q.agent))
 
-    if (q.status) {
-        results = results.filter((t) => t.finalStatus === q.status)
-    }
-    if (q.creator) {
-        results = results.filter((t) => t.creator === q.creator)
-    }
-    if (q.agent) {
-        results = results.filter((t) => t.agent === q.agent)
-    }
-
-    // Sort newest-closed first
-    results.sort((a, b) => b.closedAt - a.closedAt)
-
-    const total = results.length
-    const offset = q.offset ?? 0
+    const where = conditions.length > 0 ? and(...conditions) : undefined
     const limit = Math.min(q.limit ?? 100, 500)
-    const page = results.slice(offset, offset + limit)
+    const offset = q.offset ?? 0
 
-    return { tasks: page, total, limit, offset }
+    const [rows, countResult] = await Promise.all([
+        db
+            .select()
+            .from(historicalTasks)
+            .where(where)
+            .orderBy(desc(historicalTasks.closedAt))
+            .limit(limit)
+            .offset(offset),
+        db
+            .select({ count: sql<number>`count(*)::int` })
+            .from(historicalTasks)
+            .where(where),
+    ])
+
+    const total = countResult[0]?.count ?? 0
+
+    // Enrich with event trails from memory
+    const tasks: HistoricalTask[] = rows.map((row) => ({
+        address: row.address,
+        title: row.title,
+        creator: row.creator,
+        taskIndex: row.taskIndex,
+        bountyLamports: row.bountyLamports,
+        deadline: row.deadline,
+        finalStatus: row.finalStatus as HistoricalTask['finalStatus'],
+        agent: row.agent,
+        payoutLamports: row.payoutLamports,
+        feeLamports: row.feeLamports,
+        refundedLamports: row.refundedLamports,
+        createdAt: row.createdAt,
+        closedAt: row.closedAt,
+        events: taskEventsMap.get(row.address)?.sort((a, b) => a.blockTime - b.blockTime) ?? [],
+    }))
+
+    return { tasks, total, limit, offset }
 }
 
-export function getHistoricalTask(address: string): HistoricalTask | undefined {
-    return taskMap.get(address)
+export async function getHistoricalTask(address: string): Promise<HistoricalTask | undefined> {
+    const rows = await db.select().from(historicalTasks).where(eq(historicalTasks.address, address)).limit(1)
+    if (rows.length === 0) return undefined
+
+    const row = rows[0]
+    return {
+        address: row.address,
+        title: row.title,
+        creator: row.creator,
+        taskIndex: row.taskIndex,
+        bountyLamports: row.bountyLamports,
+        deadline: row.deadline,
+        finalStatus: row.finalStatus as HistoricalTask['finalStatus'],
+        agent: row.agent,
+        payoutLamports: row.payoutLamports,
+        feeLamports: row.feeLamports,
+        refundedLamports: row.refundedLamports,
+        createdAt: row.createdAt,
+        closedAt: row.closedAt,
+        events: taskEventsMap.get(row.address)?.sort((a, b) => a.blockTime - b.blockTime) ?? [],
+    }
 }
 
-export function getRecentEvents(limit = 50): IndexedEvent[] {
-    return events.slice(0, limit)
+export async function getRecentEvents(limit = 50): Promise<IndexedEvent[]> {
+    const rows = await db
+        .select()
+        .from(indexedEvents)
+        .orderBy(desc(indexedEvents.blockTime))
+        .limit(limit)
+
+    return rows.map((r) => ({
+        signature: r.signature,
+        slot: r.slot,
+        blockTime: r.blockTime,
+        eventName: r.eventName,
+        data: r.data as Record<string, string>,
+    }))
 }
 
 export function getEventsByTask(taskAddress: string): IndexedEvent[] {
@@ -285,15 +386,44 @@ export function getEventsByTask(taskAddress: string): IndexedEvent[] {
 }
 
 /** Summary stats for the dashboard */
-export function getIndexerStats() {
+export async function getIndexerStats() {
+    const [totalEventsResult, statusCounts] = await Promise.all([
+        db.select({ count: sql<number>`count(*)::int` }).from(indexedEvents),
+        db
+            .select({
+                finalStatus: historicalTasks.finalStatus,
+                count: sql<number>`count(*)::int`,
+            })
+            .from(historicalTasks)
+            .groupBy(historicalTasks.finalStatus),
+    ])
+
     const byStatus: Record<string, number> = {}
-    for (const t of taskMap.values()) {
-        byStatus[t.finalStatus] = (byStatus[t.finalStatus] ?? 0) + 1
+    let totalHistoricalTasks = 0
+    for (const row of statusCounts) {
+        byStatus[row.finalStatus] = row.count
+        totalHistoricalTasks += row.count
     }
+
+    // Get latest event time from memory cache (faster than DB query)
+    let lastEventTime: number | null = null
+    for (const evts of taskEventsMap.values()) {
+        for (const e of evts) {
+            if (!lastEventTime || e.blockTime > lastEventTime) {
+                lastEventTime = e.blockTime
+            }
+        }
+    }
+
     return {
-        totalEvents: events.length,
-        totalHistoricalTasks: taskMap.size,
+        totalEvents: totalEventsResult[0]?.count ?? 0,
+        totalHistoricalTasks,
         byStatus,
-        lastEventTime: events[0]?.blockTime ?? null,
+        lastEventTime,
     }
+}
+
+// ── Legacy compatibility export (no-op, save is now immediate via DB) ──
+export async function saveStore(): Promise<void> {
+    // No-op: data is persisted to DB immediately on write
 }
