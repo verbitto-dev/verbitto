@@ -13,7 +13,7 @@
 import { createRoute, OpenAPIHono } from '@hono/zod-openapi'
 import { eq } from 'drizzle-orm'
 import { db } from '../db/index.js'
-import { taskDescriptions } from '../db/schema.js'
+import { deliverableDescriptions, taskDescriptions } from '../db/schema.js'
 import { backfillFromRpc } from '../lib/backfill.js'
 import {
   getEventsByTask,
@@ -56,11 +56,31 @@ async function serializeHistoricalTask(t: Awaited<ReturnType<typeof getHistorica
     }
   }
 
+  // Fetch deliverable description content from database if deliverableHash exists
+  let deliverableContent: string | null = null
+  if (t.deliverableHash && t.deliverableHash !== '0'.repeat(64)) {
+    try {
+      const deliverableRows = await db
+        .select()
+        .from(deliverableDescriptions)
+        .where(eq(deliverableDescriptions.deliverableHash, t.deliverableHash))
+        .limit(1)
+
+      if (deliverableRows.length > 0) {
+        deliverableContent = deliverableRows[0].content
+      }
+    } catch (err) {
+      console.warn(`[History] Failed to fetch deliverable for ${t.address}:`, err)
+    }
+  }
+
   return {
     address: t.address,
     title: t.title,
     descriptionHash: t.descriptionHash,
     description: descriptionContent,
+    deliverableHash: t.deliverableHash,
+    deliverable: deliverableContent,
     creator: t.creator,
     taskIndex: t.taskIndex,
     bountyLamports: t.bountyLamports,

@@ -45,6 +45,8 @@ export const historicalTasks = pgTable(
     title: text('title').notNull().default(''),
     /** SHA-256 hash of the description (hex) */
     descriptionHash: text('description_hash').notNull().default(''),
+    /** SHA-256 hash of the deliverable (hex) */
+    deliverableHash: text('deliverable_hash').notNull().default(''),
     /** Creator public key */
     creator: text('creator').notNull(),
     /** Per-creator task index */
@@ -113,3 +115,24 @@ export const taskTitles = pgTable('task_titles', {
 
   createdAt: timestamp('created_at').defaultNow().notNull(),
 })
+
+// ────────────────────────────────────────────────────────────
+// deliverable_descriptions — store deliverable text before IPFS
+// ────────────────────────────────────────────────────────────
+
+export const deliverableDescriptions = pgTable(
+  'deliverable_descriptions',
+  {
+    /** SHA-256 hash of the deliverable (hex) — serves as content-addressed key */
+    deliverableHash: text('deliverable_hash').primaryKey(),
+    /** The full deliverable description text */
+    content: text('content').notNull(),
+    /** Task PDA address (optional, for easier lookup) */
+    taskAddress: text('task_address'),
+    /** Agent who submitted it */
+    agent: text('agent'),
+
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+  },
+  (t) => [index('idx_deliverable_task_address').on(t.taskAddress)]
+)

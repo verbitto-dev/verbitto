@@ -12,8 +12,9 @@ export function loadIdl() {
   if (cachedIdl) return cachedIdl
 
   const possiblePaths = [
-    join(process.cwd(), 'target/idl/task_escrow.json'),
-    join(process.cwd(), '../../target/idl/task_escrow.json'),
+    join(process.cwd(), 'task_escrow.json'), // API directory (committed to git)
+    join(process.cwd(), '../../target/idl/task_escrow.json'), // Monorepo build output
+    join(process.cwd(), 'target/idl/task_escrow.json'), // Local build output
   ]
 
   for (const idlPath of possiblePaths) {

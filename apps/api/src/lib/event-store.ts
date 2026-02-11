@@ -9,7 +9,7 @@
 
 import { and, desc, eq, sql } from 'drizzle-orm'
 import { db } from '../db/index.js'
-import { historicalTasks, indexedEvents, taskTitles } from '../db/schema.js'
+import { historicalTasks, indexedEvents, taskDescriptions, taskTitles } from '../db/schema.js'
 
 // ────────────────────────────────────────────────────────────
 // Types
@@ -39,6 +39,8 @@ export interface HistoricalTask {
   title: string
   /** SHA-256 hash of the description (hex) */
   descriptionHash: string
+  /** SHA-256 hash of the deliverable (hex) */
+  deliverableHash: string
   creator: string
   taskIndex: string
   bountyLamports: string
@@ -172,6 +174,7 @@ function projectHistoricalTask(taskAddr: string, terminalEvent: IndexedEvent): H
 
   const createdEvt = allEvents.find((e) => e.eventName === 'TaskCreated')
   const claimedEvt = allEvents.find((e) => e.eventName === 'TaskClaimed')
+  const submittedEvt = allEvents.find((e) => e.eventName === 'DeliverableSubmitted')
 
   const finalStatus = mapTerminalStatus(terminalEvent.eventName)
 
@@ -202,10 +205,17 @@ function projectHistoricalTask(taskAddr: string, terminalEvent: IndexedEvent): H
     }
   }
 
+  // Extract deliverableHash from DeliverableSubmitted event
+  let deliverableHash = ''
+  if (submittedEvt?.data.deliverable_hash) {
+    deliverableHash = submittedEvt.data.deliverable_hash
+  }
+
   return {
     address: taskAddr,
     title: titleMap.get(taskAddr) ?? '',
     descriptionHash,
+    deliverableHash,
     creator: createdEvt?.data.creator ?? terminalEvent.data.creator ?? '',
     taskIndex: createdEvt?.data.task_index ?? '',
     bountyLamports: createdEvt?.data.bounty_lamports ?? '0',
@@ -239,6 +249,7 @@ export async function rebuildHistoricalTasks(): Promise<void> {
           address: ht.address,
           title: ht.title,
           descriptionHash: ht.descriptionHash,
+          deliverableHash: ht.deliverableHash,
           creator: ht.creator,
           taskIndex: ht.taskIndex,
           bountyLamports: ht.bountyLamports,
@@ -256,6 +267,7 @@ export async function rebuildHistoricalTasks(): Promise<void> {
           set: {
             title: ht.title,
             descriptionHash: ht.descriptionHash,
+            deliverableHash: ht.deliverableHash,
             creator: ht.creator,
             taskIndex: ht.taskIndex,
             bountyLamports: ht.bountyLamports,
@@ -288,6 +300,36 @@ export async function setTaskTitle(taskAddr: string, title: string): Promise<voi
     })
   } catch (err) {
     console.error('[EventStore] Failed to save task title:', err)
+  }
+}
+
+/**
+ * Store task data (title + descriptionHash) extracted from instruction data during backfill.
+ */
+export async function setTaskData(
+  taskAddr: string,
+  title: string,
+  descriptionHash: string
+): Promise<void> {
+  titleMap.set(taskAddr, title)
+  try {
+    // Store title
+    await db.insert(taskTitles).values({ taskAddress: taskAddr, title }).onConflictDoUpdate({
+      target: taskTitles.taskAddress,
+      set: { title },
+    })
+
+    // Store descriptionHash reference (without content, as we don't have it during backfill)
+    await db
+      .insert(taskDescriptions)
+      .values({
+        descriptionHash,
+        content: '', // Empty content during backfill
+        taskAddress: taskAddr,
+      })
+      .onConflictDoNothing()
+  } catch (err) {
+    console.error('[EventStore] Failed to save task data:', err)
   }
 }
 
@@ -347,6 +389,7 @@ export async function queryHistoricalTasks(q: HistoryQuery) {
     address: row.address,
     title: row.title,
     descriptionHash: row.descriptionHash,
+    deliverableHash: row.deliverableHash,
     creator: row.creator,
     taskIndex: row.taskIndex,
     bountyLamports: row.bountyLamports,
@@ -377,6 +420,7 @@ export async function getHistoricalTask(address: string): Promise<HistoricalTask
     address: row.address,
     title: row.title,
     descriptionHash: row.descriptionHash,
+    deliverableHash: row.deliverableHash,
     creator: row.creator,
     taskIndex: row.taskIndex,
     bountyLamports: row.bountyLamports,
