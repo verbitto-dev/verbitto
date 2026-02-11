@@ -77,16 +77,50 @@ app.openapi(listTasksRoute, async (c) => {
     const limit = Math.min(parseInt(query.limit ?? '100', 10), 500)
     const offset = parseInt(query.offset ?? '0', 10)
 
-    const accounts = await connection.getProgramAccounts(PROGRAM_ID, {
-      filters: [
-        {
-          memcmp: {
-            offset: 0,
-            bytes: DISCRIMINATOR.Task.toString('base64'),
-            encoding: 'base64',
-          },
+    // Build RPC-level memcmp filters for efficiency
+    const rpcFilters: Array<{ memcmp: { offset: number; bytes: string; encoding?: string } }> = [
+      {
+        memcmp: {
+          offset: 0,
+          bytes: DISCRIMINATOR.Task.toString('base64'),
+          encoding: 'base64',
         },
-      ],
+      },
+    ]
+
+    // Status byte is at offset 56 (disc:8 + creator:32 + taskIndex:8 + bounty:8)
+    // Map status string to on-chain enum index for memcmp
+    const STATUS_BYTE_MAP: Record<string, number> = {
+      Open: 0, Claimed: 1, Submitted: 2, Approved: 3,
+      Rejected: 4, Cancelled: 5, Expired: 6, Disputed: 7,
+    }
+    if (statusFilter && statusFilter in STATUS_BYTE_MAP) {
+      rpcFilters.push({
+        memcmp: {
+          offset: 56,
+          bytes: Buffer.from([STATUS_BYTE_MAP[statusFilter]]).toString('base64'),
+          encoding: 'base64',
+        },
+      })
+    }
+
+    // Creator pubkey is at offset 8 (after discriminator)
+    if (creatorStr) {
+      try {
+        const creatorKey = new PublicKey(creatorStr)
+        rpcFilters.push({
+          memcmp: {
+            offset: 8,
+            bytes: creatorKey.toBase58(),
+          },
+        })
+      } catch {
+        /* invalid pubkey, skip filter */
+      }
+    }
+
+    const accounts = await connection.getProgramAccounts(PROGRAM_ID, {
+      filters: rpcFilters,
     })
 
     let tasks = accounts
@@ -100,21 +134,10 @@ app.openapi(listTasksRoute, async (c) => {
       .filter((t): t is NonNullable<typeof t> => t !== null)
       .sort((a, b) => Number(b.createdAt - a.createdAt))
 
-    // Filters
-    if (statusFilter && TASK_STATUS.includes(statusFilter as TaskStatus)) {
-      tasks = tasks.filter((t) => t.status === statusFilter)
-    }
+    // Client-side filters for fields not covered by memcmp
     if (minBountyStr) {
       const minLamports = BigInt(Math.floor(parseFloat(minBountyStr) * 1e9))
       tasks = tasks.filter((t) => t.bountyLamports >= minLamports)
-    }
-    if (creatorStr) {
-      try {
-        const creatorKey = new PublicKey(creatorStr)
-        tasks = tasks.filter((t) => t.creator.equals(creatorKey))
-      } catch {
-        /* invalid pubkey, skip filter */
-      }
     }
     if (agentStr) {
       try {

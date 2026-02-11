@@ -56,7 +56,7 @@ export function CreateTaskDialog({ open, onOpenChange, onSuccess }: CreateTaskDi
     try {
       // Check balance first
       const balance = await connection.getBalance(publicKey)
-      const requiredBounty = parseFloat(bounty) * 1e9
+      const requiredBounty = Math.round(parseFloat(bounty) * 1e9)
       const estimatedFees = 0.01 * 1e9 // Estimate 0.01 SOL for fees and rent
 
       if (balance < requiredBounty + estimatedFees) {
@@ -80,7 +80,7 @@ export function CreateTaskDialog({ open, onOpenChange, onSuccess }: CreateTaskDi
       const program = new Program(IDL, provider)
 
       // Convert bounty to lamports
-      const bountyLamports = new BN(parseFloat(bounty) * 1e9)
+      const bountyLamports = new BN(Math.round(parseFloat(bounty) * 1e9))
 
       // Calculate deadline (current time + days)
       const deadlineTimestamp = Math.floor(Date.now() / 1000) + parseInt(deadlineDays) * 86400

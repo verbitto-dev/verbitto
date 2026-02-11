@@ -5,6 +5,7 @@ import { OpenAPIHono } from '@hono/zod-openapi'
 import { cors } from 'hono/cors'
 import { logger } from 'hono/logger'
 import { prettyJSON } from 'hono/pretty-json'
+import { rateLimiter } from 'hono-rate-limiter'
 import agentsRoutes from './routes/agents.js'
 import idlRoutes from './routes/idl.js'
 import platformRoutes from './routes/platform.js'
@@ -27,6 +28,17 @@ app.use(
   cors({
     origin: process.env.CORS_ORIGIN || '*',
     credentials: true,
+  })
+)
+
+// Rate limiting — 100 requests per 60 seconds per IP
+app.use(
+  '/api/*',
+  rateLimiter({
+    windowMs: 60 * 1000,
+    limit: parseInt(process.env.RATE_LIMIT || '100', 10),
+    standardHeaders: 'draft-6',
+    keyGenerator: (c) => c.req.header('x-forwarded-for') || c.req.header('x-real-ip') || 'unknown',
   })
 )
 

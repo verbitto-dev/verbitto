@@ -1207,4 +1207,591 @@ describe('task-escrow', () => {
       }
     })
   })
+
+  // ─── Expire task success ───────────────────────────────────
+
+  describe('expire task (success)', () => {
+    let taskPda: PublicKey
+
+    it('expires an open task after deadline passes', async () => {
+      const taskIndex = new BN(creatorTaskCount)
+      const bounty = 0.2 * LAMPORTS_PER_SOL
+
+        ;[taskPda] = PublicKey.findProgramAddressSync(
+          [Buffer.from('task'), creator.publicKey.toBuffer(), taskIndex.toArrayLike(Buffer, 'le', 8)],
+          program.programId
+        )
+
+      // Very short deadline: 3 seconds from now
+      const deadline = Math.floor(Date.now() / 1000) + 3
+
+      await program.methods
+        .createTask(
+          'Short deadline task',
+          Array.from(Buffer.alloc(32, 40)) as any,
+          new BN(bounty),
+          new BN(creatorTaskCount),
+          new BN(deadline),
+          new BN(10)
+        )
+        .accounts({
+          // @ts-expect-error Anchor 0.31
+          task: taskPda,
+          platform: platformPda,
+          creatorCounter: creatorCounterPda,
+          creator: creator.publicKey,
+          systemProgram: SystemProgram.programId,
+        })
+        .signers([creator])
+        .rpc()
+
+      creatorTaskCount++
+
+      // Wait for deadline to pass
+      await new Promise((resolve) => setTimeout(resolve, 5000))
+
+      const creatorBefore = await provider.connection.getBalance(creator.publicKey)
+
+      // Anyone can trigger expiration
+      await program.methods
+        .expireTask()
+        .accounts({
+          // @ts-expect-error Anchor 0.31
+          task: taskPda,
+          creator: creator.publicKey,
+          platform: platformPda,
+          caller: authority.publicKey,
+        })
+        .rpc()
+
+      // Task PDA should be closed
+      const taskInfo = await provider.connection.getAccountInfo(taskPda)
+      expect(taskInfo).to.be.null
+
+      // Creator should have received bounty + rent back
+      const creatorAfter = await provider.connection.getBalance(creator.publicKey)
+      expect(creatorAfter).to.be.greaterThan(creatorBefore)
+    })
+  })
+
+  // ─── MAX_REJECTIONS auto-dispute ───────────────────────────
+
+  describe('auto-dispute after MAX_REJECTIONS (3)', () => {
+    let taskPda: PublicKey
+
+    it('auto-transitions to Disputed after 3 rejections', async () => {
+      const taskIndex = new BN(creatorTaskCount)
+      const bounty = 0.5 * LAMPORTS_PER_SOL
+
+        ;[taskPda] = PublicKey.findProgramAddressSync(
+          [Buffer.from('task'), creator.publicKey.toBuffer(), taskIndex.toArrayLike(Buffer, 'le', 8)],
+          program.programId
+        )
+
+      const deadline = Math.floor(Date.now() / 1000) + 3600
+
+      await program.methods
+        .createTask(
+          'Multi-reject task',
+          Array.from(Buffer.alloc(32, 50)) as any,
+          new BN(bounty),
+          new BN(creatorTaskCount),
+          new BN(deadline),
+          new BN(20)
+        )
+        .accounts({
+          // @ts-expect-error Anchor 0.31
+          task: taskPda,
+          platform: platformPda,
+          creatorCounter: creatorCounterPda,
+          creator: creator.publicKey,
+          systemProgram: SystemProgram.programId,
+        })
+        .signers([creator])
+        .rpc()
+
+      creatorTaskCount++
+
+      // Agent claims
+      await program.methods
+        .claimTask()
+        .accounts({
+          // @ts-expect-error Anchor 0.31
+          task: taskPda,
+          platform: platformPda,
+          agentProfile: agentProfilePda,
+          agent: agent.publicKey,
+        })
+        .signers([agent])
+        .rpc()
+
+      // Rejection cycle: submit → reject × 3
+      for (let i = 0; i < 3; i++) {
+        // Agent submits
+        await program.methods
+          .submitDeliverable(Array.from(Buffer.alloc(32, 51 + i)) as any)
+          .accounts({
+            // @ts-expect-error Anchor 0.31
+            task: taskPda,
+            platform: platformPda,
+            agent: agent.publicKey,
+          })
+          .signers([agent])
+          .rpc()
+
+        // Creator rejects
+        await program.methods
+          .rejectSubmission(Array.from(Buffer.alloc(32, 61 + i)) as any)
+          // @ts-expect-error Anchor 0.31
+          .accounts({ task: taskPda, creator: creator.publicKey })
+          .signers([creator])
+          .rpc()
+      }
+
+      // After 3 rejections, status should be Disputed
+      const task = await program.account.task.fetch(taskPda)
+      expect(task.status).to.deep.include({ disputed: {} })
+      expect(task.rejectionCount).to.equal(3)
+    })
+  })
+
+  // ─── Dispute: CreatorWins & Split rulings ──────────────────
+
+  describe('dispute rulings: CreatorWins and Split', () => {
+    // ── CreatorWins ──
+
+    it('resolves dispute with CreatorWins ruling (full refund)', async () => {
+      const taskIndex = new BN(creatorTaskCount)
+      const bounty = 1 * LAMPORTS_PER_SOL
+
+      const [taskPda] = PublicKey.findProgramAddressSync(
+        [Buffer.from('task'), creator.publicKey.toBuffer(), taskIndex.toArrayLike(Buffer, 'le', 8)],
+        program.programId
+      )
+
+      const deadline = Math.floor(Date.now() / 1000) + 3600
+
+      // Create → Claim → Submit → Reject → OpenDispute
+      await program.methods
+        .createTask(
+          'CreatorWins dispute task',
+          Array.from(Buffer.alloc(32, 70)) as any,
+          new BN(bounty),
+          new BN(creatorTaskCount),
+          new BN(deadline),
+          new BN(50)
+        )
+        .accounts({
+          // @ts-expect-error Anchor 0.31
+          task: taskPda,
+          platform: platformPda,
+          creatorCounter: creatorCounterPda,
+          creator: creator.publicKey,
+          systemProgram: SystemProgram.programId,
+        })
+        .signers([creator])
+        .rpc()
+
+      creatorTaskCount++
+
+      await program.methods
+        .claimTask()
+        .accounts({
+          // @ts-expect-error Anchor 0.31
+          task: taskPda,
+          platform: platformPda,
+          agentProfile: agentProfilePda,
+          agent: agent.publicKey,
+        })
+        .signers([agent])
+        .rpc()
+
+      await program.methods
+        .submitDeliverable(Array.from(Buffer.alloc(32, 71)) as any)
+        .accounts({
+          // @ts-expect-error Anchor 0.31
+          task: taskPda,
+          platform: platformPda,
+          agent: agent.publicKey,
+        })
+        .signers([agent])
+        .rpc()
+
+      await program.methods
+        .rejectSubmission(Array.from(Buffer.alloc(32, 72)) as any)
+        // @ts-expect-error Anchor 0.31
+        .accounts({ task: taskPda, creator: creator.publicKey })
+        .signers([creator])
+        .rpc()
+
+      const [disputePda] = PublicKey.findProgramAddressSync(
+        [Buffer.from('dispute'), taskPda.toBuffer()],
+        program.programId
+      )
+
+      await program.methods
+        .openDispute({ qualityIssue: {} } as any, Array.from(Buffer.alloc(32, 73)) as any)
+        .accounts({
+          // @ts-expect-error Anchor 0.31
+          task: taskPda,
+          dispute: disputePda,
+          initiator: creator.publicKey,
+          systemProgram: SystemProgram.programId,
+        })
+        .signers([creator])
+        .rpc()
+
+      // Both voters vote CreatorWins
+      for (const [voter, voterProfile] of [
+        [voter1, voter1ProfilePda],
+        [voter2, voter2ProfilePda],
+      ] as const) {
+        const [votePda] = PublicKey.findProgramAddressSync(
+          [Buffer.from('vote'), disputePda.toBuffer(), (voter as Keypair).publicKey.toBuffer()],
+          program.programId
+        )
+
+        await program.methods
+          .castVote({ creatorWins: {} } as any)
+          .accounts({
+            // @ts-expect-error Anchor 0.31
+            task: taskPda,
+            dispute: disputePda,
+            platform: platformPda,
+            vote: votePda,
+            voterProfile: voterProfile as PublicKey,
+            voter: (voter as Keypair).publicKey,
+            systemProgram: SystemProgram.programId,
+          })
+          .signers([voter as Keypair])
+          .rpc()
+      }
+
+      // Wait for voting period
+      await new Promise((resolve) => setTimeout(resolve, (VOTING_PERIOD + 1) * 1000))
+
+      const creatorBefore = await provider.connection.getBalance(creator.publicKey)
+
+      await program.methods
+        .resolveDispute()
+        .accounts({
+          // @ts-expect-error Anchor 0.31
+          dispute: disputePda,
+          task: taskPda,
+          platform: platformPda,
+          creator: creator.publicKey,
+          agent: agent.publicKey,
+          agentProfile: agentProfilePda,
+          treasury: treasury.publicKey,
+          caller: authority.publicKey,
+        })
+        .rpc()
+
+      // Both PDAs should be closed
+      const taskInfo = await provider.connection.getAccountInfo(taskPda)
+      expect(taskInfo).to.be.null
+      const disputeInfo = await provider.connection.getAccountInfo(disputePda)
+      expect(disputeInfo).to.be.null
+
+      // Creator should receive full bounty back (no fee for CreatorWins)
+      const creatorAfter = await provider.connection.getBalance(creator.publicKey)
+      expect(creatorAfter - creatorBefore).to.be.greaterThanOrEqual(bounty)
+    })
+
+    // ── Split ──
+
+    it('resolves dispute with Split ruling (50/50 minus fee)', async () => {
+      const taskIndex = new BN(creatorTaskCount)
+      const bounty = 2 * LAMPORTS_PER_SOL
+
+      const [taskPda] = PublicKey.findProgramAddressSync(
+        [Buffer.from('task'), creator.publicKey.toBuffer(), taskIndex.toArrayLike(Buffer, 'le', 8)],
+        program.programId
+      )
+
+      const deadline = Math.floor(Date.now() / 1000) + 3600
+
+      await program.methods
+        .createTask(
+          'Split dispute task',
+          Array.from(Buffer.alloc(32, 80)) as any,
+          new BN(bounty),
+          new BN(creatorTaskCount),
+          new BN(deadline),
+          new BN(50)
+        )
+        .accounts({
+          // @ts-expect-error Anchor 0.31
+          task: taskPda,
+          platform: platformPda,
+          creatorCounter: creatorCounterPda,
+          creator: creator.publicKey,
+          systemProgram: SystemProgram.programId,
+        })
+        .signers([creator])
+        .rpc()
+
+      creatorTaskCount++
+
+      await program.methods
+        .claimTask()
+        .accounts({
+          // @ts-expect-error Anchor 0.31
+          task: taskPda,
+          platform: platformPda,
+          agentProfile: agentProfilePda,
+          agent: agent.publicKey,
+        })
+        .signers([agent])
+        .rpc()
+
+      await program.methods
+        .submitDeliverable(Array.from(Buffer.alloc(32, 81)) as any)
+        .accounts({
+          // @ts-expect-error Anchor 0.31
+          task: taskPda,
+          platform: platformPda,
+          agent: agent.publicKey,
+        })
+        .signers([agent])
+        .rpc()
+
+      await program.methods
+        .rejectSubmission(Array.from(Buffer.alloc(32, 82)) as any)
+        // @ts-expect-error Anchor 0.31
+        .accounts({ task: taskPda, creator: creator.publicKey })
+        .signers([creator])
+        .rpc()
+
+      const [disputePda] = PublicKey.findProgramAddressSync(
+        [Buffer.from('dispute'), taskPda.toBuffer()],
+        program.programId
+      )
+
+      await program.methods
+        .openDispute({ qualityIssue: {} } as any, Array.from(Buffer.alloc(32, 83)) as any)
+        .accounts({
+          // @ts-expect-error Anchor 0.31
+          task: taskPda,
+          dispute: disputePda,
+          initiator: agent.publicKey,
+          systemProgram: SystemProgram.programId,
+        })
+        .signers([agent])
+        .rpc()
+
+      // 1 vote CreatorWins + 1 vote AgentWins → tie → Split
+      const [vote1Pda] = PublicKey.findProgramAddressSync(
+        [Buffer.from('vote'), disputePda.toBuffer(), voter1.publicKey.toBuffer()],
+        program.programId
+      )
+      await program.methods
+        .castVote({ creatorWins: {} } as any)
+        .accounts({
+          // @ts-expect-error Anchor 0.31
+          task: taskPda,
+          dispute: disputePda,
+          platform: platformPda,
+          vote: vote1Pda,
+          voterProfile: voter1ProfilePda,
+          voter: voter1.publicKey,
+          systemProgram: SystemProgram.programId,
+        })
+        .signers([voter1])
+        .rpc()
+
+      const [vote2Pda] = PublicKey.findProgramAddressSync(
+        [Buffer.from('vote'), disputePda.toBuffer(), voter2.publicKey.toBuffer()],
+        program.programId
+      )
+      await program.methods
+        .castVote({ agentWins: {} } as any)
+        .accounts({
+          // @ts-expect-error Anchor 0.31
+          task: taskPda,
+          dispute: disputePda,
+          platform: platformPda,
+          vote: vote2Pda,
+          voterProfile: voter2ProfilePda,
+          voter: voter2.publicKey,
+          systemProgram: SystemProgram.programId,
+        })
+        .signers([voter2])
+        .rpc()
+
+      // Wait for voting period
+      await new Promise((resolve) => setTimeout(resolve, (VOTING_PERIOD + 1) * 1000))
+
+      const creatorBefore = await provider.connection.getBalance(creator.publicKey)
+      const agentBefore = await provider.connection.getBalance(agent.publicKey)
+      const treasuryBefore = await provider.connection.getBalance(treasury.publicKey)
+
+      await program.methods
+        .resolveDispute()
+        .accounts({
+          // @ts-expect-error Anchor 0.31
+          dispute: disputePda,
+          task: taskPda,
+          platform: platformPda,
+          creator: creator.publicKey,
+          agent: agent.publicKey,
+          agentProfile: agentProfilePda,
+          treasury: treasury.publicKey,
+          caller: authority.publicKey,
+        })
+        .rpc()
+
+      // Both PDAs should be closed
+      const taskInfo = await provider.connection.getAccountInfo(taskPda)
+      expect(taskInfo).to.be.null
+
+      // Verify split distribution
+      const fee = Math.floor((bounty * FEE_BPS) / 10000)
+      const afterFee = bounty - fee
+      const halfAgent = Math.floor(afterFee / 2)
+      const halfCreator = afterFee - halfAgent // creator gets ceiling
+
+      const creatorAfter = await provider.connection.getBalance(creator.publicKey)
+      const agentAfter = await provider.connection.getBalance(agent.publicKey)
+      const treasuryAfter = await provider.connection.getBalance(treasury.publicKey)
+
+      // Creator gets half + rent from closed accounts
+      expect(creatorAfter - creatorBefore).to.be.greaterThanOrEqual(halfCreator)
+      // Agent gets the other half
+      expect(agentAfter - agentBefore).to.equal(halfAgent)
+      // Treasury gets the fee
+      expect(treasuryAfter - treasuryBefore).to.equal(fee)
+    })
+  })
+
+  // ─── InsufficientVotes error path ──────────────────────────
+
+  describe('InsufficientVotes error path', () => {
+    it('rejects resolve_dispute when votes < min_votes', async () => {
+      const taskIndex = new BN(creatorTaskCount)
+      const bounty = 0.5 * LAMPORTS_PER_SOL
+
+      const [taskPda] = PublicKey.findProgramAddressSync(
+        [Buffer.from('task'), creator.publicKey.toBuffer(), taskIndex.toArrayLike(Buffer, 'le', 8)],
+        program.programId
+      )
+
+      const deadline = Math.floor(Date.now() / 1000) + 3600
+
+      // Create → Claim → Submit → Reject → OpenDispute
+      await program.methods
+        .createTask(
+          'InsufficientVotes task',
+          Array.from(Buffer.alloc(32, 90)) as any,
+          new BN(bounty),
+          new BN(creatorTaskCount),
+          new BN(deadline),
+          new BN(10)
+        )
+        .accounts({
+          // @ts-expect-error Anchor 0.31
+          task: taskPda,
+          platform: platformPda,
+          creatorCounter: creatorCounterPda,
+          creator: creator.publicKey,
+          systemProgram: SystemProgram.programId,
+        })
+        .signers([creator])
+        .rpc()
+
+      creatorTaskCount++
+
+      await program.methods
+        .claimTask()
+        .accounts({
+          // @ts-expect-error Anchor 0.31
+          task: taskPda,
+          platform: platformPda,
+          agentProfile: agentProfilePda,
+          agent: agent.publicKey,
+        })
+        .signers([agent])
+        .rpc()
+
+      await program.methods
+        .submitDeliverable(Array.from(Buffer.alloc(32, 91)) as any)
+        .accounts({
+          // @ts-expect-error Anchor 0.31
+          task: taskPda,
+          platform: platformPda,
+          agent: agent.publicKey,
+        })
+        .signers([agent])
+        .rpc()
+
+      await program.methods
+        .rejectSubmission(Array.from(Buffer.alloc(32, 92)) as any)
+        // @ts-expect-error Anchor 0.31
+        .accounts({ task: taskPda, creator: creator.publicKey })
+        .signers([creator])
+        .rpc()
+
+      const [disputePda] = PublicKey.findProgramAddressSync(
+        [Buffer.from('dispute'), taskPda.toBuffer()],
+        program.programId
+      )
+
+      await program.methods
+        .openDispute({ qualityIssue: {} } as any, Array.from(Buffer.alloc(32, 93)) as any)
+        .accounts({
+          // @ts-expect-error Anchor 0.31
+          task: taskPda,
+          dispute: disputePda,
+          initiator: agent.publicKey,
+          systemProgram: SystemProgram.programId,
+        })
+        .signers([agent])
+        .rpc()
+
+      // Cast only 1 vote (MIN_VOTES = 2)
+      const [votePda] = PublicKey.findProgramAddressSync(
+        [Buffer.from('vote'), disputePda.toBuffer(), voter1.publicKey.toBuffer()],
+        program.programId
+      )
+
+      await program.methods
+        .castVote({ agentWins: {} } as any)
+        .accounts({
+          // @ts-expect-error Anchor 0.31
+          task: taskPda,
+          dispute: disputePda,
+          platform: platformPda,
+          vote: votePda,
+          voterProfile: voter1ProfilePda,
+          voter: voter1.publicKey,
+          systemProgram: SystemProgram.programId,
+        })
+        .signers([voter1])
+        .rpc()
+
+      // Wait for voting period to end
+      await new Promise((resolve) => setTimeout(resolve, (VOTING_PERIOD + 1) * 1000))
+
+      // Try to resolve — should fail with InsufficientVotes
+      try {
+        await program.methods
+          .resolveDispute()
+          .accounts({
+            // @ts-expect-error Anchor 0.31
+            dispute: disputePda,
+            task: taskPda,
+            platform: platformPda,
+            creator: creator.publicKey,
+            agent: agent.publicKey,
+            agentProfile: agentProfilePda,
+            treasury: treasury.publicKey,
+            caller: authority.publicKey,
+          })
+          .rpc()
+        expect.fail('Should have thrown InsufficientVotes')
+      } catch (err: any) {
+        expect(err.error.errorCode.code).to.equal('InsufficientVotes')
+      }
+    })
+  })
 })

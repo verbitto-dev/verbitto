@@ -19,6 +19,7 @@
     "bn.js": "^5.2.2",
     "dotenv": "^17.2.4",
     "hono": "^4.11.9",
+    "hono-rate-limiter": "^0.5.3",
     "zod": "^4.3.6"
   },
   "devDependencies": {

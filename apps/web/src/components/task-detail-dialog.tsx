@@ -14,9 +14,10 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Separator } from '@/components/ui/separator'
+import { Textarea } from '@/components/ui/textarea'
 import { Icons } from '@/components/icons'
 import { formatDeadline, lamportsToSol, shortKey } from '@/hooks/use-program'
-import { STATUS_VARIANTS, type TaskAccount, type TaskStatus } from '@/lib/program'
+import { STATUS_VARIANTS, type TaskAccount, type TaskStatus, getPlatformPda, getAgentProfilePda, decodePlatform } from '@/lib/program'
 
 // Import IDL
 const IDL = require('../../public/idl.json')
@@ -34,6 +35,8 @@ export function TaskDetailDialog({ task, open, onOpenChange, onRefresh }: TaskDe
   const anchorWallet = useAnchorWallet()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [deliverableText, setDeliverableText] = useState('')
+  const [rejectReasonText, setRejectReasonText] = useState('')
 
   if (!task) return null
 
@@ -46,40 +49,241 @@ export function TaskDetailDialog({ task, open, onOpenChange, onRefresh }: TaskDe
   const canCancel = (task.status === 'Open' || task.status === 'Claimed') && isCreator
 
   const handleClaim = async () => {
+    if (!publicKey || !anchorWallet) {
+      setError('Please connect your wallet')
+      return
+    }
+
+    const confirmed = confirm(
+      `Are you sure you want to claim this task?\n\n"${task.title}"\n\nBounty: ${lamportsToSol(task.bountyLamports)} SOL`
+    )
+    if (!confirmed) return
+
     setLoading(true)
+    setError(null)
+
     try {
-      // TODO: Implement claim task
-      alert('Claim task functionality coming soon!')
+      const provider = new AnchorProvider(connection, anchorWallet, {
+        commitment: 'confirmed',
+        preflightCommitment: 'confirmed',
+      })
+      const program = new Program(IDL, provider)
+
+      const tx = await program.methods
+        .claimTask()
+        .accounts({
+          task: task.publicKey,
+          platform: getPlatformPda(),
+          agentProfile: getAgentProfilePda(publicKey),
+          agent: publicKey,
+        })
+        .rpc({ skipPreflight: false, commitment: 'confirmed' })
+
+      await connection.confirmTransaction(tx, 'confirmed')
+
+      alert(`✓ Task claimed successfully!\n\nYou are now the assigned agent.\n\nTransaction: ${tx.slice(0, 8)}...`)
+      onOpenChange(false)
+      onRefresh?.()
+    } catch (err: any) {
+      console.error('Error claiming task:', err)
+      let errorMsg = 'Failed to claim task'
+      if (err.message?.includes('User rejected') || err.message?.includes('User denied')) {
+        errorMsg = 'Transaction was rejected by wallet'
+      } else if (err.logs) {
+        errorMsg = `Program error: ${err.message}`
+      } else {
+        errorMsg = err.message || 'Unknown error'
+      }
+      setError(errorMsg)
+      alert(`❌ ${errorMsg}\n\nCheck console for details.`)
     } finally {
       setLoading(false)
     }
   }
 
   const handleSubmit = async () => {
+    if (!publicKey || !anchorWallet) {
+      setError('Please connect your wallet')
+      return
+    }
+
+    if (!deliverableText.trim()) {
+      setError('Please enter deliverable description')
+      return
+    }
+
+    const confirmed = confirm(
+      `Submit deliverable for this task?\n\n"${task.title}"\n\nDeliverable: "${deliverableText.slice(0, 100)}${deliverableText.length > 100 ? '...' : ''}"`
+    )
+    if (!confirmed) return
+
     setLoading(true)
+    setError(null)
+
     try {
-      // TODO: Implement submit deliverable
-      alert('Submit deliverable functionality coming soon!')
+      // Hash the deliverable text
+      const encoder = new TextEncoder()
+      const data = encoder.encode(deliverableText)
+      const hashBuffer = await crypto.subtle.digest('SHA-256', data)
+      const deliverableHash = Array.from(new Uint8Array(hashBuffer))
+
+      const provider = new AnchorProvider(connection, anchorWallet, {
+        commitment: 'confirmed',
+        preflightCommitment: 'confirmed',
+      })
+      const program = new Program(IDL, provider)
+
+      const tx = await program.methods
+        .submitDeliverable(deliverableHash)
+        .accounts({
+          task: task.publicKey,
+          platform: getPlatformPda(),
+          agent: publicKey,
+        })
+        .rpc({ skipPreflight: false, commitment: 'confirmed' })
+
+      await connection.confirmTransaction(tx, 'confirmed')
+
+      alert(`✓ Deliverable submitted successfully!\n\nTransaction: ${tx.slice(0, 8)}...\n\nThe task creator can now review and approve/reject.`)
+      setDeliverableText('')
+      onOpenChange(false)
+      onRefresh?.()
+    } catch (err: any) {
+      console.error('Error submitting deliverable:', err)
+      let errorMsg = 'Failed to submit deliverable'
+      if (err.message?.includes('User rejected') || err.message?.includes('User denied')) {
+        errorMsg = 'Transaction was rejected by wallet'
+      } else if (err.logs) {
+        errorMsg = `Program error: ${err.message}`
+      } else {
+        errorMsg = err.message || 'Unknown error'
+      }
+      setError(errorMsg)
+      alert(`❌ ${errorMsg}\n\nCheck console for details.`)
     } finally {
       setLoading(false)
     }
   }
 
   const handleApprove = async () => {
+    if (!publicKey || !anchorWallet) {
+      setError('Please connect your wallet')
+      return
+    }
+
+    const confirmed = confirm(
+      `Are you sure you want to approve and settle this task?\n\n"${task.title}"\n\nThis will send ${lamportsToSol(task.bountyLamports)} SOL to the agent.\nThis action is irreversible.`
+    )
+    if (!confirmed) return
+
     setLoading(true)
+    setError(null)
+
     try {
-      // TODO: Implement approve and settle
-      alert('Approve and settle functionality coming soon!')
+      const provider = new AnchorProvider(connection, anchorWallet, {
+        commitment: 'confirmed',
+        preflightCommitment: 'confirmed',
+      })
+      const program = new Program(IDL, provider)
+
+      // Fetch platform account to get treasury address
+      const platformPda = getPlatformPda()
+      const platformInfo = await connection.getAccountInfo(platformPda)
+      if (!platformInfo) throw new Error('Platform account not found')
+      const platform = decodePlatform(platformInfo.data as Buffer)
+
+      const tx = await program.methods
+        .approveAndSettle()
+        .accounts({
+          task: task.publicKey,
+          platform: platformPda,
+          creator: publicKey,
+          agent: task.agent,
+          agentProfile: getAgentProfilePda(task.agent),
+          treasury: platform.treasury,
+        })
+        .rpc({ skipPreflight: false, commitment: 'confirmed' })
+
+      await connection.confirmTransaction(tx, 'confirmed')
+
+      alert(`✓ Task approved and settled!\n\nBounty sent to agent: ${lamportsToSol(task.bountyLamports)} SOL\n\nTransaction: ${tx.slice(0, 8)}...`)
+      onOpenChange(false)
+      onRefresh?.()
+    } catch (err: any) {
+      console.error('Error approving task:', err)
+      let errorMsg = 'Failed to approve and settle'
+      if (err.message?.includes('User rejected') || err.message?.includes('User denied')) {
+        errorMsg = 'Transaction was rejected by wallet'
+      } else if (err.logs) {
+        errorMsg = `Program error: ${err.message}`
+      } else {
+        errorMsg = err.message || 'Unknown error'
+      }
+      setError(errorMsg)
+      alert(`❌ ${errorMsg}\n\nCheck console for details.`)
     } finally {
       setLoading(false)
     }
   }
 
   const handleReject = async () => {
+    if (!publicKey || !anchorWallet) {
+      setError('Please connect your wallet')
+      return
+    }
+
+    if (!rejectReasonText.trim()) {
+      setError('Please enter a rejection reason')
+      return
+    }
+
+    const confirmed = confirm(
+      `Are you sure you want to reject this submission?\n\n"${task.title}"\n\nReason: "${rejectReasonText.slice(0, 100)}${rejectReasonText.length > 100 ? '...' : ''}"\n\nThe task will return to 'Claimed' status.`
+    )
+    if (!confirmed) return
+
     setLoading(true)
+    setError(null)
+
     try {
-      // TODO: Implement reject submission
-      alert('Reject submission functionality coming soon!')
+      // Hash the rejection reason
+      const encoder = new TextEncoder()
+      const data = encoder.encode(rejectReasonText)
+      const hashBuffer = await crypto.subtle.digest('SHA-256', data)
+      const reasonHash = Array.from(new Uint8Array(hashBuffer))
+
+      const provider = new AnchorProvider(connection, anchorWallet, {
+        commitment: 'confirmed',
+        preflightCommitment: 'confirmed',
+      })
+      const program = new Program(IDL, provider)
+
+      const tx = await program.methods
+        .rejectSubmission(reasonHash)
+        .accounts({
+          task: task.publicKey,
+          creator: publicKey,
+        })
+        .rpc({ skipPreflight: false, commitment: 'confirmed' })
+
+      await connection.confirmTransaction(tx, 'confirmed')
+
+      alert(`✓ Submission rejected!\n\nThe agent can re-submit a new deliverable.\n\nTransaction: ${tx.slice(0, 8)}...`)
+      setRejectReasonText('')
+      onOpenChange(false)
+      onRefresh?.()
+    } catch (err: any) {
+      console.error('Error rejecting submission:', err)
+      let errorMsg = 'Failed to reject submission'
+      if (err.message?.includes('User rejected') || err.message?.includes('User denied')) {
+        errorMsg = 'Transaction was rejected by wallet'
+      } else if (err.logs) {
+        errorMsg = `Program error: ${err.message}`
+      } else {
+        errorMsg = err.message || 'Unknown error'
+      }
+      setError(errorMsg)
+      alert(`❌ ${errorMsg}\n\nCheck console for details.`)
     } finally {
       setLoading(false)
     }
@@ -291,6 +495,40 @@ export function TaskDetailDialog({ task, open, onOpenChange, onRefresh }: TaskDe
         {error && (
           <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
             {error}
+          </div>
+        )}
+
+        {/* Deliverable input for agents */}
+        {canSubmit && (
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Deliverable Description</label>
+            <Textarea
+              placeholder="Describe your deliverable (e.g. link to PR, IPFS hash, or summary of work done)..."
+              value={deliverableText}
+              onChange={(e) => setDeliverableText(e.target.value)}
+              rows={3}
+              disabled={loading}
+            />
+            <p className="text-xs text-muted-foreground">
+              This text will be SHA-256 hashed and stored on-chain.
+            </p>
+          </div>
+        )}
+
+        {/* Rejection reason input for creators */}
+        {canReject && (
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Rejection Reason (for Reject)</label>
+            <Textarea
+              placeholder="Explain why the submission is being rejected..."
+              value={rejectReasonText}
+              onChange={(e) => setRejectReasonText(e.target.value)}
+              rows={2}
+              disabled={loading}
+            />
+            <p className="text-xs text-muted-foreground">
+              Required when rejecting. This text will be SHA-256 hashed.
+            </p>
           </div>
         )}
 

@@ -253,11 +253,12 @@ app.openapi(buildTransactionRoute, async (c) => {
         ix = await program.methods
           .castVote(params.ruling)
           .accounts({
-            dispute: disputePda,
             task: taskPda,
-            arbitratorProfile: getAgentProfilePda(signerKey),
-            arbitrator: signerKey,
+            dispute: disputePda,
+            platform: getPlatformPda(),
             vote: votePda,
+            voterProfile: getAgentProfilePda(signerKey),
+            voter: signerKey,
             systemProgram: SystemProgram.programId,
           })
           .instruction()
