@@ -1,10 +1,10 @@
 'use client'
 
+import { AnchorProvider, Program } from '@coral-xyz/anchor'
 import { useAnchorWallet, useConnection, useWallet } from '@solana/wallet-adapter-react'
-import { Program, AnchorProvider } from '@coral-xyz/anchor'
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
-
+import { Icons } from '@/components/icons'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -16,10 +16,16 @@ import {
 } from '@/components/ui/dialog'
 import { Separator } from '@/components/ui/separator'
 import { Textarea } from '@/components/ui/textarea'
-import { Icons } from '@/components/icons'
 import { formatDeadline, lamportsToSol, shortKey } from '@/hooks/use-program'
-import { STATUS_VARIANTS, type TaskAccount, type TaskStatus, getPlatformPda, getAgentProfilePda, decodePlatform } from '@/lib/program'
 import { fetchDescription } from '@/lib/api'
+import {
+  decodePlatform,
+  getAgentProfilePda,
+  getPlatformPda,
+  STATUS_VARIANTS,
+  type TaskAccount,
+  type TaskStatus,
+} from '@/lib/program'
 import IDL from '../../public/idl.json'
 
 interface TaskDetailDialogProps {
@@ -221,7 +227,9 @@ export function TaskDetailDialog({ task, open, onOpenChange, onRefresh }: TaskDe
 
       await connection.confirmTransaction(tx, 'confirmed')
 
-      toast.success(`Task approved! Bounty ${lamportsToSol(task.bountyLamports)} SOL sent. Tx: ${tx.slice(0, 8)}...`)
+      toast.success(
+        `Task approved! Bounty ${lamportsToSol(task.bountyLamports)} SOL sent. Tx: ${tx.slice(0, 8)}...`
+      )
       onOpenChange(false)
       onRefresh?.()
     } catch (err: any) {
@@ -318,17 +326,11 @@ export function TaskDetailDialog({ task, open, onOpenChange, onRefresh }: TaskDe
     setError(null)
 
     try {
-
-
       // Create provider
-      const provider = new AnchorProvider(
-        connection,
-        anchorWallet,
-        {
-          commitment: 'confirmed',
-          preflightCommitment: 'confirmed',
-        }
-      )
+      const provider = new AnchorProvider(connection, anchorWallet, {
+        commitment: 'confirmed',
+        preflightCommitment: 'confirmed',
+      })
 
       // Create program instance
       const program = new Program(IDL, provider)
@@ -349,7 +351,9 @@ export function TaskDetailDialog({ task, open, onOpenChange, onRefresh }: TaskDe
       await connection.confirmTransaction(tx, 'confirmed')
 
       // Show success message
-      toast.success(`Task cancelled. Bounty ${lamportsToSol(task.bountyLamports)} SOL refunded. Tx: ${tx.slice(0, 8)}...`)
+      toast.success(
+        `Task cancelled. Bounty ${lamportsToSol(task.bountyLamports)} SOL refunded. Tx: ${tx.slice(0, 8)}...`
+      )
 
       // Close dialog and refresh task list
       onOpenChange(false)
@@ -395,7 +399,10 @@ export function TaskDetailDialog({ task, open, onOpenChange, onRefresh }: TaskDe
               PDA #{task.taskIndex.toString()}
             </span>
             <span>•</span>
-            <Badge variant={STATUS_VARIANTS[task.status as TaskStatus] ?? 'outline'} className="text-xs">
+            <Badge
+              variant={STATUS_VARIANTS[task.status as TaskStatus] ?? 'outline'}
+              className="text-xs"
+            >
               {task.status}
             </Badge>
           </div>
@@ -413,9 +420,7 @@ export function TaskDetailDialog({ task, open, onOpenChange, onRefresh }: TaskDe
             </div>
             <div className="space-y-1">
               <p className="text-sm text-muted-foreground">Deadline</p>
-              <p className="text-lg font-medium">
-                {formatDeadline(task.deadline)}
-              </p>
+              <p className="text-lg font-medium">{formatDeadline(task.deadline)}</p>
               <p className="text-xs text-muted-foreground">
                 {deadlineDate.toLocaleDateString()} {deadlineDate.toLocaleTimeString()}
               </p>
@@ -513,9 +518,7 @@ export function TaskDetailDialog({ task, open, onOpenChange, onRefresh }: TaskDe
 
         {/* Error message */}
         {error && (
-          <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
-            {error}
-          </div>
+          <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">{error}</div>
         )}
 
         {/* Deliverable input for agents */}

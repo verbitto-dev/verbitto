@@ -98,7 +98,12 @@ export const Icons = {
         </linearGradient>
       </defs>
       <rect width="512" height="512" rx="112" fill="url(#logoBg)" />
-      <path d="M256 72 L420 148 V296 Q420 420 256 456 Q92 420 92 296 V148 Z" fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth="12" />
+      <path
+        d="M256 72 L420 148 V296 Q420 420 256 456 Q92 420 92 296 V148 Z"
+        fill="none"
+        stroke="rgba(255,255,255,0.12)"
+        strokeWidth="12"
+      />
       <path d="M144 136 L248 392 L256 392 L168 136 Z" fill="url(#logoV)" />
       <path d="M368 136 L264 392 L256 392 L344 136 Z" fill="url(#logoV)" />
       <path d="M256 368 L272 392 L256 416 L240 392 Z" fill="url(#logoV)" opacity="0.85" />

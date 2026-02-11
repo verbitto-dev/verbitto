@@ -3,7 +3,12 @@
 import { useConnection } from '@solana/wallet-adapter-react'
 import type { Connection, PublicKey } from '@solana/web3.js'
 import { useCallback, useEffect, useState } from 'react'
-
+import {
+  fetchHistoricalTasks,
+  fetchIndexerStats,
+  type HistoricalTask,
+  type IndexerStats,
+} from '@/lib/api'
 import {
   decodePlatform,
   decodeTask,
@@ -12,12 +17,6 @@ import {
   PROGRAM_ID,
   type TaskAccount,
 } from '@/lib/program'
-import {
-  fetchHistoricalTasks,
-  fetchIndexerStats,
-  type HistoricalTask,
-  type IndexerStats,
-} from '@/lib/api'
 
 // ============================================================
 // usePlatform — fetch the singleton Platform PDA
@@ -141,13 +140,9 @@ export function formatDeadline(deadline: bigint): string {
 // useHistoricalTasks — fetch closed tasks from event indexer API
 // ============================================================
 
-export { type HistoricalTask } from '@/lib/api'
+export type { HistoricalTask } from '@/lib/api'
 
-export function useHistoricalTasks(params?: {
-  status?: string
-  creator?: string
-  agent?: string
-}) {
+export function useHistoricalTasks(params?: { status?: string; creator?: string; agent?: string }) {
   const [tasks, setTasks] = useState<HistoricalTask[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)

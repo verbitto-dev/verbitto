@@ -16,7 +16,6 @@ function accs(obj: Record<string, any>): any {
   return obj
 }
 
-
 function loadOrGenerateWallet(name: string): Keypair {
   const walletFile = join(process.cwd(), 'tests', 'test-wallets.json')
 
@@ -105,31 +104,31 @@ describe('task-escrow', () => {
       program.programId
     )
 
-      // Derive agent profile PDA
-      ;[agentProfilePda] = PublicKey.findProgramAddressSync(
-        [Buffer.from('agent'), agent.publicKey.toBuffer()],
-        program.programId
-      )
+    // Derive agent profile PDA
+    ;[agentProfilePda] = PublicKey.findProgramAddressSync(
+      [Buffer.from('agent'), agent.publicKey.toBuffer()],
+      program.programId
+    )
 
-      // Derive voter profile PDAs
-      ;[voter1ProfilePda] = PublicKey.findProgramAddressSync(
-        [Buffer.from('agent'), voter1.publicKey.toBuffer()],
-        program.programId
-      )
-      ;[voter2ProfilePda] = PublicKey.findProgramAddressSync(
-        [Buffer.from('agent'), voter2.publicKey.toBuffer()],
-        program.programId
-      )
-      ;[voter3ProfilePda] = PublicKey.findProgramAddressSync(
-        [Buffer.from('agent'), voter3.publicKey.toBuffer()],
-        program.programId
-      )
+    // Derive voter profile PDAs
+    ;[voter1ProfilePda] = PublicKey.findProgramAddressSync(
+      [Buffer.from('agent'), voter1.publicKey.toBuffer()],
+      program.programId
+    )
+    ;[voter2ProfilePda] = PublicKey.findProgramAddressSync(
+      [Buffer.from('agent'), voter2.publicKey.toBuffer()],
+      program.programId
+    )
+    ;[voter3ProfilePda] = PublicKey.findProgramAddressSync(
+      [Buffer.from('agent'), voter3.publicKey.toBuffer()],
+      program.programId
+    )
 
-      // Derive creator counter PDA
-      ;[creatorCounterPda] = PublicKey.findProgramAddressSync(
-        [Buffer.from('creator'), creator.publicKey.toBuffer()],
-        program.programId
-      )
+    // Derive creator counter PDA
+    ;[creatorCounterPda] = PublicKey.findProgramAddressSync(
+      [Buffer.from('creator'), creator.publicKey.toBuffer()],
+      program.programId
+    )
 
     // Transfer SOL to test accounts from provider wallet (avoid faucet rate limits)
     // Minimal amounts optimized for devnet airdrop limits (5 SOL/day)
@@ -169,12 +168,14 @@ describe('task-escrow', () => {
         new BN(MIN_VOTER_REPUTATION),
         new BN(CLAIM_GRACE_PERIOD)
       )
-      .accounts(accs({
-        platform: platformPda,
-        treasury: treasury.publicKey,
-        authority: authority.publicKey,
-        systemProgram: SystemProgram.programId,
-      }))
+      .accounts(
+        accs({
+          platform: platformPda,
+          treasury: treasury.publicKey,
+          authority: authority.publicKey,
+          systemProgram: SystemProgram.programId,
+        })
+      )
       .rpc()
 
     const platform = await program.account.platform.fetch(platformPda)
@@ -190,11 +191,13 @@ describe('task-escrow', () => {
 
     await program.methods
       .registerAgent(skillTags)
-      .accounts(accs({
-        agentProfile: agentProfilePda,
-        authority: agent.publicKey,
-        systemProgram: SystemProgram.programId,
-      }))
+      .accounts(
+        accs({
+          agentProfile: agentProfilePda,
+          authority: agent.publicKey,
+          systemProgram: SystemProgram.programId,
+        })
+      )
       .signers([agent])
       .rpc()
 
@@ -213,11 +216,13 @@ describe('task-escrow', () => {
     ] as const) {
       await program.methods
         .registerAgent(0b0000001) // DataLabeling
-        .accounts(accs({
-          agentProfile: profilePda as PublicKey,
-          authority: (voter as Keypair).publicKey,
-          systemProgram: SystemProgram.programId,
-        }))
+        .accounts(
+          accs({
+            agentProfile: profilePda as PublicKey,
+            authority: (voter as Keypair).publicKey,
+            systemProgram: SystemProgram.programId,
+          })
+        )
         .signers([voter as Keypair])
         .rpc()
     }
@@ -238,10 +243,10 @@ describe('task-escrow', () => {
     it('creates a task with SOL escrow', async () => {
       const taskIndex = new BN(creatorTaskCount)
 
-        ;[taskPda] = PublicKey.findProgramAddressSync(
-          [Buffer.from('task'), creator.publicKey.toBuffer(), taskIndex.toArrayLike(Buffer, 'le', 8)],
-          program.programId
-        )
+      ;[taskPda] = PublicKey.findProgramAddressSync(
+        [Buffer.from('task'), creator.publicKey.toBuffer(), taskIndex.toArrayLike(Buffer, 'le', 8)],
+        program.programId
+      )
 
       const deadline = Math.floor(Date.now() / 1000) + 3600 // 1 hour
 
@@ -256,13 +261,15 @@ describe('task-escrow', () => {
           new BN(deadline),
           new BN(50) // reputation reward
         )
-        .accounts(accs({
-          task: taskPda,
-          platform: platformPda,
-          creatorCounter: creatorCounterPda,
-          creator: creator.publicKey,
-          systemProgram: SystemProgram.programId,
-        }))
+        .accounts(
+          accs({
+            task: taskPda,
+            platform: platformPda,
+            creatorCounter: creatorCounterPda,
+            creator: creator.publicKey,
+            systemProgram: SystemProgram.programId,
+          })
+        )
         .signers([creator])
         .rpc()
 
@@ -281,12 +288,14 @@ describe('task-escrow', () => {
     it('agent claims the task', async () => {
       await program.methods
         .claimTask()
-        .accounts(accs({
-          task: taskPda,
-          platform: platformPda,
-          agentProfile: agentProfilePda,
-          agent: agent.publicKey,
-        }))
+        .accounts(
+          accs({
+            task: taskPda,
+            platform: platformPda,
+            agentProfile: agentProfilePda,
+            agent: agent.publicKey,
+          })
+        )
         .signers([agent])
         .rpc()
 
@@ -298,11 +307,13 @@ describe('task-escrow', () => {
     it('agent submits deliverable', async () => {
       await program.methods
         .submitDeliverable(Array.from(deliverableHash) as any)
-        .accounts(accs({
-          task: taskPda,
-          platform: platformPda,
-          agent: agent.publicKey,
-        }))
+        .accounts(
+          accs({
+            task: taskPda,
+            platform: platformPda,
+            agent: agent.publicKey,
+          })
+        )
         .signers([agent])
         .rpc()
 
@@ -316,14 +327,16 @@ describe('task-escrow', () => {
 
       await program.methods
         .approveAndSettle()
-        .accounts(accs({
-          task: taskPda,
-          platform: platformPda,
-          creator: creator.publicKey,
-          agent: agent.publicKey,
-          agentProfile: agentProfilePda,
-          treasury: treasury.publicKey,
-        }))
+        .accounts(
+          accs({
+            task: taskPda,
+            platform: platformPda,
+            creator: creator.publicKey,
+            agent: agent.publicKey,
+            agentProfile: agentProfilePda,
+            treasury: treasury.publicKey,
+          })
+        )
         .signers([creator])
         .rpc()
 
@@ -357,10 +370,10 @@ describe('task-escrow', () => {
       const taskIndex = new BN(creatorTaskCount)
       const bounty = 0.5 * LAMPORTS_PER_SOL
 
-        ;[taskPda] = PublicKey.findProgramAddressSync(
-          [Buffer.from('task'), creator.publicKey.toBuffer(), taskIndex.toArrayLike(Buffer, 'le', 8)],
-          program.programId
-        )
+      ;[taskPda] = PublicKey.findProgramAddressSync(
+        [Buffer.from('task'), creator.publicKey.toBuffer(), taskIndex.toArrayLike(Buffer, 'le', 8)],
+        program.programId
+      )
 
       const deadline = Math.floor(Date.now() / 1000) + 3600
 
@@ -373,13 +386,15 @@ describe('task-escrow', () => {
           new BN(deadline),
           new BN(10)
         )
-        .accounts(accs({
-          task: taskPda,
-          platform: platformPda,
-          creatorCounter: creatorCounterPda,
-          creator: creator.publicKey,
-          systemProgram: SystemProgram.programId,
-        }))
+        .accounts(
+          accs({
+            task: taskPda,
+            platform: platformPda,
+            creatorCounter: creatorCounterPda,
+            creator: creator.publicKey,
+            systemProgram: SystemProgram.programId,
+          })
+        )
         .signers([creator])
         .rpc()
 
@@ -389,10 +404,12 @@ describe('task-escrow', () => {
 
       await program.methods
         .cancelTask()
-        .accounts(accs({
-          task: taskPda,
-          creator: creator.publicKey,
-        }))
+        .accounts(
+          accs({
+            task: taskPda,
+            creator: creator.publicKey,
+          })
+        )
         .signers([creator])
         .rpc()
 
@@ -415,14 +432,14 @@ describe('task-escrow', () => {
       const platform = await program.account.platform.fetch(platformPda)
       const templateIndex = platform.templateCount
 
-        ;[templatePda] = PublicKey.findProgramAddressSync(
-          [
-            Buffer.from('template'),
-            creator.publicKey.toBuffer(),
-            templateIndex.toArrayLike(Buffer, 'le', 8),
-          ],
-          program.programId
-        )
+      ;[templatePda] = PublicKey.findProgramAddressSync(
+        [
+          Buffer.from('template'),
+          creator.publicKey.toBuffer(),
+          templateIndex.toArrayLike(Buffer, 'le', 8),
+        ],
+        program.programId
+      )
 
       await program.methods
         .createTemplate(
@@ -431,12 +448,14 @@ describe('task-escrow', () => {
           new BN(0.5 * LAMPORTS_PER_SOL),
           { literatureReview: {} } as any
         )
-        .accounts(accs({
-          template: templatePda,
-          platform: platformPda,
-          creator: creator.publicKey,
-          systemProgram: SystemProgram.programId,
-        }))
+        .accounts(
+          accs({
+            template: templatePda,
+            platform: platformPda,
+            creator: creator.publicKey,
+            systemProgram: SystemProgram.programId,
+          })
+        )
         .signers([creator])
         .rpc()
 
@@ -463,14 +482,16 @@ describe('task-escrow', () => {
           new BN(30),
           new BN(creatorTaskCount)
         )
-        .accounts(accs({
-          task: taskPda,
-          template: templatePda,
-          platform: platformPda,
-          creatorCounter: creatorCounterPda,
-          creator: creator.publicKey,
-          systemProgram: SystemProgram.programId,
-        }))
+        .accounts(
+          accs({
+            task: taskPda,
+            template: templatePda,
+            platform: platformPda,
+            creatorCounter: creatorCounterPda,
+            creator: creator.publicKey,
+            systemProgram: SystemProgram.programId,
+          })
+        )
         .signers([creator])
         .rpc()
 
@@ -496,10 +517,10 @@ describe('task-escrow', () => {
       const taskIndex = new BN(creatorTaskCount)
       const bounty = 2 * LAMPORTS_PER_SOL
 
-        ;[taskPda] = PublicKey.findProgramAddressSync(
-          [Buffer.from('task'), creator.publicKey.toBuffer(), taskIndex.toArrayLike(Buffer, 'le', 8)],
-          program.programId
-        )
+      ;[taskPda] = PublicKey.findProgramAddressSync(
+        [Buffer.from('task'), creator.publicKey.toBuffer(), taskIndex.toArrayLike(Buffer, 'le', 8)],
+        program.programId
+      )
 
       const deadline = Math.floor(Date.now() / 1000) + 3600
 
@@ -512,13 +533,15 @@ describe('task-escrow', () => {
           new BN(deadline),
           new BN(100)
         )
-        .accounts(accs({
-          task: taskPda,
-          platform: platformPda,
-          creatorCounter: creatorCounterPda,
-          creator: creator.publicKey,
-          systemProgram: SystemProgram.programId,
-        }))
+        .accounts(
+          accs({
+            task: taskPda,
+            platform: platformPda,
+            creatorCounter: creatorCounterPda,
+            creator: creator.publicKey,
+            systemProgram: SystemProgram.programId,
+          })
+        )
         .signers([creator])
         .rpc()
 
@@ -526,22 +549,26 @@ describe('task-escrow', () => {
 
       await program.methods
         .claimTask()
-        .accounts(accs({
-          task: taskPda,
-          platform: platformPda,
-          agentProfile: agentProfilePda,
-          agent: agent.publicKey,
-        }))
+        .accounts(
+          accs({
+            task: taskPda,
+            platform: platformPda,
+            agentProfile: agentProfilePda,
+            agent: agent.publicKey,
+          })
+        )
         .signers([agent])
         .rpc()
 
       await program.methods
         .submitDeliverable(Array.from(Buffer.alloc(32, 6)) as any)
-        .accounts(accs({
-          task: taskPda,
-          platform: platformPda,
-          agent: agent.publicKey,
-        }))
+        .accounts(
+          accs({
+            task: taskPda,
+            platform: platformPda,
+            agent: agent.publicKey,
+          })
+        )
         .signers([agent])
         .rpc()
 
@@ -552,20 +579,22 @@ describe('task-escrow', () => {
         .signers([creator])
         .rpc()
 
-        // 3. Agent opens dispute
-        ;[disputePda] = PublicKey.findProgramAddressSync(
-          [Buffer.from('dispute'), taskPda.toBuffer()],
-          program.programId
-        )
+      // 3. Agent opens dispute
+      ;[disputePda] = PublicKey.findProgramAddressSync(
+        [Buffer.from('dispute'), taskPda.toBuffer()],
+        program.programId
+      )
 
       await program.methods
         .openDispute({ qualityIssue: {} } as any, Array.from(Buffer.alloc(32, 8)) as any)
-        .accounts(accs({
-          task: taskPda,
-          dispute: disputePda,
-          initiator: agent.publicKey,
-          systemProgram: SystemProgram.programId,
-        }))
+        .accounts(
+          accs({
+            task: taskPda,
+            dispute: disputePda,
+            initiator: agent.publicKey,
+            systemProgram: SystemProgram.programId,
+          })
+        )
         .signers([agent])
         .rpc()
 
@@ -585,15 +614,17 @@ describe('task-escrow', () => {
 
         await program.methods
           .castVote(ruling as any)
-          .accounts(accs({
-            task: taskPda,
-            dispute: disputePda,
-            platform: platformPda,
-            vote: votePda,
-            voterProfile: voterProfile as PublicKey,
-            voter: (voter as Keypair).publicKey,
-            systemProgram: SystemProgram.programId,
-          }))
+          .accounts(
+            accs({
+              task: taskPda,
+              dispute: disputePda,
+              platform: platformPda,
+              vote: votePda,
+              voterProfile: voterProfile as PublicKey,
+              voter: (voter as Keypair).publicKey,
+              systemProgram: SystemProgram.programId,
+            })
+          )
           .signers([voter as Keypair])
           .rpc()
       }
@@ -606,16 +637,18 @@ describe('task-escrow', () => {
 
       await program.methods
         .resolveDispute()
-        .accounts(accs({
-          dispute: disputePda,
-          task: taskPda,
-          platform: platformPda,
-          creator: creator.publicKey,
-          agent: agent.publicKey,
-          agentProfile: agentProfilePda,
-          treasury: treasury.publicKey,
-          caller: authority.publicKey,
-        }))
+        .accounts(
+          accs({
+            dispute: disputePda,
+            task: taskPda,
+            platform: platformPda,
+            creator: creator.publicKey,
+            agent: agent.publicKey,
+            agentProfile: agentProfilePda,
+            treasury: treasury.publicKey,
+            caller: authority.publicKey,
+          })
+        )
         .rpc()
 
       // Both dispute and task PDAs should be closed after resolution
@@ -657,10 +690,10 @@ describe('task-escrow', () => {
       // Create a fresh task for negative tests
       taskIndex = new BN(creatorTaskCount)
 
-        ;[taskPda] = PublicKey.findProgramAddressSync(
-          [Buffer.from('task'), creator.publicKey.toBuffer(), taskIndex.toArrayLike(Buffer, 'le', 8)],
-          program.programId
-        )
+      ;[taskPda] = PublicKey.findProgramAddressSync(
+        [Buffer.from('task'), creator.publicKey.toBuffer(), taskIndex.toArrayLike(Buffer, 'le', 8)],
+        program.programId
+      )
 
       const deadline = Math.floor(Date.now() / 1000) + 3600
 
@@ -673,13 +706,15 @@ describe('task-escrow', () => {
           new BN(deadline),
           new BN(50)
         )
-        .accounts(accs({
-          task: taskPda,
-          platform: platformPda,
-          creatorCounter: creatorCounterPda,
-          creator: creator.publicKey,
-          systemProgram: SystemProgram.programId,
-        }))
+        .accounts(
+          accs({
+            task: taskPda,
+            platform: platformPda,
+            creatorCounter: creatorCounterPda,
+            creator: creator.publicKey,
+            systemProgram: SystemProgram.programId,
+          })
+        )
         .signers([creator])
         .rpc()
 
@@ -703,13 +738,15 @@ describe('task-escrow', () => {
             new BN(Math.floor(Date.now() / 1000) + 3600),
             new BN(10)
           )
-          .accounts(accs({
-            task: badTaskPda,
-            platform: platformPda,
-            creatorCounter: creatorCounterPda,
-            creator: creator.publicKey,
-            systemProgram: SystemProgram.programId,
-          }))
+          .accounts(
+            accs({
+              task: badTaskPda,
+              platform: platformPda,
+              creatorCounter: creatorCounterPda,
+              creator: creator.publicKey,
+              systemProgram: SystemProgram.programId,
+            })
+          )
           .signers([creator])
           .rpc()
         expect.fail('Should have thrown BountyTooLow')
@@ -735,13 +772,15 @@ describe('task-escrow', () => {
             new BN(1000000), // way in the past
             new BN(10)
           )
-          .accounts(accs({
-            task: badTaskPda,
-            platform: platformPda,
-            creatorCounter: creatorCounterPda,
-            creator: creator.publicKey,
-            systemProgram: SystemProgram.programId,
-          }))
+          .accounts(
+            accs({
+              task: badTaskPda,
+              platform: platformPda,
+              creatorCounter: creatorCounterPda,
+              creator: creator.publicKey,
+              systemProgram: SystemProgram.programId,
+            })
+          )
           .signers([creator])
           .rpc()
         expect.fail('Should have thrown DeadlineInPast')
@@ -767,13 +806,15 @@ describe('task-escrow', () => {
             new BN(Math.floor(Date.now() / 1000) + 3600),
             new BN(10)
           )
-          .accounts(accs({
-            task: badTaskPda,
-            platform: platformPda,
-            creatorCounter: creatorCounterPda,
-            creator: creator.publicKey,
-            systemProgram: SystemProgram.programId,
-          }))
+          .accounts(
+            accs({
+              task: badTaskPda,
+              platform: platformPda,
+              creatorCounter: creatorCounterPda,
+              creator: creator.publicKey,
+              systemProgram: SystemProgram.programId,
+            })
+          )
           .signers([creator])
           .rpc()
         expect.fail('Should have thrown TitleTooLong')
@@ -786,10 +827,12 @@ describe('task-escrow', () => {
       try {
         await program.methods
           .cancelTask()
-          .accounts(accs({
-            task: taskPda,
-            creator: randomUser.publicKey,
-          }))
+          .accounts(
+            accs({
+              task: taskPda,
+              creator: randomUser.publicKey,
+            })
+          )
           .signers([randomUser])
           .rpc()
         expect.fail('Should have thrown')
@@ -803,12 +846,14 @@ describe('task-escrow', () => {
       // First claim succeeds
       await program.methods
         .claimTask()
-        .accounts(accs({
-          task: taskPda,
-          platform: platformPda,
-          agentProfile: agentProfilePda,
-          agent: agent.publicKey,
-        }))
+        .accounts(
+          accs({
+            task: taskPda,
+            platform: platformPda,
+            agentProfile: agentProfilePda,
+            agent: agent.publicKey,
+          })
+        )
         .signers([agent])
         .rpc()
 
@@ -816,12 +861,14 @@ describe('task-escrow', () => {
       try {
         await program.methods
           .claimTask()
-          .accounts(accs({
-            task: taskPda,
-            platform: platformPda,
-            agentProfile: voter1ProfilePda,
-            agent: voter1.publicKey,
-          }))
+          .accounts(
+            accs({
+              task: taskPda,
+              platform: platformPda,
+              agentProfile: voter1ProfilePda,
+              agent: voter1.publicKey,
+            })
+          )
           .signers([voter1])
           .rpc()
         expect.fail('Should have thrown TaskNotOpen')
@@ -834,11 +881,13 @@ describe('task-escrow', () => {
       try {
         await program.methods
           .submitDeliverable(Array.from(Buffer.alloc(32, 14)) as any)
-          .accounts(accs({
-            task: taskPda,
-            platform: platformPda,
-            agent: voter1.publicKey,
-          }))
+          .accounts(
+            accs({
+              task: taskPda,
+              platform: platformPda,
+              agent: voter1.publicKey,
+            })
+          )
           .signers([voter1])
           .rpc()
         expect.fail('Should have thrown NotAssignedAgent')
@@ -852,14 +901,16 @@ describe('task-escrow', () => {
       try {
         await program.methods
           .approveAndSettle()
-          .accounts(accs({
-            task: taskPda,
-            platform: platformPda,
-            creator: creator.publicKey,
-            agent: agent.publicKey,
-            agentProfile: agentProfilePda,
-            treasury: treasury.publicKey,
-          }))
+          .accounts(
+            accs({
+              task: taskPda,
+              platform: platformPda,
+              creator: creator.publicKey,
+              agent: agent.publicKey,
+              agentProfile: agentProfilePda,
+              treasury: treasury.publicKey,
+            })
+          )
           .signers([creator])
           .rpc()
         expect.fail('Should have thrown TaskNotSubmitted')
@@ -872,10 +923,12 @@ describe('task-escrow', () => {
       try {
         await program.methods
           .rejectSubmission(Array.from(Buffer.alloc(32, 15)) as any)
-          .accounts(accs({
-            task: taskPda,
-            creator: creator.publicKey,
-          }))
+          .accounts(
+            accs({
+              task: taskPda,
+              creator: creator.publicKey,
+            })
+          )
           .signers([creator])
           .rpc()
         expect.fail('Should have thrown TaskNotSubmitted')
@@ -888,10 +941,12 @@ describe('task-escrow', () => {
       try {
         await program.methods
           .cancelTask()
-          .accounts(accs({
-            task: taskPda,
-            creator: creator.publicKey,
-          }))
+          .accounts(
+            accs({
+              task: taskPda,
+              creator: creator.publicKey,
+            })
+          )
           .signers([creator])
           .rpc()
         expect.fail('Should have thrown TaskNotOpen')
@@ -904,12 +959,14 @@ describe('task-escrow', () => {
       try {
         await program.methods
           .expireTask()
-          .accounts(accs({
-            task: taskPda,
-            creator: creator.publicKey,
-            platform: platformPda,
-            caller: randomUser.publicKey,
-          }))
+          .accounts(
+            accs({
+              task: taskPda,
+              creator: creator.publicKey,
+              platform: platformPda,
+              caller: randomUser.publicKey,
+            })
+          )
           .signers([randomUser])
           .rpc()
         expect.fail('Should have thrown DeadlineNotReached')
@@ -995,13 +1052,15 @@ describe('task-escrow', () => {
             new BN(Math.floor(Date.now() / 1000) + 3600),
             new BN(10)
           )
-          .accounts(accs({
-            task: taskPda,
-            platform: platformPda,
-            creatorCounter: creatorCounterPda,
-            creator: creator.publicKey,
-            systemProgram: SystemProgram.programId,
-          }))
+          .accounts(
+            accs({
+              task: taskPda,
+              platform: platformPda,
+              creatorCounter: creatorCounterPda,
+              creator: creator.publicKey,
+              systemProgram: SystemProgram.programId,
+            })
+          )
           .signers([creator])
           .rpc()
         expect.fail('Should have thrown PlatformPaused')
@@ -1084,10 +1143,10 @@ describe('task-escrow', () => {
       const taskIndex = new BN(creatorTaskCount)
       const bounty = 0.5 * LAMPORTS_PER_SOL
 
-        ;[taskPda] = PublicKey.findProgramAddressSync(
-          [Buffer.from('task'), creator.publicKey.toBuffer(), taskIndex.toArrayLike(Buffer, 'le', 8)],
-          program.programId
-        )
+      ;[taskPda] = PublicKey.findProgramAddressSync(
+        [Buffer.from('task'), creator.publicKey.toBuffer(), taskIndex.toArrayLike(Buffer, 'le', 8)],
+        program.programId
+      )
 
       const deadline = Math.floor(Date.now() / 1000) + 3600
 
@@ -1100,13 +1159,15 @@ describe('task-escrow', () => {
           new BN(deadline),
           new BN(10)
         )
-        .accounts(accs({
-          task: taskPda,
-          platform: platformPda,
-          creatorCounter: creatorCounterPda,
-          creator: creator.publicKey,
-          systemProgram: SystemProgram.programId,
-        }))
+        .accounts(
+          accs({
+            task: taskPda,
+            platform: platformPda,
+            creatorCounter: creatorCounterPda,
+            creator: creator.publicKey,
+            systemProgram: SystemProgram.programId,
+          })
+        )
         .signers([creator])
         .rpc()
 
@@ -1122,12 +1183,14 @@ describe('task-escrow', () => {
       try {
         await program.methods
           .openDispute({ qualityIssue: {} } as any, Array.from(Buffer.alloc(32, 31)) as any)
-          .accounts(accs({
-            task: taskPda,
-            dispute: disputePda,
-            initiator: creator.publicKey,
-            systemProgram: SystemProgram.programId,
-          }))
+          .accounts(
+            accs({
+              task: taskPda,
+              dispute: disputePda,
+              initiator: creator.publicKey,
+              systemProgram: SystemProgram.programId,
+            })
+          )
           .signers([creator])
           .rpc()
         expect.fail('Should have thrown TaskNotDisputable')
@@ -1140,22 +1203,26 @@ describe('task-escrow', () => {
       // Get the task to submitted state
       await program.methods
         .claimTask()
-        .accounts(accs({
-          task: taskPda,
-          platform: platformPda,
-          agentProfile: agentProfilePda,
-          agent: agent.publicKey,
-        }))
+        .accounts(
+          accs({
+            task: taskPda,
+            platform: platformPda,
+            agentProfile: agentProfilePda,
+            agent: agent.publicKey,
+          })
+        )
         .signers([agent])
         .rpc()
 
       await program.methods
         .submitDeliverable(Array.from(Buffer.alloc(32, 32)) as any)
-        .accounts(accs({
-          task: taskPda,
-          platform: platformPda,
-          agent: agent.publicKey,
-        }))
+        .accounts(
+          accs({
+            task: taskPda,
+            platform: platformPda,
+            agent: agent.publicKey,
+          })
+        )
         .signers([agent])
         .rpc()
 
@@ -1167,12 +1234,14 @@ describe('task-escrow', () => {
       try {
         await program.methods
           .openDispute({ qualityIssue: {} } as any, Array.from(Buffer.alloc(32, 33)) as any)
-          .accounts(accs({
-            task: taskPda,
-            dispute: disputePda,
-            initiator: voter1.publicKey, // not a party
-            systemProgram: SystemProgram.programId,
-          }))
+          .accounts(
+            accs({
+              task: taskPda,
+              dispute: disputePda,
+              initiator: voter1.publicKey, // not a party
+              systemProgram: SystemProgram.programId,
+            })
+          )
           .signers([voter1])
           .rpc()
         expect.fail('Should have thrown NotTaskParty')
@@ -1191,10 +1260,10 @@ describe('task-escrow', () => {
       const taskIndex = new BN(creatorTaskCount)
       const bounty = 0.2 * LAMPORTS_PER_SOL
 
-        ;[taskPda] = PublicKey.findProgramAddressSync(
-          [Buffer.from('task'), creator.publicKey.toBuffer(), taskIndex.toArrayLike(Buffer, 'le', 8)],
-          program.programId
-        )
+      ;[taskPda] = PublicKey.findProgramAddressSync(
+        [Buffer.from('task'), creator.publicKey.toBuffer(), taskIndex.toArrayLike(Buffer, 'le', 8)],
+        program.programId
+      )
 
       // Very short deadline: 3 seconds from now
       const deadline = Math.floor(Date.now() / 1000) + 3
@@ -1208,13 +1277,15 @@ describe('task-escrow', () => {
           new BN(deadline),
           new BN(10)
         )
-        .accounts(accs({
-          task: taskPda,
-          platform: platformPda,
-          creatorCounter: creatorCounterPda,
-          creator: creator.publicKey,
-          systemProgram: SystemProgram.programId,
-        }))
+        .accounts(
+          accs({
+            task: taskPda,
+            platform: platformPda,
+            creatorCounter: creatorCounterPda,
+            creator: creator.publicKey,
+            systemProgram: SystemProgram.programId,
+          })
+        )
         .signers([creator])
         .rpc()
 
@@ -1228,12 +1299,14 @@ describe('task-escrow', () => {
       // Anyone can trigger expiration
       await program.methods
         .expireTask()
-        .accounts(accs({
-          task: taskPda,
-          creator: creator.publicKey,
-          platform: platformPda,
-          caller: authority.publicKey,
-        }))
+        .accounts(
+          accs({
+            task: taskPda,
+            creator: creator.publicKey,
+            platform: platformPda,
+            caller: authority.publicKey,
+          })
+        )
         .rpc()
 
       // Task PDA should be closed
@@ -1255,10 +1328,10 @@ describe('task-escrow', () => {
       const taskIndex = new BN(creatorTaskCount)
       const bounty = 0.5 * LAMPORTS_PER_SOL
 
-        ;[taskPda] = PublicKey.findProgramAddressSync(
-          [Buffer.from('task'), creator.publicKey.toBuffer(), taskIndex.toArrayLike(Buffer, 'le', 8)],
-          program.programId
-        )
+      ;[taskPda] = PublicKey.findProgramAddressSync(
+        [Buffer.from('task'), creator.publicKey.toBuffer(), taskIndex.toArrayLike(Buffer, 'le', 8)],
+        program.programId
+      )
 
       const deadline = Math.floor(Date.now() / 1000) + 3600
 
@@ -1271,13 +1344,15 @@ describe('task-escrow', () => {
           new BN(deadline),
           new BN(20)
         )
-        .accounts(accs({
-          task: taskPda,
-          platform: platformPda,
-          creatorCounter: creatorCounterPda,
-          creator: creator.publicKey,
-          systemProgram: SystemProgram.programId,
-        }))
+        .accounts(
+          accs({
+            task: taskPda,
+            platform: platformPda,
+            creatorCounter: creatorCounterPda,
+            creator: creator.publicKey,
+            systemProgram: SystemProgram.programId,
+          })
+        )
         .signers([creator])
         .rpc()
 
@@ -1286,12 +1361,14 @@ describe('task-escrow', () => {
       // Agent claims
       await program.methods
         .claimTask()
-        .accounts(accs({
-          task: taskPda,
-          platform: platformPda,
-          agentProfile: agentProfilePda,
-          agent: agent.publicKey,
-        }))
+        .accounts(
+          accs({
+            task: taskPda,
+            platform: platformPda,
+            agentProfile: agentProfilePda,
+            agent: agent.publicKey,
+          })
+        )
         .signers([agent])
         .rpc()
 
@@ -1300,11 +1377,13 @@ describe('task-escrow', () => {
         // Agent submits
         await program.methods
           .submitDeliverable(Array.from(Buffer.alloc(32, 51 + i)) as any)
-          .accounts(accs({
-            task: taskPda,
-            platform: platformPda,
-            agent: agent.publicKey,
-          }))
+          .accounts(
+            accs({
+              task: taskPda,
+              platform: platformPda,
+              agent: agent.publicKey,
+            })
+          )
           .signers([agent])
           .rpc()
 
@@ -1349,13 +1428,15 @@ describe('task-escrow', () => {
           new BN(deadline),
           new BN(50)
         )
-        .accounts(accs({
-          task: taskPda,
-          platform: platformPda,
-          creatorCounter: creatorCounterPda,
-          creator: creator.publicKey,
-          systemProgram: SystemProgram.programId,
-        }))
+        .accounts(
+          accs({
+            task: taskPda,
+            platform: platformPda,
+            creatorCounter: creatorCounterPda,
+            creator: creator.publicKey,
+            systemProgram: SystemProgram.programId,
+          })
+        )
         .signers([creator])
         .rpc()
 
@@ -1363,22 +1444,26 @@ describe('task-escrow', () => {
 
       await program.methods
         .claimTask()
-        .accounts(accs({
-          task: taskPda,
-          platform: platformPda,
-          agentProfile: agentProfilePda,
-          agent: agent.publicKey,
-        }))
+        .accounts(
+          accs({
+            task: taskPda,
+            platform: platformPda,
+            agentProfile: agentProfilePda,
+            agent: agent.publicKey,
+          })
+        )
         .signers([agent])
         .rpc()
 
       await program.methods
         .submitDeliverable(Array.from(Buffer.alloc(32, 71)) as any)
-        .accounts(accs({
-          task: taskPda,
-          platform: platformPda,
-          agent: agent.publicKey,
-        }))
+        .accounts(
+          accs({
+            task: taskPda,
+            platform: platformPda,
+            agent: agent.publicKey,
+          })
+        )
         .signers([agent])
         .rpc()
 
@@ -1395,12 +1480,14 @@ describe('task-escrow', () => {
 
       await program.methods
         .openDispute({ qualityIssue: {} } as any, Array.from(Buffer.alloc(32, 73)) as any)
-        .accounts(accs({
-          task: taskPda,
-          dispute: disputePda,
-          initiator: creator.publicKey,
-          systemProgram: SystemProgram.programId,
-        }))
+        .accounts(
+          accs({
+            task: taskPda,
+            dispute: disputePda,
+            initiator: creator.publicKey,
+            systemProgram: SystemProgram.programId,
+          })
+        )
         .signers([creator])
         .rpc()
 
@@ -1416,15 +1503,17 @@ describe('task-escrow', () => {
 
         await program.methods
           .castVote({ creatorWins: {} } as any)
-          .accounts(accs({
-            task: taskPda,
-            dispute: disputePda,
-            platform: platformPda,
-            vote: votePda,
-            voterProfile: voterProfile as PublicKey,
-            voter: (voter as Keypair).publicKey,
-            systemProgram: SystemProgram.programId,
-          }))
+          .accounts(
+            accs({
+              task: taskPda,
+              dispute: disputePda,
+              platform: platformPda,
+              vote: votePda,
+              voterProfile: voterProfile as PublicKey,
+              voter: (voter as Keypair).publicKey,
+              systemProgram: SystemProgram.programId,
+            })
+          )
           .signers([voter as Keypair])
           .rpc()
       }
@@ -1436,16 +1525,18 @@ describe('task-escrow', () => {
 
       await program.methods
         .resolveDispute()
-        .accounts(accs({
-          dispute: disputePda,
-          task: taskPda,
-          platform: platformPda,
-          creator: creator.publicKey,
-          agent: agent.publicKey,
-          agentProfile: agentProfilePda,
-          treasury: treasury.publicKey,
-          caller: authority.publicKey,
-        }))
+        .accounts(
+          accs({
+            dispute: disputePda,
+            task: taskPda,
+            platform: platformPda,
+            creator: creator.publicKey,
+            agent: agent.publicKey,
+            agentProfile: agentProfilePda,
+            treasury: treasury.publicKey,
+            caller: authority.publicKey,
+          })
+        )
         .rpc()
 
       // Both PDAs should be closed
@@ -1481,13 +1572,15 @@ describe('task-escrow', () => {
           new BN(deadline),
           new BN(50)
         )
-        .accounts(accs({
-          task: taskPda,
-          platform: platformPda,
-          creatorCounter: creatorCounterPda,
-          creator: creator.publicKey,
-          systemProgram: SystemProgram.programId,
-        }))
+        .accounts(
+          accs({
+            task: taskPda,
+            platform: platformPda,
+            creatorCounter: creatorCounterPda,
+            creator: creator.publicKey,
+            systemProgram: SystemProgram.programId,
+          })
+        )
         .signers([creator])
         .rpc()
 
@@ -1495,22 +1588,26 @@ describe('task-escrow', () => {
 
       await program.methods
         .claimTask()
-        .accounts(accs({
-          task: taskPda,
-          platform: platformPda,
-          agentProfile: agentProfilePda,
-          agent: agent.publicKey,
-        }))
+        .accounts(
+          accs({
+            task: taskPda,
+            platform: platformPda,
+            agentProfile: agentProfilePda,
+            agent: agent.publicKey,
+          })
+        )
         .signers([agent])
         .rpc()
 
       await program.methods
         .submitDeliverable(Array.from(Buffer.alloc(32, 81)) as any)
-        .accounts(accs({
-          task: taskPda,
-          platform: platformPda,
-          agent: agent.publicKey,
-        }))
+        .accounts(
+          accs({
+            task: taskPda,
+            platform: platformPda,
+            agent: agent.publicKey,
+          })
+        )
         .signers([agent])
         .rpc()
 
@@ -1527,12 +1624,14 @@ describe('task-escrow', () => {
 
       await program.methods
         .openDispute({ qualityIssue: {} } as any, Array.from(Buffer.alloc(32, 83)) as any)
-        .accounts(accs({
-          task: taskPda,
-          dispute: disputePda,
-          initiator: agent.publicKey,
-          systemProgram: SystemProgram.programId,
-        }))
+        .accounts(
+          accs({
+            task: taskPda,
+            dispute: disputePda,
+            initiator: agent.publicKey,
+            systemProgram: SystemProgram.programId,
+          })
+        )
         .signers([agent])
         .rpc()
 
@@ -1543,15 +1642,17 @@ describe('task-escrow', () => {
       )
       await program.methods
         .castVote({ creatorWins: {} } as any)
-        .accounts(accs({
-          task: taskPda,
-          dispute: disputePda,
-          platform: platformPda,
-          vote: vote1Pda,
-          voterProfile: voter1ProfilePda,
-          voter: voter1.publicKey,
-          systemProgram: SystemProgram.programId,
-        }))
+        .accounts(
+          accs({
+            task: taskPda,
+            dispute: disputePda,
+            platform: platformPda,
+            vote: vote1Pda,
+            voterProfile: voter1ProfilePda,
+            voter: voter1.publicKey,
+            systemProgram: SystemProgram.programId,
+          })
+        )
         .signers([voter1])
         .rpc()
 
@@ -1561,15 +1662,17 @@ describe('task-escrow', () => {
       )
       await program.methods
         .castVote({ agentWins: {} } as any)
-        .accounts(accs({
-          task: taskPda,
-          dispute: disputePda,
-          platform: platformPda,
-          vote: vote2Pda,
-          voterProfile: voter2ProfilePda,
-          voter: voter2.publicKey,
-          systemProgram: SystemProgram.programId,
-        }))
+        .accounts(
+          accs({
+            task: taskPda,
+            dispute: disputePda,
+            platform: platformPda,
+            vote: vote2Pda,
+            voterProfile: voter2ProfilePda,
+            voter: voter2.publicKey,
+            systemProgram: SystemProgram.programId,
+          })
+        )
         .signers([voter2])
         .rpc()
 
@@ -1582,16 +1685,18 @@ describe('task-escrow', () => {
 
       await program.methods
         .resolveDispute()
-        .accounts(accs({
-          dispute: disputePda,
-          task: taskPda,
-          platform: platformPda,
-          creator: creator.publicKey,
-          agent: agent.publicKey,
-          agentProfile: agentProfilePda,
-          treasury: treasury.publicKey,
-          caller: authority.publicKey,
-        }))
+        .accounts(
+          accs({
+            dispute: disputePda,
+            task: taskPda,
+            platform: platformPda,
+            creator: creator.publicKey,
+            agent: agent.publicKey,
+            agentProfile: agentProfilePda,
+            treasury: treasury.publicKey,
+            caller: authority.publicKey,
+          })
+        )
         .rpc()
 
       // Both PDAs should be closed
@@ -1641,13 +1746,15 @@ describe('task-escrow', () => {
           new BN(deadline),
           new BN(10)
         )
-        .accounts(accs({
-          task: taskPda,
-          platform: platformPda,
-          creatorCounter: creatorCounterPda,
-          creator: creator.publicKey,
-          systemProgram: SystemProgram.programId,
-        }))
+        .accounts(
+          accs({
+            task: taskPda,
+            platform: platformPda,
+            creatorCounter: creatorCounterPda,
+            creator: creator.publicKey,
+            systemProgram: SystemProgram.programId,
+          })
+        )
         .signers([creator])
         .rpc()
 
@@ -1655,22 +1762,26 @@ describe('task-escrow', () => {
 
       await program.methods
         .claimTask()
-        .accounts(accs({
-          task: taskPda,
-          platform: platformPda,
-          agentProfile: agentProfilePda,
-          agent: agent.publicKey,
-        }))
+        .accounts(
+          accs({
+            task: taskPda,
+            platform: platformPda,
+            agentProfile: agentProfilePda,
+            agent: agent.publicKey,
+          })
+        )
         .signers([agent])
         .rpc()
 
       await program.methods
         .submitDeliverable(Array.from(Buffer.alloc(32, 91)) as any)
-        .accounts(accs({
-          task: taskPda,
-          platform: platformPda,
-          agent: agent.publicKey,
-        }))
+        .accounts(
+          accs({
+            task: taskPda,
+            platform: platformPda,
+            agent: agent.publicKey,
+          })
+        )
         .signers([agent])
         .rpc()
 
@@ -1687,12 +1798,14 @@ describe('task-escrow', () => {
 
       await program.methods
         .openDispute({ qualityIssue: {} } as any, Array.from(Buffer.alloc(32, 93)) as any)
-        .accounts(accs({
-          task: taskPda,
-          dispute: disputePda,
-          initiator: agent.publicKey,
-          systemProgram: SystemProgram.programId,
-        }))
+        .accounts(
+          accs({
+            task: taskPda,
+            dispute: disputePda,
+            initiator: agent.publicKey,
+            systemProgram: SystemProgram.programId,
+          })
+        )
         .signers([agent])
         .rpc()
 
@@ -1704,15 +1817,17 @@ describe('task-escrow', () => {
 
       await program.methods
         .castVote({ agentWins: {} } as any)
-        .accounts(accs({
-          task: taskPda,
-          dispute: disputePda,
-          platform: platformPda,
-          vote: votePda,
-          voterProfile: voter1ProfilePda,
-          voter: voter1.publicKey,
-          systemProgram: SystemProgram.programId,
-        }))
+        .accounts(
+          accs({
+            task: taskPda,
+            dispute: disputePda,
+            platform: platformPda,
+            vote: votePda,
+            voterProfile: voter1ProfilePda,
+            voter: voter1.publicKey,
+            systemProgram: SystemProgram.programId,
+          })
+        )
         .signers([voter1])
         .rpc()
 
@@ -1723,16 +1838,18 @@ describe('task-escrow', () => {
       try {
         await program.methods
           .resolveDispute()
-          .accounts(accs({
-            dispute: disputePda,
-            task: taskPda,
-            platform: platformPda,
-            creator: creator.publicKey,
-            agent: agent.publicKey,
-            agentProfile: agentProfilePda,
-            treasury: treasury.publicKey,
-            caller: authority.publicKey,
-          }))
+          .accounts(
+            accs({
+              dispute: disputePda,
+              task: taskPda,
+              platform: platformPda,
+              creator: creator.publicKey,
+              agent: agent.publicKey,
+              agentProfile: agentProfilePda,
+              treasury: treasury.publicKey,
+              caller: authority.publicKey,
+            })
+          )
           .rpc()
         expect.fail('Should have thrown InsufficientVotes')
       } catch (err: any) {

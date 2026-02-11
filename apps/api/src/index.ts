@@ -1,6 +1,6 @@
-import { config } from 'dotenv'
-import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { config } from 'dotenv'
 
 // Load .env from project root (2 levels up from src/)
 const __dirname = dirname(fileURLToPath(import.meta.url))
@@ -21,17 +21,17 @@ import { cors } from 'hono/cors'
 import { logger } from 'hono/logger'
 import { prettyJSON } from 'hono/pretty-json'
 import { rateLimiter } from 'hono-rate-limiter'
+import { testConnection } from './db/index.js'
+import { migrateDb } from './db/migrate.js'
+import { loadStore } from './lib/event-store.js'
 import agentsRoutes from './routes/agents.js'
+import descriptionsRoutes from './routes/descriptions.js'
+import historyRoutes from './routes/history.js'
 import idlRoutes from './routes/idl.js'
 import platformRoutes from './routes/platform.js'
 import tasksRoutes from './routes/tasks.js'
 import txRoutes from './routes/tx.js'
 import webhookRoutes from './routes/webhook.js'
-import historyRoutes from './routes/history.js'
-import descriptionsRoutes from './routes/descriptions.js'
-import { loadStore } from './lib/event-store.js'
-import { testConnection } from './db/index.js'
-import { migrateDb } from './db/migrate.js'
 
 const app = new OpenAPIHono()
 

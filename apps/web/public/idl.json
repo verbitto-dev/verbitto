@@ -9,7 +9,7 @@
   "instructions": [
     {
       "name": "approve_and_settle",
-      "discriminator": [ 149, 210, 18, 168, 18, 3, 209, 224 ],
+      "discriminator": [149, 210, 18, 168, 18, 3, 209, 224],
       "accounts": [
         {
           "name": "task",
@@ -18,7 +18,7 @@
             "seeds": [
               {
                 "kind": "const",
-                "value": [ 116, 97, 115, 107 ]
+                "value": [116, 97, 115, 107]
               },
               {
                 "kind": "account",
@@ -40,7 +40,7 @@
             "seeds": [
               {
                 "kind": "const",
-                "value": [ 112, 108, 97, 116, 102, 111, 114, 109 ]
+                "value": [112, 108, 97, 116, 102, 111, 114, 109]
               }
             ]
           }
@@ -56,13 +56,13 @@
         },
         {
           "name": "agent_profile",
-          "docs": [ "Agent's on-chain profile. Updated with completion stats." ],
+          "docs": ["Agent's on-chain profile. Updated with completion stats."],
           "writable": true,
           "pda": {
             "seeds": [
               {
                 "kind": "const",
-                "value": [ 97, 103, 101, 110, 116 ]
+                "value": [97, 103, 101, 110, 116]
               },
               {
                 "kind": "account",
@@ -77,11 +77,11 @@
           "writable": true
         }
       ],
-      "args": [ ]
+      "args": []
     },
     {
       "name": "cancel_task",
-      "discriminator": [ 69, 228, 134, 187, 134, 105, 238, 48 ],
+      "discriminator": [69, 228, 134, 187, 134, 105, 238, 48],
       "accounts": [
         {
           "name": "task",
@@ -90,7 +90,7 @@
             "seeds": [
               {
                 "kind": "const",
-                "value": [ 116, 97, 115, 107 ]
+                "value": [116, 97, 115, 107]
               },
               {
                 "kind": "account",
@@ -111,20 +111,20 @@
           "signer": true
         }
       ],
-      "args": [ ]
+      "args": []
     },
     {
       "name": "cast_vote",
-      "discriminator": [ 20, 212, 15, 189, 69, 180, 69, 151 ],
+      "discriminator": [20, 212, 15, 189, 69, 180, 69, 151],
       "accounts": [
         {
           "name": "task",
-          "docs": [ "Task account referenced by the dispute. Used to verify voter is not a party." ],
+          "docs": ["Task account referenced by the dispute. Used to verify voter is not a party."],
           "pda": {
             "seeds": [
               {
                 "kind": "const",
-                "value": [ 116, 97, 115, 107 ]
+                "value": [116, 97, 115, 107]
               },
               {
                 "kind": "account",
@@ -146,7 +146,7 @@
             "seeds": [
               {
                 "kind": "const",
-                "value": [ 100, 105, 115, 112, 117, 116, 101 ]
+                "value": [100, 105, 115, 112, 117, 116, 101]
               },
               {
                 "kind": "account",
@@ -161,7 +161,7 @@
             "seeds": [
               {
                 "kind": "const",
-                "value": [ 112, 108, 97, 116, 102, 111, 114, 109 ]
+                "value": [112, 108, 97, 116, 102, 111, 114, 109]
               }
             ]
           }
@@ -173,7 +173,7 @@
             "seeds": [
               {
                 "kind": "const",
-                "value": [ 118, 111, 116, 101 ]
+                "value": [118, 111, 116, 101]
               },
               {
                 "kind": "account",
@@ -188,12 +188,12 @@
         },
         {
           "name": "voter_profile",
-          "docs": [ "Voter must have a registered agent profile (sybil protection)." ],
+          "docs": ["Voter must have a registered agent profile (sybil protection)."],
           "pda": {
             "seeds": [
               {
                 "kind": "const",
-                "value": [ 97, 103, 101, 110, 116 ]
+                "value": [97, 103, 101, 110, 116]
               },
               {
                 "kind": "account",
@@ -225,7 +225,7 @@
     },
     {
       "name": "claim_task",
-      "discriminator": [ 49, 222, 219, 238, 155, 68, 221, 136 ],
+      "discriminator": [49, 222, 219, 238, 155, 68, 221, 136],
       "accounts": [
         {
           "name": "task",
@@ -234,7 +234,7 @@
             "seeds": [
               {
                 "kind": "const",
-                "value": [ 116, 97, 115, 107 ]
+                "value": [116, 97, 115, 107]
               },
               {
                 "kind": "account",
@@ -255,19 +255,19 @@
             "seeds": [
               {
                 "kind": "const",
-                "value": [ 112, 108, 97, 116, 102, 111, 114, 109 ]
+                "value": [112, 108, 97, 116, 102, 111, 114, 109]
               }
             ]
           }
         },
         {
           "name": "agent_profile",
-          "docs": [ "Agent must have a registered profile to claim tasks." ],
+          "docs": ["Agent must have a registered profile to claim tasks."],
           "pda": {
             "seeds": [
               {
                 "kind": "const",
-                "value": [ 97, 103, 101, 110, 116 ]
+                "value": [97, 103, 101, 110, 116]
               },
               {
                 "kind": "account",
@@ -281,11 +281,11 @@
           "signer": true
         }
       ],
-      "args": [ ]
+      "args": []
     },
     {
       "name": "create_task",
-      "discriminator": [ 194, 80, 6, 180, 232, 127, 48, 171 ],
+      "discriminator": [194, 80, 6, 180, 232, 127, 48, 171],
       "accounts": [
         {
           "name": "task",
@@ -294,7 +294,7 @@
             "seeds": [
               {
                 "kind": "const",
-                "value": [ 116, 97, 115, 107 ]
+                "value": [116, 97, 115, 107]
               },
               {
                 "kind": "account",
@@ -314,7 +314,7 @@
             "seeds": [
               {
                 "kind": "const",
-                "value": [ 99, 114, 101, 97, 116, 111, 114 ]
+                "value": [99, 114, 101, 97, 116, 111, 114]
               },
               {
                 "kind": "account",
@@ -330,7 +330,7 @@
             "seeds": [
               {
                 "kind": "const",
-                "value": [ 112, 108, 97, 116, 102, 111, 114, 109 ]
+                "value": [112, 108, 97, 116, 102, 111, 114, 109]
               }
             ]
           }
@@ -353,7 +353,7 @@
         {
           "name": "description_hash",
           "type": {
-            "array": [ "u8", 32 ]
+            "array": ["u8", 32]
           }
         },
         {
@@ -376,7 +376,7 @@
     },
     {
       "name": "create_task_from_template",
-      "discriminator": [ 201, 88, 188, 163, 6, 21, 239, 202 ],
+      "discriminator": [201, 88, 188, 163, 6, 21, 239, 202],
       "accounts": [
         {
           "name": "task",
@@ -385,7 +385,7 @@
             "seeds": [
               {
                 "kind": "const",
-                "value": [ 116, 97, 115, 107 ]
+                "value": [116, 97, 115, 107]
               },
               {
                 "kind": "account",
@@ -405,7 +405,7 @@
             "seeds": [
               {
                 "kind": "const",
-                "value": [ 99, 114, 101, 97, 116, 111, 114 ]
+                "value": [99, 114, 101, 97, 116, 111, 114]
               },
               {
                 "kind": "account",
@@ -421,7 +421,7 @@
             "seeds": [
               {
                 "kind": "const",
-                "value": [ 116, 101, 109, 112, 108, 97, 116, 101 ]
+                "value": [116, 101, 109, 112, 108, 97, 116, 101]
               },
               {
                 "kind": "account",
@@ -443,7 +443,7 @@
             "seeds": [
               {
                 "kind": "const",
-                "value": [ 112, 108, 97, 116, 102, 111, 114, 109 ]
+                "value": [112, 108, 97, 116, 102, 111, 114, 109]
               }
             ]
           }
@@ -479,7 +479,7 @@
     },
     {
       "name": "create_template",
-      "discriminator": [ 245, 51, 247, 234, 31, 9, 40, 227 ],
+      "discriminator": [245, 51, 247, 234, 31, 9, 40, 227],
       "accounts": [
         {
           "name": "template",
@@ -488,7 +488,7 @@
             "seeds": [
               {
                 "kind": "const",
-                "value": [ 116, 101, 109, 112, 108, 97, 116, 101 ]
+                "value": [116, 101, 109, 112, 108, 97, 116, 101]
               },
               {
                 "kind": "account",
@@ -509,7 +509,7 @@
             "seeds": [
               {
                 "kind": "const",
-                "value": [ 112, 108, 97, 116, 102, 111, 114, 109 ]
+                "value": [112, 108, 97, 116, 102, 111, 114, 109]
               }
             ]
           }
@@ -532,7 +532,7 @@
         {
           "name": "description_hash",
           "type": {
-            "array": [ "u8", 32 ]
+            "array": ["u8", 32]
           }
         },
         {
@@ -551,7 +551,7 @@
     },
     {
       "name": "deactivate_template",
-      "discriminator": [ 161, 89, 173, 13, 150, 247, 106, 194 ],
+      "discriminator": [161, 89, 173, 13, 150, 247, 106, 194],
       "accounts": [
         {
           "name": "template",
@@ -560,7 +560,7 @@
             "seeds": [
               {
                 "kind": "const",
-                "value": [ 116, 101, 109, 112, 108, 97, 116, 101 ]
+                "value": [116, 101, 109, 112, 108, 97, 116, 101]
               },
               {
                 "kind": "account",
@@ -578,14 +578,14 @@
         {
           "name": "creator",
           "signer": true,
-          "relations": [ "template" ]
+          "relations": ["template"]
         }
       ],
-      "args": [ ]
+      "args": []
     },
     {
       "name": "expire_task",
-      "discriminator": [ 116, 94, 206, 205, 170, 51, 156, 98 ],
+      "discriminator": [116, 94, 206, 205, 170, 51, 156, 98],
       "accounts": [
         {
           "name": "task",
@@ -594,7 +594,7 @@
             "seeds": [
               {
                 "kind": "const",
-                "value": [ 116, 97, 115, 107 ]
+                "value": [116, 97, 115, 107]
               },
               {
                 "kind": "account",
@@ -615,27 +615,27 @@
         },
         {
           "name": "platform",
-          "docs": [ "Platform config (needed for claim_grace_period)." ],
+          "docs": ["Platform config (needed for claim_grace_period)."],
           "pda": {
             "seeds": [
               {
                 "kind": "const",
-                "value": [ 112, 108, 97, 116, 102, 111, 114, 109 ]
+                "value": [112, 108, 97, 116, 102, 111, 114, 109]
               }
             ]
           }
         },
         {
           "name": "caller",
-          "docs": [ "Anyone can trigger expiration." ],
+          "docs": ["Anyone can trigger expiration."],
           "signer": true
         }
       ],
-      "args": [ ]
+      "args": []
     },
     {
       "name": "initialize_platform",
-      "discriminator": [ 119, 201, 101, 45, 75, 122, 89, 3 ],
+      "discriminator": [119, 201, 101, 45, 75, 122, 89, 3],
       "accounts": [
         {
           "name": "platform",
@@ -644,7 +644,7 @@
             "seeds": [
               {
                 "kind": "const",
-                "value": [ 112, 108, 97, 116, 102, 111, 114, 109 ]
+                "value": [112, 108, 97, 116, 102, 111, 114, 109]
               }
             ]
           }
@@ -691,7 +691,7 @@
     },
     {
       "name": "open_dispute",
-      "discriminator": [ 137, 25, 99, 119, 23, 223, 161, 42 ],
+      "discriminator": [137, 25, 99, 119, 23, 223, 161, 42],
       "accounts": [
         {
           "name": "task",
@@ -700,7 +700,7 @@
             "seeds": [
               {
                 "kind": "const",
-                "value": [ 116, 97, 115, 107 ]
+                "value": [116, 97, 115, 107]
               },
               {
                 "kind": "account",
@@ -722,7 +722,7 @@
             "seeds": [
               {
                 "kind": "const",
-                "value": [ 100, 105, 115, 112, 117, 116, 101 ]
+                "value": [100, 105, 115, 112, 117, 116, 101]
               },
               {
                 "kind": "account",
@@ -753,14 +753,14 @@
         {
           "name": "evidence_hash",
           "type": {
-            "array": [ "u8", 32 ]
+            "array": ["u8", 32]
           }
         }
       ]
     },
     {
       "name": "pause_platform",
-      "discriminator": [ 232, 46, 204, 130, 181, 0, 172, 57 ],
+      "discriminator": [232, 46, 204, 130, 181, 0, 172, 57],
       "accounts": [
         {
           "name": "platform",
@@ -769,7 +769,7 @@
             "seeds": [
               {
                 "kind": "const",
-                "value": [ 112, 108, 97, 116, 102, 111, 114, 109 ]
+                "value": [112, 108, 97, 116, 102, 111, 114, 109]
               }
             ]
           }
@@ -777,14 +777,14 @@
         {
           "name": "authority",
           "signer": true,
-          "relations": [ "platform" ]
+          "relations": ["platform"]
         }
       ],
-      "args": [ ]
+      "args": []
     },
     {
       "name": "register_agent",
-      "discriminator": [ 135, 157, 66, 195, 2, 113, 175, 30 ],
+      "discriminator": [135, 157, 66, 195, 2, 113, 175, 30],
       "accounts": [
         {
           "name": "agent_profile",
@@ -793,7 +793,7 @@
             "seeds": [
               {
                 "kind": "const",
-                "value": [ 97, 103, 101, 110, 116 ]
+                "value": [97, 103, 101, 110, 116]
               },
               {
                 "kind": "account",
@@ -821,7 +821,7 @@
     },
     {
       "name": "reject_submission",
-      "discriminator": [ 2, 92, 1, 81, 148, 156, 6, 160 ],
+      "discriminator": [2, 92, 1, 81, 148, 156, 6, 160],
       "accounts": [
         {
           "name": "task",
@@ -830,7 +830,7 @@
             "seeds": [
               {
                 "kind": "const",
-                "value": [ 116, 97, 115, 107 ]
+                "value": [116, 97, 115, 107]
               },
               {
                 "kind": "account",
@@ -854,14 +854,14 @@
         {
           "name": "reason_hash",
           "type": {
-            "array": [ "u8", 32 ]
+            "array": ["u8", 32]
           }
         }
       ]
     },
     {
       "name": "resolve_dispute",
-      "discriminator": [ 231, 6, 202, 6, 96, 103, 12, 230 ],
+      "discriminator": [231, 6, 202, 6, 96, 103, 12, 230],
       "accounts": [
         {
           "name": "dispute",
@@ -870,7 +870,7 @@
             "seeds": [
               {
                 "kind": "const",
-                "value": [ 100, 105, 115, 112, 117, 116, 101 ]
+                "value": [100, 105, 115, 112, 117, 116, 101]
               },
               {
                 "kind": "account",
@@ -886,7 +886,7 @@
             "seeds": [
               {
                 "kind": "const",
-                "value": [ 116, 97, 115, 107 ]
+                "value": [116, 97, 115, 107]
               },
               {
                 "kind": "account",
@@ -908,7 +908,7 @@
             "seeds": [
               {
                 "kind": "const",
-                "value": [ 112, 108, 97, 116, 102, 111, 114, 109 ]
+                "value": [112, 108, 97, 116, 102, 111, 114, 109]
               }
             ]
           }
@@ -923,13 +923,13 @@
         },
         {
           "name": "agent_profile",
-          "docs": [ "Agent's on-chain profile. Updated with dispute outcome." ],
+          "docs": ["Agent's on-chain profile. Updated with dispute outcome."],
           "writable": true,
           "pda": {
             "seeds": [
               {
                 "kind": "const",
-                "value": [ 97, 103, 101, 110, 116 ]
+                "value": [97, 103, 101, 110, 116]
               },
               {
                 "kind": "account",
@@ -945,15 +945,15 @@
         },
         {
           "name": "caller",
-          "docs": [ "Anyone can trigger dispute resolution after voting period." ],
+          "docs": ["Anyone can trigger dispute resolution after voting period."],
           "signer": true
         }
       ],
-      "args": [ ]
+      "args": []
     },
     {
       "name": "resume_platform",
-      "discriminator": [ 23, 162, 56, 123, 186, 207, 109, 131 ],
+      "discriminator": [23, 162, 56, 123, 186, 207, 109, 131],
       "accounts": [
         {
           "name": "platform",
@@ -962,7 +962,7 @@
             "seeds": [
               {
                 "kind": "const",
-                "value": [ 112, 108, 97, 116, 102, 111, 114, 109 ]
+                "value": [112, 108, 97, 116, 102, 111, 114, 109]
               }
             ]
           }
@@ -970,14 +970,14 @@
         {
           "name": "authority",
           "signer": true,
-          "relations": [ "platform" ]
+          "relations": ["platform"]
         }
       ],
-      "args": [ ]
+      "args": []
     },
     {
       "name": "submit_deliverable",
-      "discriminator": [ 38, 137, 64, 44, 237, 11, 125, 101 ],
+      "discriminator": [38, 137, 64, 44, 237, 11, 125, 101],
       "accounts": [
         {
           "name": "task",
@@ -986,7 +986,7 @@
             "seeds": [
               {
                 "kind": "const",
-                "value": [ 116, 97, 115, 107 ]
+                "value": [116, 97, 115, 107]
               },
               {
                 "kind": "account",
@@ -1007,7 +1007,7 @@
             "seeds": [
               {
                 "kind": "const",
-                "value": [ 112, 108, 97, 116, 102, 111, 114, 109 ]
+                "value": [112, 108, 97, 116, 102, 111, 114, 109]
               }
             ]
           }
@@ -1021,14 +1021,14 @@
         {
           "name": "deliverable_hash",
           "type": {
-            "array": [ "u8", 32 ]
+            "array": ["u8", 32]
           }
         }
       ]
     },
     {
       "name": "update_agent_skills",
-      "discriminator": [ 85, 199, 126, 131, 237, 98, 184, 64 ],
+      "discriminator": [85, 199, 126, 131, 237, 98, 184, 64],
       "accounts": [
         {
           "name": "agent_profile",
@@ -1037,7 +1037,7 @@
             "seeds": [
               {
                 "kind": "const",
-                "value": [ 97, 103, 101, 110, 116 ]
+                "value": [97, 103, 101, 110, 116]
               },
               {
                 "kind": "account",
@@ -1049,7 +1049,7 @@
         {
           "name": "authority",
           "signer": true,
-          "relations": [ "agent_profile" ]
+          "relations": ["agent_profile"]
         }
       ],
       "args": [
@@ -1061,7 +1061,7 @@
     },
     {
       "name": "update_platform",
-      "discriminator": [ 46, 78, 138, 189, 47, 163, 120, 85 ],
+      "discriminator": [46, 78, 138, 189, 47, 163, 120, 85],
       "accounts": [
         {
           "name": "platform",
@@ -1070,7 +1070,7 @@
             "seeds": [
               {
                 "kind": "const",
-                "value": [ 112, 108, 97, 116, 102, 111, 114, 109 ]
+                "value": [112, 108, 97, 116, 102, 111, 114, 109]
               }
             ]
           }
@@ -1078,7 +1078,7 @@
         {
           "name": "authority",
           "signer": true,
-          "relations": [ "platform" ]
+          "relations": ["platform"]
         }
       ],
       "args": [
@@ -1116,89 +1116,89 @@
   "accounts": [
     {
       "name": "AgentProfile",
-      "discriminator": [ 60, 227, 42, 24, 0, 87, 86, 205 ]
+      "discriminator": [60, 227, 42, 24, 0, 87, 86, 205]
     },
     {
       "name": "ArbitratorVote",
-      "discriminator": [ 12, 102, 2, 171, 197, 209, 33, 66 ]
+      "discriminator": [12, 102, 2, 171, 197, 209, 33, 66]
     },
     {
       "name": "CreatorCounter",
-      "discriminator": [ 62, 129, 78, 26, 23, 138, 248, 82 ]
+      "discriminator": [62, 129, 78, 26, 23, 138, 248, 82]
     },
     {
       "name": "Dispute",
-      "discriminator": [ 36, 49, 241, 67, 40, 36, 241, 74 ]
+      "discriminator": [36, 49, 241, 67, 40, 36, 241, 74]
     },
     {
       "name": "Platform",
-      "discriminator": [ 77, 92, 204, 58, 187, 98, 91, 12 ]
+      "discriminator": [77, 92, 204, 58, 187, 98, 91, 12]
     },
     {
       "name": "Task",
-      "discriminator": [ 79, 34, 229, 55, 88, 90, 55, 84 ]
+      "discriminator": [79, 34, 229, 55, 88, 90, 55, 84]
     },
     {
       "name": "TaskTemplate",
-      "discriminator": [ 254, 91, 117, 85, 27, 252, 247, 172 ]
+      "discriminator": [254, 91, 117, 85, 27, 252, 247, 172]
     }
   ],
   "events": [
     {
       "name": "AgentProfileUpdated",
-      "discriminator": [ 37, 86, 36, 71, 59, 237, 6, 247 ]
+      "discriminator": [37, 86, 36, 71, 59, 237, 6, 247]
     },
     {
       "name": "AgentRegistered",
-      "discriminator": [ 191, 78, 217, 54, 232, 100, 189, 85 ]
+      "discriminator": [191, 78, 217, 54, 232, 100, 189, 85]
     },
     {
       "name": "DeliverableSubmitted",
-      "discriminator": [ 128, 198, 110, 44, 67, 73, 255, 99 ]
+      "discriminator": [128, 198, 110, 44, 67, 73, 255, 99]
     },
     {
       "name": "DisputeOpened",
-      "discriminator": [ 239, 222, 102, 235, 193, 85, 1, 214 ]
+      "discriminator": [239, 222, 102, 235, 193, 85, 1, 214]
     },
     {
       "name": "DisputeResolved",
-      "discriminator": [ 121, 64, 249, 153, 139, 128, 236, 187 ]
+      "discriminator": [121, 64, 249, 153, 139, 128, 236, 187]
     },
     {
       "name": "PlatformInitialized",
-      "discriminator": [ 16, 222, 212, 5, 213, 140, 112, 162 ]
+      "discriminator": [16, 222, 212, 5, 213, 140, 112, 162]
     },
     {
       "name": "SubmissionRejected",
-      "discriminator": [ 222, 120, 204, 232, 51, 196, 71, 146 ]
+      "discriminator": [222, 120, 204, 232, 51, 196, 71, 146]
     },
     {
       "name": "TaskCancelled",
-      "discriminator": [ 158, 101, 220, 187, 16, 141, 141, 64 ]
+      "discriminator": [158, 101, 220, 187, 16, 141, 141, 64]
     },
     {
       "name": "TaskClaimed",
-      "discriminator": [ 208, 90, 243, 116, 80, 15, 228, 202 ]
+      "discriminator": [208, 90, 243, 116, 80, 15, 228, 202]
     },
     {
       "name": "TaskCreated",
-      "discriminator": [ 49, 174, 6, 7, 71, 159, 69, 175 ]
+      "discriminator": [49, 174, 6, 7, 71, 159, 69, 175]
     },
     {
       "name": "TaskExpired",
-      "discriminator": [ 36, 130, 189, 154, 110, 249, 231, 45 ]
+      "discriminator": [36, 130, 189, 154, 110, 249, 231, 45]
     },
     {
       "name": "TaskSettled",
-      "discriminator": [ 161, 220, 91, 215, 23, 253, 247, 65 ]
+      "discriminator": [161, 220, 91, 215, 23, 253, 247, 65]
     },
     {
       "name": "TemplateCreated",
-      "discriminator": [ 182, 124, 104, 44, 8, 70, 124, 46 ]
+      "discriminator": [182, 124, 104, 44, 8, 70, 124, 46]
     },
     {
       "name": "VoteCast",
-      "discriminator": [ 39, 53, 195, 104, 188, 17, 225, 213 ]
+      "discriminator": [39, 53, 195, 104, 188, 17, 225, 213]
     }
   ],
   "errors": [
@@ -1381,58 +1381,58 @@
   "types": [
     {
       "name": "AgentProfile",
-      "docs": [ "On-chain agent identity and reputation profile.", "PDA: [b\"agent\", authority]" ],
+      "docs": ["On-chain agent identity and reputation profile.", "PDA: [b\"agent\", authority]"],
       "type": {
         "kind": "struct",
         "fields": [
           {
             "name": "authority",
-            "docs": [ "Agent wallet (signer authority)" ],
+            "docs": ["Agent wallet (signer authority)"],
             "type": "pubkey"
           },
           {
             "name": "reputation_score",
-            "docs": [ "Cumulative reputation score (can go negative)" ],
+            "docs": ["Cumulative reputation score (can go negative)"],
             "type": "i64"
           },
           {
             "name": "tasks_completed",
-            "docs": [ "Total tasks successfully completed" ],
+            "docs": ["Total tasks successfully completed"],
             "type": "u64"
           },
           {
             "name": "tasks_disputed",
-            "docs": [ "Total tasks that went to dispute" ],
+            "docs": ["Total tasks that went to dispute"],
             "type": "u64"
           },
           {
             "name": "disputes_won",
-            "docs": [ "Disputes where agent won" ],
+            "docs": ["Disputes where agent won"],
             "type": "u64"
           },
           {
             "name": "disputes_lost",
-            "docs": [ "Disputes where agent lost" ],
+            "docs": ["Disputes where agent lost"],
             "type": "u64"
           },
           {
             "name": "total_earned_lamports",
-            "docs": [ "Total SOL earned (lamports)" ],
+            "docs": ["Total SOL earned (lamports)"],
             "type": "u64"
           },
           {
             "name": "registered_at",
-            "docs": [ "Registration timestamp" ],
+            "docs": ["Registration timestamp"],
             "type": "i64"
           },
           {
             "name": "skill_tags",
-            "docs": [ "Skill bitmap (bit 0=DataLabeling, 1=LiteratureReview, ..., 6=Other)" ],
+            "docs": ["Skill bitmap (bit 0=DataLabeling, 1=LiteratureReview, ..., 6=Other)"],
             "type": "u8"
           },
           {
             "name": "bump",
-            "docs": [ "PDA bump" ],
+            "docs": ["PDA bump"],
             "type": "u8"
           }
         ]
@@ -1476,23 +1476,23 @@
     },
     {
       "name": "ArbitratorVote",
-      "docs": [ "Individual arbitrator vote on a dispute." ],
+      "docs": ["Individual arbitrator vote on a dispute."],
       "type": {
         "kind": "struct",
         "fields": [
           {
             "name": "dispute",
-            "docs": [ "Dispute being voted on" ],
+            "docs": ["Dispute being voted on"],
             "type": "pubkey"
           },
           {
             "name": "arbitrator",
-            "docs": [ "Voter's pubkey" ],
+            "docs": ["Voter's pubkey"],
             "type": "pubkey"
           },
           {
             "name": "ruling",
-            "docs": [ "Voter's ruling" ],
+            "docs": ["Voter's ruling"],
             "type": {
               "defined": {
                 "name": "Ruling"
@@ -1501,12 +1501,12 @@
           },
           {
             "name": "voted_at",
-            "docs": [ "When vote was cast" ],
+            "docs": ["When vote was cast"],
             "type": "i64"
           },
           {
             "name": "bump",
-            "docs": [ "PDA bump" ],
+            "docs": ["PDA bump"],
             "type": "u8"
           }
         ]
@@ -1523,17 +1523,17 @@
         "fields": [
           {
             "name": "authority",
-            "docs": [ "Creator wallet" ],
+            "docs": ["Creator wallet"],
             "type": "pubkey"
           },
           {
             "name": "task_count",
-            "docs": [ "Creator-local sequential task counter" ],
+            "docs": ["Creator-local sequential task counter"],
             "type": "u64"
           },
           {
             "name": "bump",
-            "docs": [ "PDA bump" ],
+            "docs": ["PDA bump"],
             "type": "u8"
           }
         ]
@@ -1555,7 +1555,7 @@
           {
             "name": "deliverable_hash",
             "type": {
-              "array": [ "u8", 32 ]
+              "array": ["u8", 32]
             }
           }
         ]
@@ -1563,23 +1563,23 @@
     },
     {
       "name": "Dispute",
-      "docs": [ "Dispute record for a task." ],
+      "docs": ["Dispute record for a task."],
       "type": {
         "kind": "struct",
         "fields": [
           {
             "name": "task",
-            "docs": [ "Task being disputed" ],
+            "docs": ["Task being disputed"],
             "type": "pubkey"
           },
           {
             "name": "initiator",
-            "docs": [ "Who opened the dispute" ],
+            "docs": ["Who opened the dispute"],
             "type": "pubkey"
           },
           {
             "name": "reason",
-            "docs": [ "Reason category" ],
+            "docs": ["Reason category"],
             "type": {
               "defined": {
                 "name": "DisputeReason"
@@ -1588,14 +1588,14 @@
           },
           {
             "name": "evidence_hash",
-            "docs": [ "Evidence content hash" ],
+            "docs": ["Evidence content hash"],
             "type": {
-              "array": [ "u8", 32 ]
+              "array": ["u8", 32]
             }
           },
           {
             "name": "status",
-            "docs": [ "Current dispute status" ],
+            "docs": ["Current dispute status"],
             "type": {
               "defined": {
                 "name": "DisputeStatus"
@@ -1604,32 +1604,32 @@
           },
           {
             "name": "votes_for_creator",
-            "docs": [ "Votes for creator wins" ],
+            "docs": ["Votes for creator wins"],
             "type": "u16"
           },
           {
             "name": "votes_for_agent",
-            "docs": [ "Votes for agent wins" ],
+            "docs": ["Votes for agent wins"],
             "type": "u16"
           },
           {
             "name": "votes_for_split",
-            "docs": [ "Votes for 50/50 split" ],
+            "docs": ["Votes for 50/50 split"],
             "type": "u16"
           },
           {
             "name": "opened_at",
-            "docs": [ "When dispute was opened" ],
+            "docs": ["When dispute was opened"],
             "type": "i64"
           },
           {
             "name": "resolved_at",
-            "docs": [ "When dispute was resolved (0 if open)" ],
+            "docs": ["When dispute was resolved (0 if open)"],
             "type": "i64"
           },
           {
             "name": "ruling",
-            "docs": [ "Final ruling" ],
+            "docs": ["Final ruling"],
             "type": {
               "defined": {
                 "name": "Ruling"
@@ -1638,7 +1638,7 @@
           },
           {
             "name": "bump",
-            "docs": [ "PDA bump" ],
+            "docs": ["PDA bump"],
             "type": "u8"
           }
         ]
@@ -1736,73 +1736,73 @@
     },
     {
       "name": "Platform",
-      "docs": [ "Global platform configuration. Singleton PDA." ],
+      "docs": ["Global platform configuration. Singleton PDA."],
       "type": {
         "kind": "struct",
         "fields": [
           {
             "name": "authority",
-            "docs": [ "Platform admin who can update config" ],
+            "docs": ["Platform admin who can update config"],
             "type": "pubkey"
           },
           {
             "name": "fee_bps",
-            "docs": [ "Platform fee in basis points (e.g. 250 = 2.5%)" ],
+            "docs": ["Platform fee in basis points (e.g. 250 = 2.5%)"],
             "type": "u16"
           },
           {
             "name": "min_bounty_lamports",
-            "docs": [ "Minimum task bounty in lamports" ],
+            "docs": ["Minimum task bounty in lamports"],
             "type": "u64"
           },
           {
             "name": "treasury",
-            "docs": [ "Fee recipient wallet" ],
+            "docs": ["Fee recipient wallet"],
             "type": "pubkey"
           },
           {
             "name": "task_count",
-            "docs": [ "Global sequential task counter" ],
+            "docs": ["Global sequential task counter"],
             "type": "u64"
           },
           {
             "name": "template_count",
-            "docs": [ "Global sequential template counter" ],
+            "docs": ["Global sequential template counter"],
             "type": "u64"
           },
           {
             "name": "total_settled_lamports",
-            "docs": [ "Cumulative settled volume in lamports" ],
+            "docs": ["Cumulative settled volume in lamports"],
             "type": "u64"
           },
           {
             "name": "dispute_voting_period",
-            "docs": [ "Dispute voting period in seconds" ],
+            "docs": ["Dispute voting period in seconds"],
             "type": "i64"
           },
           {
             "name": "dispute_min_votes",
-            "docs": [ "Minimum votes required to resolve a dispute" ],
+            "docs": ["Minimum votes required to resolve a dispute"],
             "type": "u8"
           },
           {
             "name": "min_voter_reputation",
-            "docs": [ "Minimum reputation score required to vote on disputes" ],
+            "docs": ["Minimum reputation score required to vote on disputes"],
             "type": "i64"
           },
           {
             "name": "claim_grace_period",
-            "docs": [ "Grace period (seconds) after deadline for Claimed tasks before expiry" ],
+            "docs": ["Grace period (seconds) after deadline for Claimed tasks before expiry"],
             "type": "i64"
           },
           {
             "name": "is_paused",
-            "docs": [ "Whether the platform is paused (emergency stop)" ],
+            "docs": ["Whether the platform is paused (emergency stop)"],
             "type": "bool"
           },
           {
             "name": "bump",
-            "docs": [ "PDA bump" ],
+            "docs": ["PDA bump"],
             "type": "u8"
           }
         ]
@@ -1864,7 +1864,7 @@
           {
             "name": "reason_hash",
             "type": {
-              "array": [ "u8", 32 ]
+              "array": ["u8", 32]
             }
           }
         ]
@@ -1872,28 +1872,28 @@
     },
     {
       "name": "Task",
-      "docs": [ "Individual task with escrowed SOL bounty." ],
+      "docs": ["Individual task with escrowed SOL bounty."],
       "type": {
         "kind": "struct",
         "fields": [
           {
             "name": "creator",
-            "docs": [ "Task creator (bounty depositor)" ],
+            "docs": ["Task creator (bounty depositor)"],
             "type": "pubkey"
           },
           {
             "name": "task_index",
-            "docs": [ "Sequential task index (global)" ],
+            "docs": ["Sequential task index (global)"],
             "type": "u64"
           },
           {
             "name": "bounty_lamports",
-            "docs": [ "Bounty amount in lamports (held in this PDA)" ],
+            "docs": ["Bounty amount in lamports (held in this PDA)"],
             "type": "u64"
           },
           {
             "name": "status",
-            "docs": [ "Current task status" ],
+            "docs": ["Current task status"],
             "type": {
               "defined": {
                 "name": "TaskStatus"
@@ -1902,61 +1902,61 @@
           },
           {
             "name": "agent",
-            "docs": [ "Assigned agent (Pubkey::default if unclaimed)" ],
+            "docs": ["Assigned agent (Pubkey::default if unclaimed)"],
             "type": "pubkey"
           },
           {
             "name": "deadline",
-            "docs": [ "Unix timestamp deadline" ],
+            "docs": ["Unix timestamp deadline"],
             "type": "i64"
           },
           {
             "name": "created_at",
-            "docs": [ "Creation timestamp" ],
+            "docs": ["Creation timestamp"],
             "type": "i64"
           },
           {
             "name": "settled_at",
-            "docs": [ "Settlement timestamp (0 if unsettled)" ],
+            "docs": ["Settlement timestamp (0 if unsettled)"],
             "type": "i64"
           },
           {
             "name": "reputation_reward",
-            "docs": [ "Reputation reward on task approval" ],
+            "docs": ["Reputation reward on task approval"],
             "type": "i64"
           },
           {
             "name": "title",
-            "docs": [ "Task title (max 64 chars)" ],
+            "docs": ["Task title (max 64 chars)"],
             "type": "string"
           },
           {
             "name": "description_hash",
-            "docs": [ "IPFS/Arweave content hash of full description" ],
+            "docs": ["IPFS/Arweave content hash of full description"],
             "type": {
-              "array": [ "u8", 32 ]
+              "array": ["u8", 32]
             }
           },
           {
             "name": "deliverable_hash",
-            "docs": [ "Content hash of submitted deliverable" ],
+            "docs": ["Content hash of submitted deliverable"],
             "type": {
-              "array": [ "u8", 32 ]
+              "array": ["u8", 32]
             }
           },
           {
             "name": "template_index",
-            "docs": [ "Template index (1-indexed, 0 = no template)" ],
+            "docs": ["Template index (1-indexed, 0 = no template)"],
             "type": "u64"
           },
           {
             "name": "rejection_count",
-            "docs": [ "Number of times this task's submission has been rejected" ],
+            "docs": ["Number of times this task's submission has been rejected"],
             "type": "u8"
           },
           {
             "name": "bump",
-            "docs": [ "PDA bump" ],
+            "docs": ["PDA bump"],
             "type": "u8"
           }
         ]
@@ -2137,45 +2137,45 @@
     },
     {
       "name": "TaskTemplate",
-      "docs": [ "Reusable task template." ],
+      "docs": ["Reusable task template."],
       "type": {
         "kind": "struct",
         "fields": [
           {
             "name": "creator",
-            "docs": [ "Template creator" ],
+            "docs": ["Template creator"],
             "type": "pubkey"
           },
           {
             "name": "template_index",
-            "docs": [ "Sequential template index" ],
+            "docs": ["Sequential template index"],
             "type": "u64"
           },
           {
             "name": "title",
-            "docs": [ "Template title" ],
+            "docs": ["Template title"],
             "type": "string"
           },
           {
             "name": "description_hash",
-            "docs": [ "Description content hash" ],
+            "docs": ["Description content hash"],
             "type": {
-              "array": [ "u8", 32 ]
+              "array": ["u8", 32]
             }
           },
           {
             "name": "default_bounty_lamports",
-            "docs": [ "Default bounty amount" ],
+            "docs": ["Default bounty amount"],
             "type": "u64"
           },
           {
             "name": "times_used",
-            "docs": [ "Number of tasks created from this template" ],
+            "docs": ["Number of tasks created from this template"],
             "type": "u64"
           },
           {
             "name": "category",
-            "docs": [ "Task category" ],
+            "docs": ["Task category"],
             "type": {
               "defined": {
                 "name": "TaskCategory"
@@ -2184,12 +2184,12 @@
           },
           {
             "name": "is_active",
-            "docs": [ "Whether template is active" ],
+            "docs": ["Whether template is active"],
             "type": "bool"
           },
           {
             "name": "bump",
-            "docs": [ "PDA bump" ],
+            "docs": ["PDA bump"],
             "type": "u8"
           }
         ]

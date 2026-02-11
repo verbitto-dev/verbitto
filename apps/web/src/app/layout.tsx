@@ -1,11 +1,10 @@
 import type { Metadata, Viewport } from 'next'
 import type React from 'react'
-
+import { Toaster } from 'sonner'
 import { Providers } from '@/components/providers'
 import { META_THEME_COLORS, siteConfig } from '@/config/site'
 import { fontMono, fontSans } from '@/lib/fonts'
 import { cn } from '@/lib/utils'
-import { Toaster } from 'sonner'
 
 import '@/app/globals.css'
 

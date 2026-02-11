@@ -21,12 +21,7 @@ export function WalletButton() {
   // Prevent hydration mismatch by rendering consistent initial state
   if (!mounted) {
     return (
-      <Button
-        variant="brand"
-        size="sm"
-        className="rounded-lg gap-1.5"
-        disabled
-      >
+      <Button variant="brand" size="sm" className="rounded-lg gap-1.5" disabled>
         <Icons.wallet className="size-3.5" />
         Connect
       </Button>

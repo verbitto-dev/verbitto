@@ -1,10 +1,10 @@
 'use client'
 
+import { AnchorProvider, BN, Program } from '@coral-xyz/anchor'
 import { useAnchorWallet, useConnection, useWallet } from '@solana/wallet-adapter-react'
 import { type PublicKey, SystemProgram } from '@solana/web3.js'
-import { Program, AnchorProvider, BN } from '@coral-xyz/anchor'
 import { useState } from 'react'
-
+import { Icons } from '@/components/icons'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -17,9 +17,8 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { Icons } from '@/components/icons'
-import { PROGRAM_ID, getPlatformPda, getTaskPda, getCreatorCounterPda } from '@/lib/program'
 import { storeDescription } from '@/lib/api'
+import { getCreatorCounterPda, getPlatformPda, getTaskPda, PROGRAM_ID } from '@/lib/program'
 import IDL from '../../public/idl.json'
 
 interface CreateTaskDialogProps {
@@ -65,21 +64,19 @@ export function CreateTaskDialog({ open, onOpenChange, onSuccess }: CreateTaskDi
       console.log('💵 Required:', (requiredBounty + estimatedFees) / 1e9, 'SOL')
 
       if (balance < requiredBounty + estimatedFees) {
-        setError(`Insufficient balance. You need at least ${(requiredBounty + estimatedFees) / 1e9} SOL`)
+        setError(
+          `Insufficient balance. You need at least ${(requiredBounty + estimatedFees) / 1e9} SOL`
+        )
         setLoading(false)
         return
       }
 
       // Create provider with explicit options
-      const provider = new AnchorProvider(
-        connection,
-        anchorWallet,
-        {
-          commitment: 'confirmed',
-          preflightCommitment: 'confirmed',
-          skipPreflight: false,
-        }
-      )
+      const provider = new AnchorProvider(connection, anchorWallet, {
+        commitment: 'confirmed',
+        preflightCommitment: 'confirmed',
+        skipPreflight: false,
+      })
 
       // Create program instance
       const program = new Program(IDL, provider)
@@ -195,16 +192,24 @@ export function CreateTaskDialog({ open, onOpenChange, onSuccess }: CreateTaskDi
       // User friendly error messages
       if (err.message?.includes('User rejected') || err.code === 4001) {
         setError('Transaction was rejected. Please approve the transaction in your Phantom wallet.')
-      } else if (err.message?.includes('Wallet not ready') || err.message?.includes('wallet is not connected')) {
+      } else if (
+        err.message?.includes('Wallet not ready') ||
+        err.message?.includes('wallet is not connected')
+      ) {
         setError('Wallet connection error. Please reconnect your wallet and try again.')
-      } else if (err.message?.includes('Insufficient balance') || err.message?.includes('insufficient funds')) {
+      } else if (
+        err.message?.includes('Insufficient balance') ||
+        err.message?.includes('insufficient funds')
+      ) {
         setError('Insufficient SOL balance. Please add more SOL to your wallet.')
       } else if (err.message?.includes('simulation failed')) {
         setError(`Transaction would fail: ${err.message}. Check console for details.`)
       } else if (err.code === -32603) {
         setError('Wallet RPC error. Please refresh the page and try again.')
       } else {
-        setError(`Failed to create task: ${err.message || 'Unknown error'}. Check browser console for details.`)
+        setError(
+          `Failed to create task: ${err.message || 'Unknown error'}. Check browser console for details.`
+        )
       }
     } finally {
       setLoading(false)
@@ -292,9 +297,7 @@ export function CreateTaskDialog({ open, onOpenChange, onSuccess }: CreateTaskDi
           </div>
 
           {error && (
-            <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
-              {error}
-            </div>
+            <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">{error}</div>
           )}
 
           <DialogFooter>

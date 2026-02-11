@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { Icons } from '@/components/icons'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { lamportsToSol, usePlatform, useTasks, useIndexerStats } from '@/hooks/use-program'
+import { lamportsToSol, useIndexerStats, usePlatform, useTasks } from '@/hooks/use-program'
 
 export function ExplorerStats() {
   const { platform, loading: pLoading } = usePlatform()

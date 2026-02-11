@@ -1,8 +1,8 @@
 import Link from 'next/link'
 
 import { Icons } from '@/components/icons'
-import { siteConfig } from '@/config/site'
 import { ModeSwitcher } from '@/components/mode-switcher'
+import { siteConfig } from '@/config/site'
 
 export function SiteFooter() {
   return (

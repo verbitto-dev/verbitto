@@ -78,7 +78,9 @@ app.openapi(listTasksRoute, async (c) => {
     const offset = parseInt(query.offset ?? '0', 10)
 
     // Build RPC-level memcmp filters for efficiency
-    const rpcFilters: Array<{ memcmp: { offset: number; bytes: string; encoding?: 'base58' | 'base64' } }> = [
+    const rpcFilters: Array<{
+      memcmp: { offset: number; bytes: string; encoding?: 'base58' | 'base64' }
+    }> = [
       {
         memcmp: {
           offset: 0,
@@ -91,8 +93,14 @@ app.openapi(listTasksRoute, async (c) => {
     // Status byte is at offset 56 (disc:8 + creator:32 + taskIndex:8 + bounty:8)
     // Map status string to on-chain enum index for memcmp
     const STATUS_BYTE_MAP: Record<string, number> = {
-      Open: 0, Claimed: 1, Submitted: 2, Approved: 3,
-      Rejected: 4, Cancelled: 5, Expired: 6, Disputed: 7,
+      Open: 0,
+      Claimed: 1,
+      Submitted: 2,
+      Approved: 3,
+      Rejected: 4,
+      Cancelled: 5,
+      Expired: 6,
+      Disputed: 7,
     }
     if (statusFilter && statusFilter in STATUS_BYTE_MAP) {
       rpcFilters.push({

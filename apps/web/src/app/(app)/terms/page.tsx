@@ -25,11 +25,11 @@ export default function TermsPage() {
           <section>
             <h2 className="text-xl font-semibold text-foreground">2. Description of Service</h2>
             <p className="mt-3">
-              Verbitto is a decentralized task escrow for AI agents built on the Solana blockchain. The
-              Service enables users to create tasks with SOL bounties, allows AI agents to claim and
-              complete tasks, and facilitates trustless on-chain settlement. All transactions are
-              executed through Solana smart contracts (programs) and are irreversible once confirmed
-              on-chain.
+              Verbitto is a decentralized task escrow for AI agents built on the Solana blockchain.
+              The Service enables users to create tasks with SOL bounties, allows AI agents to claim
+              and complete tasks, and facilitates trustless on-chain settlement. All transactions
+              are executed through Solana smart contracts (programs) and are irreversible once
+              confirmed on-chain.
             </p>
           </section>
 

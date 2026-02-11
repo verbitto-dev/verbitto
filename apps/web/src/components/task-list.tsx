@@ -3,25 +3,48 @@
 import { useWallet } from '@solana/wallet-adapter-react'
 import { useWalletModal } from '@solana/wallet-adapter-react-ui'
 import { PublicKey } from '@solana/web3.js'
-import { useEffect, useState, useMemo, useRef, useCallback } from 'react'
-import { useSearchParams, useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 
 import { CreateTaskDialog } from '@/components/create-task-dialog'
-import { TaskDetailDialog } from '@/components/task-detail-dialog'
 import { Icons } from '@/components/icons'
+import { TaskDetailDialog } from '@/components/task-detail-dialog'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
-import { formatDeadline, lamportsToSol, shortKey, useTasks, useHistoricalTasks, type HistoricalTask } from '@/hooks/use-program'
+import {
+  formatDeadline,
+  type HistoricalTask,
+  lamportsToSol,
+  shortKey,
+  useHistoricalTasks,
+  useTasks,
+} from '@/hooks/use-program'
 import { triggerBackfill } from '@/lib/api'
-import { STATUS_VARIANTS, type TaskStatus, type TaskAccount } from '@/lib/program'
+import { STATUS_VARIANTS, type TaskAccount, type TaskStatus } from '@/lib/program'
 
 const TASKS_PER_PAGE = 9
 
-const TASK_STATUSES: (TaskStatus | 'All')[] = ['All', 'Open', 'Claimed', 'Submitted', 'Approved', 'Rejected', 'Cancelled', 'Expired', 'Disputed']
+const TASK_STATUSES: (TaskStatus | 'All')[] = [
+  'All',
+  'Open',
+  'Claimed',
+  'Submitted',
+  'Approved',
+  'Rejected',
+  'Cancelled',
+  'Expired',
+  'Disputed',
+]
 
 /** Terminal statuses whose PDA accounts are closed — data comes from history index */
 const TERMINAL_STATUSES = new Set(['Approved', 'Cancelled', 'Expired'])
@@ -39,7 +62,7 @@ function historicalToTaskAccount(h: HistoricalTask): TaskAccount {
   const EMPTY_KEY = PublicKey.default
 
   // Convert descriptionHash from hex string to Uint8Array
-  let descriptionHashArray = new Uint8Array(32)
+  const descriptionHashArray = new Uint8Array(32)
   if (h.descriptionHash && h.descriptionHash.length === 64) {
     try {
       for (let i = 0; i < 32; i++) {
@@ -51,12 +74,30 @@ function historicalToTaskAccount(h: HistoricalTask): TaskAccount {
   }
 
   return {
-    publicKey: (() => { try { return new PublicKey(h.address) } catch { return EMPTY_KEY } })(),
-    creator: (() => { try { return new PublicKey(h.creator) } catch { return EMPTY_KEY } })(),
+    publicKey: (() => {
+      try {
+        return new PublicKey(h.address)
+      } catch {
+        return EMPTY_KEY
+      }
+    })(),
+    creator: (() => {
+      try {
+        return new PublicKey(h.creator)
+      } catch {
+        return EMPTY_KEY
+      }
+    })(),
     taskIndex: BigInt(h.taskIndex || '0'),
     bountyLamports: BigInt(h.bountyLamports || '0'),
     status: FINAL_STATUS_MAP[h.finalStatus] ?? 'Approved',
-    agent: (() => { try { return new PublicKey(h.agent) } catch { return EMPTY_KEY } })(),
+    agent: (() => {
+      try {
+        return new PublicKey(h.agent)
+      } catch {
+        return EMPTY_KEY
+      }
+    })(),
     deadline: BigInt(h.deadline || 0),
     createdAt: BigInt(h.createdAt || 0),
     settledAt: BigInt(h.closedAt || 0),
@@ -97,7 +138,11 @@ export function TaskList() {
   const { publicKey } = useWallet()
   const { setVisible } = useWalletModal()
   const { tasks, loading, error, refetch } = useTasks()
-  const { tasks: historicalTasks, loading: histLoading, refetch: refetchHist } = useHistoricalTasks()
+  const {
+    tasks: historicalTasks,
+    loading: histLoading,
+    refetch: refetchHist,
+  } = useHistoricalTasks()
   const [mounted, setMounted] = useState(false)
   const [createDialogOpen, setCreateDialogOpen] = useState(false)
   const [selectedTask, setSelectedTask] = useState<TaskAccount | null>(null)
@@ -123,7 +168,7 @@ export function TaskList() {
   // Merge live on-chain tasks with historical (closed) tasks
   const filteredTasks = useMemo(() => {
     // Start with on-chain tasks
-    let onChain = tasks
+    const onChain = tasks
 
     // Convert historical tasks to TaskAccount shape
     const historicalAsAccounts = historicalTasks.map(historicalToTaskAccount)
@@ -131,7 +176,7 @@ export function TaskList() {
     // Deduplicate: if a task address exists on-chain, prefer the live version
     const onChainAddrs = new Set(onChain.map((t) => t.publicKey.toBase58()))
     const uniqueHistorical = historicalAsAccounts.filter(
-      (h) => !onChainAddrs.has(h.publicKey.toBase58()),
+      (h) => !onChainAddrs.has(h.publicKey.toBase58())
     )
 
     // Merge
@@ -227,7 +272,9 @@ export function TaskList() {
     try {
       const result = await triggerBackfill(500)
       if (result.eventsIngested > 0) {
-        toast.success(`Synced ${result.eventsIngested} events (${result.signaturesScanned} txns scanned)`)
+        toast.success(
+          `Synced ${result.eventsIngested} events (${result.signaturesScanned} txns scanned)`
+        )
         refetchHist()
       } else {
         toast.info(`Scanned ${result.signaturesScanned} transactions — no new events found`)
@@ -297,7 +344,10 @@ export function TaskList() {
             variant="outline"
             size="icon"
             className="rounded-lg"
-            onClick={() => { refetch(); refetchHist() }}
+            onClick={() => {
+              refetch()
+              refetchHist()
+            }}
             title="Refresh"
           >
             <Icons.refresh className="size-4" />
@@ -311,15 +361,20 @@ export function TaskList() {
               disabled={syncing}
               onClick={handleSyncHistory}
             >
-              {syncing
-                ? <Icons.loader className="mr-1 size-4 animate-spin" />
-                : <Icons.databaseSync className="mr-1 size-4" />
-              }
+              {syncing ? (
+                <Icons.loader className="mr-1 size-4 animate-spin" />
+              ) : (
+                <Icons.databaseSync className="mr-1 size-4" />
+              )}
               {syncing ? 'Syncing…' : 'Sync History'}
             </Button>
             <div className="absolute right-0 top-full mt-2 w-72 rounded-lg border bg-popover p-3 text-xs text-muted-foreground shadow-md opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50">
               <p className="font-medium text-foreground mb-1">Sync closed task history</p>
-              <p>Tasks in terminal states (Cancelled, Expired, Approved) have their on-chain PDA accounts closed and cannot be queried directly. Click to scan transaction history and recover this data.</p>
+              <p>
+                Tasks in terminal states (Cancelled, Expired, Approved) have their on-chain PDA
+                accounts closed and cannot be queried directly. Click to scan transaction history
+                and recover this data.
+              </p>
             </div>
           </div>
         </div>
@@ -365,7 +420,10 @@ export function TaskList() {
               >
                 <CardHeader className="flex-1">
                   <div className="flex items-start justify-between gap-2 mb-2">
-                    <Badge variant={STATUS_VARIANTS[task.status as TaskStatus] ?? 'outline'} className="text-xs">
+                    <Badge
+                      variant={STATUS_VARIANTS[task.status as TaskStatus] ?? 'outline'}
+                      className="text-xs"
+                    >
                       {task.status}
                     </Badge>
                     {task.templateIndex > 0n && (
@@ -426,19 +484,26 @@ export function TaskList() {
           <CardContent className="flex flex-col items-center justify-center py-24">
             <Icons.listChecks className="size-12 text-muted-foreground/50 mb-4" />
             <CardTitle className="text-center mb-2">
-              {statusFilter !== 'All' || templateFilter ? 'No Tasks Match Filters' : 'No Tasks Found'}
+              {statusFilter !== 'All' || templateFilter
+                ? 'No Tasks Match Filters'
+                : 'No Tasks Found'}
             </CardTitle>
             <CardDescription className="text-center max-w-md">
               {statusFilter !== 'All' || templateFilter ? (
                 <>
                   No tasks found with the current filters.
                   {TERMINAL_STATUSES.has(statusFilter) && (
-                    <> {statusFilter} tasks have their on-chain PDA accounts closed. Sync from transaction history to recover.</>
+                    <>
+                      {' '}
+                      {statusFilter} tasks have their on-chain PDA accounts closed. Sync from
+                      transaction history to recover.
+                    </>
                   )}
                 </>
               ) : (
                 <>
-                  No tasks exist on-chain yet. Connect your wallet and create the first task on devnet!
+                  No tasks exist on-chain yet. Connect your wallet and create the first task on
+                  devnet!
                 </>
               )}
             </CardDescription>
@@ -449,19 +514,16 @@ export function TaskList() {
                 onClick={handleSyncHistory}
                 className="mt-4 rounded-lg"
               >
-                {syncing
-                  ? <Icons.loader className="mr-1 size-4 animate-spin" />
-                  : <Icons.databaseSync className="mr-1 size-4" />
-                }
+                {syncing ? (
+                  <Icons.loader className="mr-1 size-4 animate-spin" />
+                ) : (
+                  <Icons.databaseSync className="mr-1 size-4" />
+                )}
                 {syncing ? 'Syncing…' : 'Sync History'}
               </Button>
             )}
             {(statusFilter !== 'All' || templateFilter) && (
-              <Button
-                variant="outline"
-                onClick={handleClearFilters}
-                className="mt-4 rounded-lg"
-              >
+              <Button variant="outline" onClick={handleClearFilters} className="mt-4 rounded-lg">
                 <Icons.close className="mr-2 size-4" />
                 Clear Filters
               </Button>
