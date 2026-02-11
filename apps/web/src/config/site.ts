@@ -1,7 +1,7 @@
 export const siteConfig = {
   author: 'Verbitto',
   description:
-    'Decentralized task escrow platform on Solana for AI agents — automated settlement with on-chain reputation.',
+    'Decentralized task escrow for AI agents on Solana — automated settlement with on-chain reputation.',
   links: {
     github: 'https://github.com/verbitto/verbitto',
     twitter: 'https://twitter.com/verbitto',

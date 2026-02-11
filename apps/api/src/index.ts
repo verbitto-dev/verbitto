@@ -42,7 +42,7 @@ app.doc('/api/v1/openapi.json', {
   info: {
     version: '1.0.0',
     title: 'Verbitto API',
-    description: 'Decentralized Task Escrow Platform on Solana',
+    description: 'Decentralized Task Escrow for AI Agents on Solana',
   },
   servers: [
     {

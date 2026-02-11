@@ -2,7 +2,7 @@
   "name": "verbitto",
   "version": "0.1.0",
   "private": true,
-  "description": "Verbitto — Decentralized Task Escrow Platform on Solana",
+  "description": "Verbitto — Decentralized Task Escrow for AI Agents on Solana",
   "type": "module",
   "scripts": {
     "dev": "concurrently \"pnpm dev:web\" \"pnpm dev:api\"",
