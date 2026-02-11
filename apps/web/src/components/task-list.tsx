@@ -67,8 +67,6 @@ function historicalToTaskAccount(h: HistoricalTask): TaskAccount {
     templateIndex: 0n,
     rejectionCount: 0,
     bump: 0,
-    // Store description content for later use
-    _descriptionContent: h.description,
   }
 }
 

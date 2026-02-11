@@ -73,9 +73,6 @@ const taskEventsMap = new Map<string, IndexedEvent[]>()
 /** task address → title (from instruction data or DB) */
 const titleMap = new Map<string, string>()
 
-/** task address → description hash (hex) */
-const descHashMap = new Map<string, string>()
-
 // ────────────────────────────────────────────────────────────
 // Load from DB on startup
 // ────────────────────────────────────────────────────────────
@@ -111,15 +108,6 @@ export async function loadStore(): Promise<void> {
             titleMap.set(row.taskAddress, row.title)
         }
         console.log(`[EventStore] Loaded ${titleRows.length} task titles from DB`)
-
-        // Load historical tasks to get description hashes
-        const histRows = await db.select().from(historicalTasks)
-        for (const row of histRows) {
-            if (row.descriptionHash) {
-                descHashMap.set(row.address, row.descriptionHash)
-            }
-        }
-        console.log(`[EventStore] Loaded ${descHashMap.size} description hashes from DB`)
     } catch (err) {
         console.error('[EventStore] Failed to load from DB:', err)
     }
@@ -194,10 +182,39 @@ function projectHistoricalTask(taskAddr: string, terminalEvent: IndexedEvent): H
 
     const finalStatus = mapTerminalStatus(terminalEvent.eventName)
 
+    // Extract descriptionHash from TaskCreated event (it's an array of u8)
+    let descriptionHash = ''
+    if (createdEvt?.data.description_hash) {
+        try {
+            // The description_hash in event data might be a JSON stringified array or comma-separated string
+            const hashData = createdEvt.data.description_hash
+            let hashArray: number[] = []
+
+            if (typeof hashData === 'string') {
+                // Try parsing as JSON array first
+                try {
+                    hashArray = JSON.parse(hashData)
+                } catch {
+                    // If not JSON, try comma-separated
+                    hashArray = hashData.split(',').map(s => parseInt(s.trim(), 10))
+                }
+            } else if (Array.isArray(hashData)) {
+                hashArray = hashData
+            }
+
+            // Convert to hex string
+            descriptionHash = hashArray
+                .map(b => b.toString(16).padStart(2, '0'))
+                .join('')
+        } catch (err) {
+            console.warn(`[EventStore] Failed to parse description_hash for task ${taskAddr}:`, err)
+        }
+    }
+
     return {
         address: taskAddr,
         title: titleMap.get(taskAddr) ?? '',
-        descriptionHash: descHashMap.get(taskAddr) ?? '',
+        descriptionHash,
         creator: createdEvt?.data.creator ?? terminalEvent.data.creator ?? '',
         taskIndex: createdEvt?.data.task_index ?? '',
         bountyLamports: createdEvt?.data.bounty_lamports ?? '0',
@@ -268,29 +285,7 @@ export async function rebuildHistoricalTasks(): Promise<void> {
 }
 
 /**
- * Store a task title and descriptionHash extracted from instruction data.
- */
-export async function setTaskData(
-    taskAddr: string,
-    title: string,
-    descriptionHash: string,
-): Promise<void> {
-    titleMap.set(taskAddr, title)
-    descHashMap.set(taskAddr, descriptionHash)
-    try {
-        await db.insert(taskTitles).values({ taskAddress: taskAddr, title })
-            .onConflictDoUpdate({
-                target: taskTitles.taskAddress,
-                set: { title },
-            })
-    } catch (err) {
-        console.error('[EventStore] Failed to save task title:', err)
-    }
-}
-
-/**
  * Store a task title extracted from instruction data.
- * @deprecated Use setTaskData instead to also store descriptionHash
  */
 export async function setTaskTitle(taskAddr: string, title: string): Promise<void> {
     titleMap.set(taskAddr, title)
