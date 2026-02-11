@@ -19,7 +19,7 @@ export function parseArgs(): CLIOptions {
   const args = process.argv.slice(2)
   const options: CLIOptions = {
     port: parseInt(process.env.PORT || '3344', 10),
-    apiUrl: process.env.API_URL || 'http://localhost:3001/api/v1',
+    apiUrl: process.env.API_URL || 'http://localhost:3001/v1',
     wallet: process.env.WALLET_PATH || null,
     help: false,
     version: false,
@@ -61,6 +61,6 @@ export function parseArgs(): CLIOptions {
   return options
 }
 
-export function showHelp(): void {}
+export function showHelp(): void { }
 
-export function showVersion(): void {}
+export function showVersion(): void { }

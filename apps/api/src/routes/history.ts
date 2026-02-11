@@ -5,9 +5,9 @@
  * (Approved, Cancelled, Expired, DisputeResolved). The data is reconstructed
  * from Anchor events ingested via the Helius webhook.
  *
- * GET /api/v1/history/tasks          — paginated list of closed tasks
- * GET /api/v1/history/tasks/:address — single historical task with events
- * GET /api/v1/history/stats          — indexer statistics
+ * GET /v1/history/tasks          — paginated list of closed tasks
+ * GET /v1/history/tasks/:address — single historical task with events
+ * GET /v1/history/stats          — indexer statistics
  */
 
 import { createRoute, OpenAPIHono } from '@hono/zod-openapi'

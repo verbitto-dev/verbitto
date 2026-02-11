@@ -16,7 +16,7 @@ npx verbitto-signer --wallet ~/.config/solana/id.json
 npx verbitto-signer \
   --port 3344 \
   --wallet ~/my-wallet.json \
-  --api-url https://api-devnet.verbitto.com/api/v1
+  --api-url https://api-devnet.verbitto.com/v1
 ```
 
 ### Option 2: Global Installation
@@ -46,7 +46,7 @@ EXAMPLES:
   npx verbitto-signer --wallet ./wallet.json
 
   # Custom port and API
-  npx verbitto-signer -p 8080 -w ./wallet.json -a https://api.verbitto.io/api/v1
+  npx verbitto-signer -p 8080 -w ./wallet.json -a https://api.verbitto.io/v1
 
   # Using environment variables
   WALLET_PATH=./wallet.json PORT=8080 npx verbitto-signer
@@ -103,11 +103,11 @@ curl "http://localhost:3344/verbitto/tasks?status=Open&minBounty=0.1"
 
 ## Environment Variables
 
-| Variable      | Default                        | Description           |
-| ------------- | ------------------------------ | --------------------- |
-| `API_URL`     | `http://localhost:3001/api/v1` | Verbitto API endpoint |
-| `PORT`        | `3344`                         | HTTP server port      |
-| `WALLET_PATH` | (none)                         | Wallet keypair path   |
+| Variable      | Default                    | Description           |
+| ------------- | -------------------------- | --------------------- |
+| `API_URL`     | `http://localhost:3001/v1` | Verbitto API endpoint |
+| `PORT`        | `3344`                     | HTTP server port      |
+| `WALLET_PATH` | (none)                     | Wallet keypair path   |
 
 ## Supported Actions
 

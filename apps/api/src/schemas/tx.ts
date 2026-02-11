@@ -42,7 +42,7 @@ export const BuildTransactionResponseSchema = z
     }),
     message: z.string().openapi({
       example:
-        'Unsigned registerAgent transaction. Sign with your wallet, then POST to /api/v1/tx/send.',
+        'Unsigned registerAgent transaction. Sign with your wallet, then POST to /v1/tx/send.',
     }),
   })
   .openapi('BuildTransactionResponse')

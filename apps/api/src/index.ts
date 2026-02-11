@@ -66,17 +66,17 @@ app.get('/health', (c) => {
 })
 
 // API Routes
-app.route('/api/v1/platform', platformRoutes)
-app.route('/api/v1/tasks', tasksRoutes)
-app.route('/api/v1/agents', agentsRoutes)
-app.route('/api/v1/tx', txRoutes)
-app.route('/api/v1/idl', idlRoutes)
-app.route('/api/v1/webhook', webhookRoutes)
-app.route('/api/v1/history', historyRoutes)
-app.route('/api/v1/descriptions', descriptionsRoutes)
+app.route('/v1/platform', platformRoutes)
+app.route('/v1/tasks', tasksRoutes)
+app.route('/v1/agents', agentsRoutes)
+app.route('/v1/tx', txRoutes)
+app.route('/v1/idl', idlRoutes)
+app.route('/v1/webhook', webhookRoutes)
+app.route('/v1/history', historyRoutes)
+app.route('/v1/descriptions', descriptionsRoutes)
 
 // OpenAPI JSON
-app.doc('/api/v1/openapi.json', {
+app.doc('/v1/openapi.json', {
   openapi: '3.0.0',
   info: {
     version: '1.0.0',
@@ -92,11 +92,11 @@ app.doc('/api/v1/openapi.json', {
 })
 
 // Swagger UI
-app.get('/api/v1/docs', swaggerUI({ url: '/api/v1/openapi.json' }))
+app.get('/v1/docs', swaggerUI({ url: '/v1/openapi.json' }))
 
 // Root redirect to docs
 app.get('/', (c) => {
-  return c.redirect('/api/v1/docs')
+  return c.redirect('/v1/docs')
 })
 
 const port = parseInt(process.env.API_PORT || '3001', 10)

@@ -3,7 +3,7 @@
  * and ingests Anchor events into the event store.
  *
  * This is the dev/catch-up alternative to the Helius webhook.
- * POST /api/v1/history/backfill triggers this.
+ * POST /v1/history/backfill triggers this.
  */
 
 import type { ConfirmedSignatureInfo } from '@solana/web3.js'

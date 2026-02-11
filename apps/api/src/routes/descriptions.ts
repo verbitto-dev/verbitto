@@ -5,8 +5,8 @@
  * recorded on-chain in the task PDA). This serves as a pre-IPFS
  * content-addressed store.
  *
- * POST /api/v1/descriptions       — store a description
- * GET  /api/v1/descriptions/:hash — fetch description by hash
+ * POST /v1/descriptions       — store a description
+ * GET  /v1/descriptions/:hash — fetch description by hash
  */
 
 import { createRoute, OpenAPIHono } from '@hono/zod-openapi'

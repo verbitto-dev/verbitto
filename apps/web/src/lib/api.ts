@@ -63,7 +63,7 @@ export async function fetchHistoricalTasks(params?: {
   limit?: number
   offset?: number
 }): Promise<{ tasks: HistoricalTask[]; total: number }> {
-  const url = new URL(`${API_BASE}/api/v1/history/tasks`)
+  const url = new URL(`${API_BASE}/v1/history/tasks`)
   if (params?.status) url.searchParams.set('status', params.status)
   if (params?.creator) url.searchParams.set('creator', params.creator)
   if (params?.agent) url.searchParams.set('agent', params.agent)
@@ -82,7 +82,7 @@ export async function fetchHistoricalTasks(params?: {
 
 export async function fetchHistoricalTask(address: string): Promise<HistoricalTaskDetail | null> {
   try {
-    const res = await fetch(`${API_BASE}/api/v1/history/tasks/${address}`)
+    const res = await fetch(`${API_BASE}/v1/history/tasks/${address}`)
     if (!res.ok) return null
     return await res.json()
   } catch {
@@ -92,7 +92,7 @@ export async function fetchHistoricalTask(address: string): Promise<HistoricalTa
 
 export async function fetchIndexerStats(): Promise<IndexerStats | null> {
   try {
-    const res = await fetch(`${API_BASE}/api/v1/history/stats`)
+    const res = await fetch(`${API_BASE}/v1/history/stats`)
     if (!res.ok) return null
     return await res.json()
   } catch {
@@ -117,7 +117,7 @@ export interface BackfillResult {
  * historical transactions that the Helius webhook may have missed.
  */
 export async function triggerBackfill(limit?: number): Promise<BackfillResult> {
-  const res = await fetch(`${API_BASE}/api/v1/history/backfill`, {
+  const res = await fetch(`${API_BASE}/v1/history/backfill`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ limit: limit ?? 500 }),
@@ -149,7 +149,7 @@ export async function storeDescription(params: {
   taskAddress?: string
   creator?: string
 }): Promise<TaskDescription> {
-  const res = await fetch(`${API_BASE}/api/v1/descriptions`, {
+  const res = await fetch(`${API_BASE}/v1/descriptions`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(params),
@@ -168,7 +168,7 @@ export async function storeDescription(params: {
  */
 export async function fetchDescription(hash: string): Promise<TaskDescription | null> {
   try {
-    const res = await fetch(`${API_BASE}/api/v1/descriptions/${hash}`)
+    const res = await fetch(`${API_BASE}/v1/descriptions/${hash}`)
     if (!res.ok) return null
     return await res.json()
   } catch {

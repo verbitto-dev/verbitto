@@ -2,7 +2,7 @@
  * Helius Webhook Route — receives transaction data from Helius,
  * parses Anchor events, and stores them in the event store.
  *
- * POST /api/v1/webhook/helius
+ * POST /v1/webhook/helius
  *
  * Authentication: Bearer token in Authorization header or
  *   ?token= query parameter (Helius supports both).

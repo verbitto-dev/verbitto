@@ -48,7 +48,7 @@ const buildTransactionRoute = createRoute({
   tags: ['Transactions'],
   summary: 'Build an unsigned transaction',
   description:
-    'Build an unsigned transaction for various instructions. Sign locally then submit via /api/v1/tx/send',
+    'Build an unsigned transaction for various instructions. Sign locally then submit via /v1/tx/send',
   request: {
     body: {
       content: {
@@ -333,7 +333,7 @@ app.openapi(buildTransactionRoute, async (c) => {
 
     return c.json({
       transaction: serialized.toString('base64'),
-      message: `Unsigned ${instruction} transaction. Sign with your wallet, then POST to /api/v1/tx/send.`,
+      message: `Unsigned ${instruction} transaction. Sign with your wallet, then POST to /v1/tx/send.`,
     })
   } catch (error) {
     return c.json({ error: error instanceof Error ? error.message : 'Internal error' }, 500)
