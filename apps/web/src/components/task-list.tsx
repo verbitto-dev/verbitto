@@ -5,6 +5,7 @@ import { useWalletModal } from '@solana/wallet-adapter-react-ui'
 import { PublicKey } from '@solana/web3.js'
 import { useEffect, useState, useMemo, useRef, useCallback } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 
 import { CreateTaskDialog } from '@/components/create-task-dialog'
 import { TaskDetailDialog } from '@/components/task-detail-dialog'
@@ -186,7 +187,7 @@ export function TaskList() {
 
   const handleCreateFromTemplate = () => {
     // TODO: Implement template selection
-    alert('Create from Template feature coming soon!')
+    toast.info('Create from Template feature coming soon!')
   }
 
   const handleTaskCreated = () => {

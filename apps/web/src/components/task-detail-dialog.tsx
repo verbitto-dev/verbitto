@@ -3,6 +3,7 @@
 import { useAnchorWallet, useConnection, useWallet } from '@solana/wallet-adapter-react'
 import { Program, AnchorProvider } from '@coral-xyz/anchor'
 import { useState } from 'react'
+import { toast } from 'sonner'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -18,9 +19,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Icons } from '@/components/icons'
 import { formatDeadline, lamportsToSol, shortKey } from '@/hooks/use-program'
 import { STATUS_VARIANTS, type TaskAccount, type TaskStatus, getPlatformPda, getAgentProfilePda, decodePlatform } from '@/lib/program'
-
-// Import IDL
-const IDL = require('../../public/idl.json')
+import IDL from '../../public/idl.json'
 
 interface TaskDetailDialogProps {
   task: TaskAccount | null
@@ -54,10 +53,7 @@ export function TaskDetailDialog({ task, open, onOpenChange, onRefresh }: TaskDe
       return
     }
 
-    const confirmed = confirm(
-      `Are you sure you want to claim this task?\n\n"${task.title}"\n\nBounty: ${lamportsToSol(task.bountyLamports)} SOL`
-    )
-    if (!confirmed) return
+    // Proceed with claiming
 
     setLoading(true)
     setError(null)
@@ -81,7 +77,7 @@ export function TaskDetailDialog({ task, open, onOpenChange, onRefresh }: TaskDe
 
       await connection.confirmTransaction(tx, 'confirmed')
 
-      alert(`✓ Task claimed successfully!\n\nYou are now the assigned agent.\n\nTransaction: ${tx.slice(0, 8)}...`)
+      toast.success(`Task claimed successfully! Tx: ${tx.slice(0, 8)}...`)
       onOpenChange(false)
       onRefresh?.()
     } catch (err: any) {
@@ -95,7 +91,7 @@ export function TaskDetailDialog({ task, open, onOpenChange, onRefresh }: TaskDe
         errorMsg = err.message || 'Unknown error'
       }
       setError(errorMsg)
-      alert(`❌ ${errorMsg}\n\nCheck console for details.`)
+      toast.error(errorMsg)
     } finally {
       setLoading(false)
     }
@@ -112,10 +108,7 @@ export function TaskDetailDialog({ task, open, onOpenChange, onRefresh }: TaskDe
       return
     }
 
-    const confirmed = confirm(
-      `Submit deliverable for this task?\n\n"${task.title}"\n\nDeliverable: "${deliverableText.slice(0, 100)}${deliverableText.length > 100 ? '...' : ''}"`
-    )
-    if (!confirmed) return
+    // Proceed with submission
 
     setLoading(true)
     setError(null)
@@ -144,7 +137,7 @@ export function TaskDetailDialog({ task, open, onOpenChange, onRefresh }: TaskDe
 
       await connection.confirmTransaction(tx, 'confirmed')
 
-      alert(`✓ Deliverable submitted successfully!\n\nTransaction: ${tx.slice(0, 8)}...\n\nThe task creator can now review and approve/reject.`)
+      toast.success(`Deliverable submitted! Tx: ${tx.slice(0, 8)}...`)
       setDeliverableText('')
       onOpenChange(false)
       onRefresh?.()
@@ -159,7 +152,7 @@ export function TaskDetailDialog({ task, open, onOpenChange, onRefresh }: TaskDe
         errorMsg = err.message || 'Unknown error'
       }
       setError(errorMsg)
-      alert(`❌ ${errorMsg}\n\nCheck console for details.`)
+      toast.error(errorMsg)
     } finally {
       setLoading(false)
     }
@@ -171,10 +164,7 @@ export function TaskDetailDialog({ task, open, onOpenChange, onRefresh }: TaskDe
       return
     }
 
-    const confirmed = confirm(
-      `Are you sure you want to approve and settle this task?\n\n"${task.title}"\n\nThis will send ${lamportsToSol(task.bountyLamports)} SOL to the agent.\nThis action is irreversible.`
-    )
-    if (!confirmed) return
+    // Proceed with approval
 
     setLoading(true)
     setError(null)
@@ -206,7 +196,7 @@ export function TaskDetailDialog({ task, open, onOpenChange, onRefresh }: TaskDe
 
       await connection.confirmTransaction(tx, 'confirmed')
 
-      alert(`✓ Task approved and settled!\n\nBounty sent to agent: ${lamportsToSol(task.bountyLamports)} SOL\n\nTransaction: ${tx.slice(0, 8)}...`)
+      toast.success(`Task approved! Bounty ${lamportsToSol(task.bountyLamports)} SOL sent. Tx: ${tx.slice(0, 8)}...`)
       onOpenChange(false)
       onRefresh?.()
     } catch (err: any) {
@@ -220,7 +210,7 @@ export function TaskDetailDialog({ task, open, onOpenChange, onRefresh }: TaskDe
         errorMsg = err.message || 'Unknown error'
       }
       setError(errorMsg)
-      alert(`❌ ${errorMsg}\n\nCheck console for details.`)
+      toast.error(errorMsg)
     } finally {
       setLoading(false)
     }
@@ -237,10 +227,7 @@ export function TaskDetailDialog({ task, open, onOpenChange, onRefresh }: TaskDe
       return
     }
 
-    const confirmed = confirm(
-      `Are you sure you want to reject this submission?\n\n"${task.title}"\n\nReason: "${rejectReasonText.slice(0, 100)}${rejectReasonText.length > 100 ? '...' : ''}"\n\nThe task will return to 'Claimed' status.`
-    )
-    if (!confirmed) return
+    // Proceed with rejection
 
     setLoading(true)
     setError(null)
@@ -268,7 +255,7 @@ export function TaskDetailDialog({ task, open, onOpenChange, onRefresh }: TaskDe
 
       await connection.confirmTransaction(tx, 'confirmed')
 
-      alert(`✓ Submission rejected!\n\nThe agent can re-submit a new deliverable.\n\nTransaction: ${tx.slice(0, 8)}...`)
+      toast.success(`Submission rejected. Tx: ${tx.slice(0, 8)}...`)
       setRejectReasonText('')
       onOpenChange(false)
       onRefresh?.()
@@ -283,7 +270,7 @@ export function TaskDetailDialog({ task, open, onOpenChange, onRefresh }: TaskDe
         errorMsg = err.message || 'Unknown error'
       }
       setError(errorMsg)
-      alert(`❌ ${errorMsg}\n\nCheck console for details.`)
+      toast.error(errorMsg)
     } finally {
       setLoading(false)
     }
@@ -300,11 +287,7 @@ export function TaskDetailDialog({ task, open, onOpenChange, onRefresh }: TaskDe
       return
     }
 
-    const confirmed = confirm(
-      `Are you sure you want to cancel this task?\n\n"${task.title}"\n\nThe bounty (${lamportsToSol(task.bountyLamports)} SOL) will be refunded to your wallet.`
-    )
-
-    if (!confirmed) return
+    // Proceed with cancellation
 
     setLoading(true)
     setError(null)
@@ -341,7 +324,7 @@ export function TaskDetailDialog({ task, open, onOpenChange, onRefresh }: TaskDe
       await connection.confirmTransaction(tx, 'confirmed')
 
       // Show success message
-      alert(`✓ Task cancelled successfully!\n\nBounty refunded: ${lamportsToSol(task.bountyLamports)} SOL\n\nTransaction: ${tx.slice(0, 8)}...\n\nThe task status has been updated to 'Cancelled'.`)
+      toast.success(`Task cancelled. Bounty ${lamportsToSol(task.bountyLamports)} SOL refunded. Tx: ${tx.slice(0, 8)}...`)
 
       // Close dialog and refresh task list
       onOpenChange(false)
@@ -368,7 +351,7 @@ export function TaskDetailDialog({ task, open, onOpenChange, onRefresh }: TaskDe
       }
 
       setError(errorMsg)
-      alert(`❌ ${errorMsg}\n\nCheck console for details.`)
+      toast.error(errorMsg)
     } finally {
       setLoading(false)
     }

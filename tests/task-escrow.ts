@@ -7,6 +7,16 @@ import BN from 'bn.js'
 import { expect } from 'chai'
 import type { TaskEscrow } from '../target/types/task_escrow.js'
 
+/**
+ * Helper to bypass Anchor 0.31 type mismatch on camelCase account names.
+ * Anchor IDL generates snake_case types but runtime accepts camelCase.
+ */
+// biome-ignore lint/suspicious/noExplicitAny: Anchor 0.31 camelCase accounts workaround
+function accs(obj: Record<string, any>): any {
+  return obj
+}
+
+
 function loadOrGenerateWallet(name: string): Keypair {
   const walletFile = join(process.cwd(), 'tests', 'test-wallets.json')
 
@@ -159,13 +169,12 @@ describe('task-escrow', () => {
         new BN(MIN_VOTER_REPUTATION),
         new BN(CLAIM_GRACE_PERIOD)
       )
-      .accounts({
-        // @ts-expect-error Anchor 0.31 type definitions don't recognize camelCase account names
+      .accounts(accs({
         platform: platformPda,
         treasury: treasury.publicKey,
         authority: authority.publicKey,
         systemProgram: SystemProgram.programId,
-      })
+      }))
       .rpc()
 
     const platform = await program.account.platform.fetch(platformPda)
@@ -181,12 +190,11 @@ describe('task-escrow', () => {
 
     await program.methods
       .registerAgent(skillTags)
-      .accounts({
-        // @ts-expect-error Anchor 0.31 type definitions don't recognize camelCase account names
+      .accounts(accs({
         agentProfile: agentProfilePda,
         authority: agent.publicKey,
         systemProgram: SystemProgram.programId,
-      })
+      }))
       .signers([agent])
       .rpc()
 
@@ -205,12 +213,11 @@ describe('task-escrow', () => {
     ] as const) {
       await program.methods
         .registerAgent(0b0000001) // DataLabeling
-        .accounts({
-          // @ts-expect-error Anchor 0.31 type definitions don't recognize camelCase account names
+        .accounts(accs({
           agentProfile: profilePda as PublicKey,
           authority: (voter as Keypair).publicKey,
           systemProgram: SystemProgram.programId,
-        })
+        }))
         .signers([voter as Keypair])
         .rpc()
     }
@@ -249,14 +256,13 @@ describe('task-escrow', () => {
           new BN(deadline),
           new BN(50) // reputation reward
         )
-        .accounts({
-          // @ts-expect-error Anchor 0.31 type definitions don't recognize camelCase account names
+        .accounts(accs({
           task: taskPda,
           platform: platformPda,
           creatorCounter: creatorCounterPda,
           creator: creator.publicKey,
           systemProgram: SystemProgram.programId,
-        })
+        }))
         .signers([creator])
         .rpc()
 
@@ -275,13 +281,12 @@ describe('task-escrow', () => {
     it('agent claims the task', async () => {
       await program.methods
         .claimTask()
-        .accounts({
-          // @ts-expect-error Anchor 0.31 type definitions don't recognize camelCase account names
+        .accounts(accs({
           task: taskPda,
           platform: platformPda,
           agentProfile: agentProfilePda,
           agent: agent.publicKey,
-        })
+        }))
         .signers([agent])
         .rpc()
 
@@ -293,12 +298,11 @@ describe('task-escrow', () => {
     it('agent submits deliverable', async () => {
       await program.methods
         .submitDeliverable(Array.from(deliverableHash) as any)
-        .accounts({
-          // @ts-expect-error Anchor 0.31 type definitions don't recognize camelCase account names
+        .accounts(accs({
           task: taskPda,
           platform: platformPda,
           agent: agent.publicKey,
-        })
+        }))
         .signers([agent])
         .rpc()
 
@@ -312,15 +316,14 @@ describe('task-escrow', () => {
 
       await program.methods
         .approveAndSettle()
-        .accounts({
-          // @ts-expect-error - Anchor 0.31 type definitions issue
+        .accounts(accs({
           task: taskPda,
           platform: platformPda,
           creator: creator.publicKey,
           agent: agent.publicKey,
           agentProfile: agentProfilePda,
           treasury: treasury.publicKey,
-        })
+        }))
         .signers([creator])
         .rpc()
 
@@ -370,14 +373,13 @@ describe('task-escrow', () => {
           new BN(deadline),
           new BN(10)
         )
-        .accounts({
-          // @ts-expect-error Anchor 0.31 type definitions don't recognize camelCase account names
+        .accounts(accs({
           task: taskPda,
           platform: platformPda,
           creatorCounter: creatorCounterPda,
           creator: creator.publicKey,
           systemProgram: SystemProgram.programId,
-        })
+        }))
         .signers([creator])
         .rpc()
 
@@ -387,11 +389,10 @@ describe('task-escrow', () => {
 
       await program.methods
         .cancelTask()
-        .accounts({
-          // @ts-expect-error - Anchor 0.31 type definitions issue
+        .accounts(accs({
           task: taskPda,
           creator: creator.publicKey,
-        })
+        }))
         .signers([creator])
         .rpc()
 
@@ -430,13 +431,12 @@ describe('task-escrow', () => {
           new BN(0.5 * LAMPORTS_PER_SOL),
           { literatureReview: {} } as any
         )
-        .accounts({
-          // @ts-expect-error - Anchor 0.31 type definitions issue
+        .accounts(accs({
           template: templatePda,
           platform: platformPda,
           creator: creator.publicKey,
           systemProgram: SystemProgram.programId,
-        })
+        }))
         .signers([creator])
         .rpc()
 
@@ -463,15 +463,14 @@ describe('task-escrow', () => {
           new BN(30),
           new BN(creatorTaskCount)
         )
-        .accounts({
-          // @ts-expect-error Anchor 0.31 type definitions don't recognize camelCase account names
+        .accounts(accs({
           task: taskPda,
           template: templatePda,
           platform: platformPda,
           creatorCounter: creatorCounterPda,
           creator: creator.publicKey,
           systemProgram: SystemProgram.programId,
-        })
+        }))
         .signers([creator])
         .rpc()
 
@@ -513,14 +512,13 @@ describe('task-escrow', () => {
           new BN(deadline),
           new BN(100)
         )
-        .accounts({
-          // @ts-expect-error Anchor 0.31 type definitions don't recognize camelCase account names
+        .accounts(accs({
           task: taskPda,
           platform: platformPda,
           creatorCounter: creatorCounterPda,
           creator: creator.publicKey,
           systemProgram: SystemProgram.programId,
-        })
+        }))
         .signers([creator])
         .rpc()
 
@@ -528,31 +526,28 @@ describe('task-escrow', () => {
 
       await program.methods
         .claimTask()
-        .accounts({
-          // @ts-expect-error Anchor 0.31
+        .accounts(accs({
           task: taskPda,
           platform: platformPda,
           agentProfile: agentProfilePda,
           agent: agent.publicKey,
-        })
+        }))
         .signers([agent])
         .rpc()
 
       await program.methods
         .submitDeliverable(Array.from(Buffer.alloc(32, 6)) as any)
-        .accounts({
-          // @ts-expect-error - Anchor 0.31 type definitions issue
+        .accounts(accs({
           task: taskPda,
           platform: platformPda,
           agent: agent.publicKey,
-        })
+        }))
         .signers([agent])
         .rpc()
 
       // 2. Creator rejects
       await program.methods
         .rejectSubmission(Array.from(Buffer.alloc(32, 7)) as any)
-        // @ts-expect-error - Anchor 0.31 type definitions issue
         .accounts({ task: taskPda, creator: creator.publicKey })
         .signers([creator])
         .rpc()
@@ -565,13 +560,12 @@ describe('task-escrow', () => {
 
       await program.methods
         .openDispute({ qualityIssue: {} } as any, Array.from(Buffer.alloc(32, 8)) as any)
-        .accounts({
-          // @ts-expect-error - Anchor 0.31 type definitions issue
+        .accounts(accs({
           task: taskPda,
           dispute: disputePda,
           initiator: agent.publicKey,
           systemProgram: SystemProgram.programId,
-        })
+        }))
         .signers([agent])
         .rpc()
 
@@ -591,8 +585,7 @@ describe('task-escrow', () => {
 
         await program.methods
           .castVote(ruling as any)
-          .accounts({
-            // @ts-expect-error - Anchor 0.31 type definitions issue
+          .accounts(accs({
             task: taskPda,
             dispute: disputePda,
             platform: platformPda,
@@ -600,7 +593,7 @@ describe('task-escrow', () => {
             voterProfile: voterProfile as PublicKey,
             voter: (voter as Keypair).publicKey,
             systemProgram: SystemProgram.programId,
-          })
+          }))
           .signers([voter as Keypair])
           .rpc()
       }
@@ -613,8 +606,7 @@ describe('task-escrow', () => {
 
       await program.methods
         .resolveDispute()
-        .accounts({
-          // @ts-expect-error - Anchor 0.31 type definitions issue
+        .accounts(accs({
           dispute: disputePda,
           task: taskPda,
           platform: platformPda,
@@ -623,7 +615,7 @@ describe('task-escrow', () => {
           agentProfile: agentProfilePda,
           treasury: treasury.publicKey,
           caller: authority.publicKey,
-        })
+        }))
         .rpc()
 
       // Both dispute and task PDAs should be closed after resolution
@@ -681,14 +673,13 @@ describe('task-escrow', () => {
           new BN(deadline),
           new BN(50)
         )
-        .accounts({
-          // @ts-expect-error Anchor 0.31
+        .accounts(accs({
           task: taskPda,
           platform: platformPda,
           creatorCounter: creatorCounterPda,
           creator: creator.publicKey,
           systemProgram: SystemProgram.programId,
-        })
+        }))
         .signers([creator])
         .rpc()
 
@@ -712,14 +703,13 @@ describe('task-escrow', () => {
             new BN(Math.floor(Date.now() / 1000) + 3600),
             new BN(10)
           )
-          .accounts({
-            // @ts-expect-error Anchor 0.31
+          .accounts(accs({
             task: badTaskPda,
             platform: platformPda,
             creatorCounter: creatorCounterPda,
             creator: creator.publicKey,
             systemProgram: SystemProgram.programId,
-          })
+          }))
           .signers([creator])
           .rpc()
         expect.fail('Should have thrown BountyTooLow')
@@ -745,14 +735,13 @@ describe('task-escrow', () => {
             new BN(1000000), // way in the past
             new BN(10)
           )
-          .accounts({
-            // @ts-expect-error Anchor 0.31
+          .accounts(accs({
             task: badTaskPda,
             platform: platformPda,
             creatorCounter: creatorCounterPda,
             creator: creator.publicKey,
             systemProgram: SystemProgram.programId,
-          })
+          }))
           .signers([creator])
           .rpc()
         expect.fail('Should have thrown DeadlineInPast')
@@ -778,14 +767,13 @@ describe('task-escrow', () => {
             new BN(Math.floor(Date.now() / 1000) + 3600),
             new BN(10)
           )
-          .accounts({
-            // @ts-expect-error Anchor 0.31
+          .accounts(accs({
             task: badTaskPda,
             platform: platformPda,
             creatorCounter: creatorCounterPda,
             creator: creator.publicKey,
             systemProgram: SystemProgram.programId,
-          })
+          }))
           .signers([creator])
           .rpc()
         expect.fail('Should have thrown TitleTooLong')
@@ -798,11 +786,10 @@ describe('task-escrow', () => {
       try {
         await program.methods
           .cancelTask()
-          .accounts({
-            // @ts-expect-error Anchor 0.31
+          .accounts(accs({
             task: taskPda,
             creator: randomUser.publicKey,
-          })
+          }))
           .signers([randomUser])
           .rpc()
         expect.fail('Should have thrown')
@@ -816,13 +803,12 @@ describe('task-escrow', () => {
       // First claim succeeds
       await program.methods
         .claimTask()
-        .accounts({
-          // @ts-expect-error Anchor 0.31
+        .accounts(accs({
           task: taskPda,
           platform: platformPda,
           agentProfile: agentProfilePda,
           agent: agent.publicKey,
-        })
+        }))
         .signers([agent])
         .rpc()
 
@@ -830,13 +816,12 @@ describe('task-escrow', () => {
       try {
         await program.methods
           .claimTask()
-          .accounts({
-            // @ts-expect-error - Anchor 0.31 type definitions issue
+          .accounts(accs({
             task: taskPda,
             platform: platformPda,
             agentProfile: voter1ProfilePda,
             agent: voter1.publicKey,
-          })
+          }))
           .signers([voter1])
           .rpc()
         expect.fail('Should have thrown TaskNotOpen')
@@ -849,12 +834,11 @@ describe('task-escrow', () => {
       try {
         await program.methods
           .submitDeliverable(Array.from(Buffer.alloc(32, 14)) as any)
-          .accounts({
-            // @ts-expect-error - Anchor 0.31 type definitions issue
+          .accounts(accs({
             task: taskPda,
             platform: platformPda,
             agent: voter1.publicKey,
-          })
+          }))
           .signers([voter1])
           .rpc()
         expect.fail('Should have thrown NotAssignedAgent')
@@ -868,15 +852,14 @@ describe('task-escrow', () => {
       try {
         await program.methods
           .approveAndSettle()
-          .accounts({
-            // @ts-expect-error Anchor 0.31
+          .accounts(accs({
             task: taskPda,
             platform: platformPda,
             creator: creator.publicKey,
             agent: agent.publicKey,
             agentProfile: agentProfilePda,
             treasury: treasury.publicKey,
-          })
+          }))
           .signers([creator])
           .rpc()
         expect.fail('Should have thrown TaskNotSubmitted')
@@ -889,11 +872,10 @@ describe('task-escrow', () => {
       try {
         await program.methods
           .rejectSubmission(Array.from(Buffer.alloc(32, 15)) as any)
-          .accounts({
-            // @ts-expect-error Anchor 0.31
+          .accounts(accs({
             task: taskPda,
             creator: creator.publicKey,
-          })
+          }))
           .signers([creator])
           .rpc()
         expect.fail('Should have thrown TaskNotSubmitted')
@@ -906,11 +888,10 @@ describe('task-escrow', () => {
       try {
         await program.methods
           .cancelTask()
-          .accounts({
-            // @ts-expect-error Anchor 0.31
+          .accounts(accs({
             task: taskPda,
             creator: creator.publicKey,
-          })
+          }))
           .signers([creator])
           .rpc()
         expect.fail('Should have thrown TaskNotOpen')
@@ -923,13 +904,12 @@ describe('task-escrow', () => {
       try {
         await program.methods
           .expireTask()
-          .accounts({
-            // @ts-expect-error Anchor 0.31
+          .accounts(accs({
             task: taskPda,
             creator: creator.publicKey,
             platform: platformPda,
             caller: randomUser.publicKey,
-          })
+          }))
           .signers([randomUser])
           .rpc()
         expect.fail('Should have thrown DeadlineNotReached')
@@ -1015,14 +995,13 @@ describe('task-escrow', () => {
             new BN(Math.floor(Date.now() / 1000) + 3600),
             new BN(10)
           )
-          .accounts({
-            // @ts-expect-error Anchor 0.31
+          .accounts(accs({
             task: taskPda,
             platform: platformPda,
             creatorCounter: creatorCounterPda,
             creator: creator.publicKey,
             systemProgram: SystemProgram.programId,
-          })
+          }))
           .signers([creator])
           .rpc()
         expect.fail('Should have thrown PlatformPaused')
@@ -1121,14 +1100,13 @@ describe('task-escrow', () => {
           new BN(deadline),
           new BN(10)
         )
-        .accounts({
-          // @ts-expect-error Anchor 0.31
+        .accounts(accs({
           task: taskPda,
           platform: platformPda,
           creatorCounter: creatorCounterPda,
           creator: creator.publicKey,
           systemProgram: SystemProgram.programId,
-        })
+        }))
         .signers([creator])
         .rpc()
 
@@ -1144,13 +1122,12 @@ describe('task-escrow', () => {
       try {
         await program.methods
           .openDispute({ qualityIssue: {} } as any, Array.from(Buffer.alloc(32, 31)) as any)
-          .accounts({
-            // @ts-expect-error Anchor 0.31
+          .accounts(accs({
             task: taskPda,
             dispute: disputePda,
             initiator: creator.publicKey,
             systemProgram: SystemProgram.programId,
-          })
+          }))
           .signers([creator])
           .rpc()
         expect.fail('Should have thrown TaskNotDisputable')
@@ -1163,24 +1140,22 @@ describe('task-escrow', () => {
       // Get the task to submitted state
       await program.methods
         .claimTask()
-        .accounts({
-          // @ts-expect-error Anchor 0.31
+        .accounts(accs({
           task: taskPda,
           platform: platformPda,
           agentProfile: agentProfilePda,
           agent: agent.publicKey,
-        })
+        }))
         .signers([agent])
         .rpc()
 
       await program.methods
         .submitDeliverable(Array.from(Buffer.alloc(32, 32)) as any)
-        .accounts({
-          // @ts-expect-error Anchor 0.31
+        .accounts(accs({
           task: taskPda,
           platform: platformPda,
           agent: agent.publicKey,
-        })
+        }))
         .signers([agent])
         .rpc()
 
@@ -1192,13 +1167,12 @@ describe('task-escrow', () => {
       try {
         await program.methods
           .openDispute({ qualityIssue: {} } as any, Array.from(Buffer.alloc(32, 33)) as any)
-          .accounts({
-            // @ts-expect-error Anchor 0.31
+          .accounts(accs({
             task: taskPda,
             dispute: disputePda,
             initiator: voter1.publicKey, // not a party
             systemProgram: SystemProgram.programId,
-          })
+          }))
           .signers([voter1])
           .rpc()
         expect.fail('Should have thrown NotTaskParty')
@@ -1234,14 +1208,13 @@ describe('task-escrow', () => {
           new BN(deadline),
           new BN(10)
         )
-        .accounts({
-          // @ts-expect-error Anchor 0.31
+        .accounts(accs({
           task: taskPda,
           platform: platformPda,
           creatorCounter: creatorCounterPda,
           creator: creator.publicKey,
           systemProgram: SystemProgram.programId,
-        })
+        }))
         .signers([creator])
         .rpc()
 
@@ -1255,13 +1228,12 @@ describe('task-escrow', () => {
       // Anyone can trigger expiration
       await program.methods
         .expireTask()
-        .accounts({
-          // @ts-expect-error Anchor 0.31
+        .accounts(accs({
           task: taskPda,
           creator: creator.publicKey,
           platform: platformPda,
           caller: authority.publicKey,
-        })
+        }))
         .rpc()
 
       // Task PDA should be closed
@@ -1299,14 +1271,13 @@ describe('task-escrow', () => {
           new BN(deadline),
           new BN(20)
         )
-        .accounts({
-          // @ts-expect-error Anchor 0.31
+        .accounts(accs({
           task: taskPda,
           platform: platformPda,
           creatorCounter: creatorCounterPda,
           creator: creator.publicKey,
           systemProgram: SystemProgram.programId,
-        })
+        }))
         .signers([creator])
         .rpc()
 
@@ -1315,13 +1286,12 @@ describe('task-escrow', () => {
       // Agent claims
       await program.methods
         .claimTask()
-        .accounts({
-          // @ts-expect-error Anchor 0.31
+        .accounts(accs({
           task: taskPda,
           platform: platformPda,
           agentProfile: agentProfilePda,
           agent: agent.publicKey,
-        })
+        }))
         .signers([agent])
         .rpc()
 
@@ -1330,19 +1300,17 @@ describe('task-escrow', () => {
         // Agent submits
         await program.methods
           .submitDeliverable(Array.from(Buffer.alloc(32, 51 + i)) as any)
-          .accounts({
-            // @ts-expect-error Anchor 0.31
+          .accounts(accs({
             task: taskPda,
             platform: platformPda,
             agent: agent.publicKey,
-          })
+          }))
           .signers([agent])
           .rpc()
 
         // Creator rejects
         await program.methods
           .rejectSubmission(Array.from(Buffer.alloc(32, 61 + i)) as any)
-          // @ts-expect-error Anchor 0.31
           .accounts({ task: taskPda, creator: creator.publicKey })
           .signers([creator])
           .rpc()
@@ -1381,14 +1349,13 @@ describe('task-escrow', () => {
           new BN(deadline),
           new BN(50)
         )
-        .accounts({
-          // @ts-expect-error Anchor 0.31
+        .accounts(accs({
           task: taskPda,
           platform: platformPda,
           creatorCounter: creatorCounterPda,
           creator: creator.publicKey,
           systemProgram: SystemProgram.programId,
-        })
+        }))
         .signers([creator])
         .rpc()
 
@@ -1396,30 +1363,27 @@ describe('task-escrow', () => {
 
       await program.methods
         .claimTask()
-        .accounts({
-          // @ts-expect-error Anchor 0.31
+        .accounts(accs({
           task: taskPda,
           platform: platformPda,
           agentProfile: agentProfilePda,
           agent: agent.publicKey,
-        })
+        }))
         .signers([agent])
         .rpc()
 
       await program.methods
         .submitDeliverable(Array.from(Buffer.alloc(32, 71)) as any)
-        .accounts({
-          // @ts-expect-error Anchor 0.31
+        .accounts(accs({
           task: taskPda,
           platform: platformPda,
           agent: agent.publicKey,
-        })
+        }))
         .signers([agent])
         .rpc()
 
       await program.methods
         .rejectSubmission(Array.from(Buffer.alloc(32, 72)) as any)
-        // @ts-expect-error Anchor 0.31
         .accounts({ task: taskPda, creator: creator.publicKey })
         .signers([creator])
         .rpc()
@@ -1431,13 +1395,12 @@ describe('task-escrow', () => {
 
       await program.methods
         .openDispute({ qualityIssue: {} } as any, Array.from(Buffer.alloc(32, 73)) as any)
-        .accounts({
-          // @ts-expect-error Anchor 0.31
+        .accounts(accs({
           task: taskPda,
           dispute: disputePda,
           initiator: creator.publicKey,
           systemProgram: SystemProgram.programId,
-        })
+        }))
         .signers([creator])
         .rpc()
 
@@ -1453,8 +1416,7 @@ describe('task-escrow', () => {
 
         await program.methods
           .castVote({ creatorWins: {} } as any)
-          .accounts({
-            // @ts-expect-error Anchor 0.31
+          .accounts(accs({
             task: taskPda,
             dispute: disputePda,
             platform: platformPda,
@@ -1462,7 +1424,7 @@ describe('task-escrow', () => {
             voterProfile: voterProfile as PublicKey,
             voter: (voter as Keypair).publicKey,
             systemProgram: SystemProgram.programId,
-          })
+          }))
           .signers([voter as Keypair])
           .rpc()
       }
@@ -1474,8 +1436,7 @@ describe('task-escrow', () => {
 
       await program.methods
         .resolveDispute()
-        .accounts({
-          // @ts-expect-error Anchor 0.31
+        .accounts(accs({
           dispute: disputePda,
           task: taskPda,
           platform: platformPda,
@@ -1484,7 +1445,7 @@ describe('task-escrow', () => {
           agentProfile: agentProfilePda,
           treasury: treasury.publicKey,
           caller: authority.publicKey,
-        })
+        }))
         .rpc()
 
       // Both PDAs should be closed
@@ -1520,14 +1481,13 @@ describe('task-escrow', () => {
           new BN(deadline),
           new BN(50)
         )
-        .accounts({
-          // @ts-expect-error Anchor 0.31
+        .accounts(accs({
           task: taskPda,
           platform: platformPda,
           creatorCounter: creatorCounterPda,
           creator: creator.publicKey,
           systemProgram: SystemProgram.programId,
-        })
+        }))
         .signers([creator])
         .rpc()
 
@@ -1535,30 +1495,27 @@ describe('task-escrow', () => {
 
       await program.methods
         .claimTask()
-        .accounts({
-          // @ts-expect-error Anchor 0.31
+        .accounts(accs({
           task: taskPda,
           platform: platformPda,
           agentProfile: agentProfilePda,
           agent: agent.publicKey,
-        })
+        }))
         .signers([agent])
         .rpc()
 
       await program.methods
         .submitDeliverable(Array.from(Buffer.alloc(32, 81)) as any)
-        .accounts({
-          // @ts-expect-error Anchor 0.31
+        .accounts(accs({
           task: taskPda,
           platform: platformPda,
           agent: agent.publicKey,
-        })
+        }))
         .signers([agent])
         .rpc()
 
       await program.methods
         .rejectSubmission(Array.from(Buffer.alloc(32, 82)) as any)
-        // @ts-expect-error Anchor 0.31
         .accounts({ task: taskPda, creator: creator.publicKey })
         .signers([creator])
         .rpc()
@@ -1570,13 +1527,12 @@ describe('task-escrow', () => {
 
       await program.methods
         .openDispute({ qualityIssue: {} } as any, Array.from(Buffer.alloc(32, 83)) as any)
-        .accounts({
-          // @ts-expect-error Anchor 0.31
+        .accounts(accs({
           task: taskPda,
           dispute: disputePda,
           initiator: agent.publicKey,
           systemProgram: SystemProgram.programId,
-        })
+        }))
         .signers([agent])
         .rpc()
 
@@ -1587,8 +1543,7 @@ describe('task-escrow', () => {
       )
       await program.methods
         .castVote({ creatorWins: {} } as any)
-        .accounts({
-          // @ts-expect-error Anchor 0.31
+        .accounts(accs({
           task: taskPda,
           dispute: disputePda,
           platform: platformPda,
@@ -1596,7 +1551,7 @@ describe('task-escrow', () => {
           voterProfile: voter1ProfilePda,
           voter: voter1.publicKey,
           systemProgram: SystemProgram.programId,
-        })
+        }))
         .signers([voter1])
         .rpc()
 
@@ -1606,8 +1561,7 @@ describe('task-escrow', () => {
       )
       await program.methods
         .castVote({ agentWins: {} } as any)
-        .accounts({
-          // @ts-expect-error Anchor 0.31
+        .accounts(accs({
           task: taskPda,
           dispute: disputePda,
           platform: platformPda,
@@ -1615,7 +1569,7 @@ describe('task-escrow', () => {
           voterProfile: voter2ProfilePda,
           voter: voter2.publicKey,
           systemProgram: SystemProgram.programId,
-        })
+        }))
         .signers([voter2])
         .rpc()
 
@@ -1628,8 +1582,7 @@ describe('task-escrow', () => {
 
       await program.methods
         .resolveDispute()
-        .accounts({
-          // @ts-expect-error Anchor 0.31
+        .accounts(accs({
           dispute: disputePda,
           task: taskPda,
           platform: platformPda,
@@ -1638,7 +1591,7 @@ describe('task-escrow', () => {
           agentProfile: agentProfilePda,
           treasury: treasury.publicKey,
           caller: authority.publicKey,
-        })
+        }))
         .rpc()
 
       // Both PDAs should be closed
@@ -1688,14 +1641,13 @@ describe('task-escrow', () => {
           new BN(deadline),
           new BN(10)
         )
-        .accounts({
-          // @ts-expect-error Anchor 0.31
+        .accounts(accs({
           task: taskPda,
           platform: platformPda,
           creatorCounter: creatorCounterPda,
           creator: creator.publicKey,
           systemProgram: SystemProgram.programId,
-        })
+        }))
         .signers([creator])
         .rpc()
 
@@ -1703,30 +1655,27 @@ describe('task-escrow', () => {
 
       await program.methods
         .claimTask()
-        .accounts({
-          // @ts-expect-error Anchor 0.31
+        .accounts(accs({
           task: taskPda,
           platform: platformPda,
           agentProfile: agentProfilePda,
           agent: agent.publicKey,
-        })
+        }))
         .signers([agent])
         .rpc()
 
       await program.methods
         .submitDeliverable(Array.from(Buffer.alloc(32, 91)) as any)
-        .accounts({
-          // @ts-expect-error Anchor 0.31
+        .accounts(accs({
           task: taskPda,
           platform: platformPda,
           agent: agent.publicKey,
-        })
+        }))
         .signers([agent])
         .rpc()
 
       await program.methods
         .rejectSubmission(Array.from(Buffer.alloc(32, 92)) as any)
-        // @ts-expect-error Anchor 0.31
         .accounts({ task: taskPda, creator: creator.publicKey })
         .signers([creator])
         .rpc()
@@ -1738,13 +1687,12 @@ describe('task-escrow', () => {
 
       await program.methods
         .openDispute({ qualityIssue: {} } as any, Array.from(Buffer.alloc(32, 93)) as any)
-        .accounts({
-          // @ts-expect-error Anchor 0.31
+        .accounts(accs({
           task: taskPda,
           dispute: disputePda,
           initiator: agent.publicKey,
           systemProgram: SystemProgram.programId,
-        })
+        }))
         .signers([agent])
         .rpc()
 
@@ -1756,8 +1704,7 @@ describe('task-escrow', () => {
 
       await program.methods
         .castVote({ agentWins: {} } as any)
-        .accounts({
-          // @ts-expect-error Anchor 0.31
+        .accounts(accs({
           task: taskPda,
           dispute: disputePda,
           platform: platformPda,
@@ -1765,7 +1712,7 @@ describe('task-escrow', () => {
           voterProfile: voter1ProfilePda,
           voter: voter1.publicKey,
           systemProgram: SystemProgram.programId,
-        })
+        }))
         .signers([voter1])
         .rpc()
 
@@ -1776,8 +1723,7 @@ describe('task-escrow', () => {
       try {
         await program.methods
           .resolveDispute()
-          .accounts({
-            // @ts-expect-error Anchor 0.31
+          .accounts(accs({
             dispute: disputePda,
             task: taskPda,
             platform: platformPda,
@@ -1786,7 +1732,7 @@ describe('task-escrow', () => {
             agentProfile: agentProfilePda,
             treasury: treasury.publicKey,
             caller: authority.publicKey,
-          })
+          }))
           .rpc()
         expect.fail('Should have thrown InsufficientVotes')
       } catch (err: any) {

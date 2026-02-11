@@ -1,27 +1,9 @@
-import { readFileSync } from 'node:fs'
-import { join } from 'node:path'
 import { createRoute, OpenAPIHono } from '@hono/zod-openapi'
 import { z } from 'zod'
+import { loadIdl } from '../lib/idl.js'
 import { ErrorSchema } from '../schemas/common.js'
 
 const app = new OpenAPIHono()
-
-// Load IDL from local file
-function loadIdl() {
-  const possiblePaths = [
-    join(process.cwd(), 'target/idl/task_escrow.json'),
-    join(process.cwd(), '../../target/idl/task_escrow.json'),
-  ]
-
-  for (const idlPath of possiblePaths) {
-    try {
-      const idlData = readFileSync(idlPath, 'utf-8')
-      return JSON.parse(idlData)
-    } catch {}
-  }
-
-  throw new Error('IDL file not found')
-}
 
 const getIdlRoute = createRoute({
   method: 'get',

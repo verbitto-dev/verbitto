@@ -19,9 +19,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Icons } from '@/components/icons'
 import { PROGRAM_ID, getPlatformPda, getTaskPda, getCreatorCounterPda } from '@/lib/program'
-
-// Import IDL
-const IDL = require('../../public/idl.json')
+import IDL from '../../public/idl.json'
 
 interface CreateTaskDialogProps {
   open: boolean

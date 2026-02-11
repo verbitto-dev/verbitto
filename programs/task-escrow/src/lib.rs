@@ -181,6 +181,10 @@ pub mod task_escrow {
         instructions::deactivate_template(ctx)
     }
 
+    pub fn reactivate_template(ctx: Context<DeactivateTemplate>) -> Result<()> {
+        instructions::reactivate_template(ctx)
+    }
+
     // ─── Disputes ──────────────────────────────────────────────
 
     pub fn open_dispute(

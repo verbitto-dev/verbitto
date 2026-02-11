@@ -2,7 +2,7 @@ use anchor_lang::prelude::*;
 
 #[error_code]
 pub enum VerbittoError {
-    #[msg("Fee basis points must be ≤ 3001 (50%)")]
+    #[msg("Fee basis points must be ≤ 3001 (30%)")]
     InvalidFee,
     #[msg("Invalid platform configuration")]
     InvalidConfig,
@@ -72,4 +72,6 @@ pub enum VerbittoError {
     MaxRejectionsReached,
     #[msg("Task index does not match creator counter")]
     InvalidTaskIndex,
+    #[msg("Template is already active")]
+    TemplateAlreadyActive,
 }

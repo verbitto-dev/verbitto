@@ -365,6 +365,13 @@ pub struct DeactivateTemplate<'info> {
     )]
     pub template: Account<'info, TaskTemplate>,
 
+    /// Platform config (needed for pause check).
+    #[account(
+        seeds = [b"platform"],
+        bump = platform.bump,
+    )]
+    pub platform: Account<'info, Platform>,
+
     pub creator: Signer<'info>,
 }
 

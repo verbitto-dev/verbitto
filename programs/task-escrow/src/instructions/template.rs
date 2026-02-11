@@ -43,8 +43,24 @@ pub fn create_template(
 
 /// Deactivate a task template. Only the template creator can call.
 pub fn deactivate_template(ctx: Context<DeactivateTemplate>) -> Result<()> {
+    require!(
+        !ctx.accounts.platform.is_paused,
+        VerbittoError::PlatformPaused
+    );
     let t = &mut ctx.accounts.template;
     require!(t.is_active, VerbittoError::TemplateInactive);
     t.is_active = false;
+    Ok(())
+}
+
+/// Reactivate a previously deactivated template. Only the template creator can call.
+pub fn reactivate_template(ctx: Context<DeactivateTemplate>) -> Result<()> {
+    require!(
+        !ctx.accounts.platform.is_paused,
+        VerbittoError::PlatformPaused
+    );
+    let t = &mut ctx.accounts.template;
+    require!(!t.is_active, VerbittoError::TemplateAlreadyActive);
+    t.is_active = true;
     Ok(())
 }

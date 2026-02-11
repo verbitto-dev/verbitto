@@ -1,5 +1,3 @@
-import { readFileSync } from 'node:fs'
-import { join } from 'node:path'
 import { AnchorProvider, Program, Wallet } from '@coral-xyz/anchor'
 import { createRoute, OpenAPIHono } from '@hono/zod-openapi'
 import {
@@ -20,6 +18,7 @@ import {
   PROGRAM_ID,
 } from '@verbitto/program'
 import BN from 'bn.js'
+import { loadIdl } from '../lib/idl.js'
 import { getConnection } from '../lib/solana.js'
 import { ErrorSchema } from '../schemas/common.js'
 import {
@@ -33,28 +32,6 @@ const app = new OpenAPIHono()
 
 // Dummy wallet for building unsigned transactions
 const dummyKeypair = Keypair.generate()
-
-// Load IDL from local file
-function loadIdl() {
-  try {
-    // Try multiple possible paths
-    const possiblePaths = [
-      join(process.cwd(), 'target/idl/task_escrow.json'), // Running from root
-      join(process.cwd(), '../../target/idl/task_escrow.json'), // Running from apps/api
-    ]
-
-    for (const idlPath of possiblePaths) {
-      try {
-        const idlData = readFileSync(idlPath, 'utf-8')
-        return JSON.parse(idlData)
-      } catch { }
-    }
-
-    throw new Error('IDL not found in any expected location')
-  } catch (err) {
-    throw new Error(`IDL file not found. Run 'anchor build' first. Error: ${err}`)
-  }
-}
 
 async function getProgram() {
   const connection = getConnection()

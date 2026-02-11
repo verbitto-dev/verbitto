@@ -5,6 +5,7 @@ import { Providers } from '@/components/providers'
 import { META_THEME_COLORS, siteConfig } from '@/config/site'
 import { fontMono, fontSans } from '@/lib/fonts'
 import { cn } from '@/lib/utils'
+import { Toaster } from 'sonner'
 
 import '@/app/globals.css'
 
@@ -88,6 +89,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       >
         <Providers>
           <div className="relative flex min-h-svh flex-col bg-background">{children}</div>
+          <Toaster richColors position="top-right" />
         </Providers>
       </body>
     </html>
