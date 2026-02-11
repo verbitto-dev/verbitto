@@ -133,3 +133,32 @@ jobs:
 
       - name: Build API
         run: pnpm --filter @verbitto/api build
+
+  # ──────────────────────────────────────────────
+  # Signer service checks
+  # ──────────────────────────────────────────────
+  signer:
+    name: Signer — typecheck & build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: TypeScript typecheck
+        run: pnpm --filter @verbitto/signer typecheck
+
+      - name: Build Signer
+        run: pnpm --filter @verbitto/signer build

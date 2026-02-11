@@ -1,0 +1,93 @@
+name: Publish Signer
+
+on:
+    push:
+        branches: [main]
+        paths:
+            - "packages/signer/**"
+    workflow_dispatch:
+
+jobs:
+    check-version:
+        name: Check version change
+        runs-on: ubuntu-latest
+        outputs:
+            should_publish: ${{ steps.check.outputs.should_publish }}
+            version: ${{ steps.check.outputs.version }}
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  fetch-depth: 2
+
+            - name: Check if version changed
+              id: check
+              run: |
+                  VERSION=$(node -p "require('./packages/signer/package.json').version")
+                  echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+                  # On manual trigger, always publish
+                  if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+                    echo "should_publish=true" >> $GITHUB_OUTPUT
+                    echo "📦 Manual trigger — will publish v$VERSION"
+                    exit 0
+                  fi
+
+                  # Check if package.json version changed in this push
+                  git diff HEAD~1 HEAD -- packages/signer/package.json | grep -q '"version"' && CHANGED=true || CHANGED=false
+                  echo "should_publish=$CHANGED" >> $GITHUB_OUTPUT
+                  if [ "$CHANGED" = "true" ]; then
+                    echo "📦 Version changed to $VERSION — will publish"
+                  else
+                    echo "⏭️ Version unchanged ($VERSION) — skipping publish"
+                  fi
+
+    publish:
+        name: Publish to npm
+        needs: check-version
+        if: needs.check-version.outputs.should_publish == 'true'
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
+            id-token: write
+
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: "20"
+                  registry-url: "https://registry.npmjs.org"
+
+            - name: Install pnpm
+              uses: pnpm/action-setup@v4
+              with:
+                  version: 9
+
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile
+
+            - name: Build signer
+              run: pnpm --filter @verbitto/signer build
+
+            - name: Verify CLI works
+              run: node packages/signer/dist/index.js --version
+
+            - name: Publish to npm
+              working-directory: packages/signer
+              run: pnpm publish --provenance --access public --no-git-checks
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Generate summary
+              run: |
+                  VERSION="${{ needs.check-version.outputs.version }}"
+                  echo "## 📦 npm Package Published" >> $GITHUB_STEP_SUMMARY
+                  echo "" >> $GITHUB_STEP_SUMMARY
+                  echo "**Package:** \`@verbitto/signer\`" >> $GITHUB_STEP_SUMMARY
+                  echo "**Version:** \`$VERSION\`" >> $GITHUB_STEP_SUMMARY
+                  echo "" >> $GITHUB_STEP_SUMMARY
+                  echo "### Usage" >> $GITHUB_STEP_SUMMARY
+                  echo "\`\`\`bash" >> $GITHUB_STEP_SUMMARY
+                  echo "npx @verbitto/signer --wallet ~/.config/solana/id.json" >> $GITHUB_STEP_SUMMARY
+                  echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
