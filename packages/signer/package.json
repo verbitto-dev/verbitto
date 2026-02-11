@@ -33,6 +33,14 @@
   ],
   "author": "Verbitto Team",
   "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/verbitto-dev/verbitto.git"
+  },
+  "bugs": {
+    "url": "https://github.com/verbitto-dev/verbitto/issues"
+  },
+  "homepage": "https://github.com/verbitto-dev/verbitto#readme",
   "dependencies": {
     "express": "^4.18.2",
     "@solana/web3.js": "^1.87.6"

@@ -11,10 +11,6 @@ function getClient() {
   if (!client) {
     const DATABASE_URL =
       process.env.DATABASE_URL || 'postgres://postgres:postgres@localhost:5432/verbitto'
-    console.log(
-      '[DB] Initializing connection to:',
-      DATABASE_URL.replace(/\/\/([^:]+):([^@]+)@/, '//***:***@')
-    )
     client = postgres(DATABASE_URL, {
       max: 10,
       idle_timeout: 20,
@@ -26,11 +22,11 @@ function getClient() {
 
 /** Drizzle ORM instance */
 export const db = new Proxy({} as ReturnType<typeof drizzle>, {
-  get(target, prop) {
+  get(_target, prop) {
     if (!dbInstance) {
       dbInstance = drizzle(getClient(), { schema })
     }
-    return (dbInstance as any)[prop]
+    return dbInstance[prop as keyof ReturnType<typeof drizzle>]
   },
 })
 

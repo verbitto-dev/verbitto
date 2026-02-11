@@ -19,8 +19,6 @@ export function loadWallet(options: CLIOptions): Keypair {
       try {
         const secretKey = Uint8Array.from(JSON.parse(readFileSync(walletPath, 'utf8')) as number[])
         const keypair = Keypair.fromSecretKey(secretKey)
-        console.log(`✅ Wallet loaded: ${keypair.publicKey.toBase58()}`)
-        console.log(`   Path: ${walletPath}`)
         return keypair
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err)
@@ -30,7 +28,9 @@ export function loadWallet(options: CLIOptions): Keypair {
   }
 
   console.error('❌ Wallet file not found. Searched paths:')
-  walletPaths.forEach((p) => console.error(`   - ${p}`))
+  for (const p of walletPaths) {
+    console.error(`   - ${p}`)
+  }
   console.error('\n💡 Generate a new wallet:')
   console.error('   solana-keygen new -o wallet.json')
   console.error('\n💡 Or specify a wallet path:')

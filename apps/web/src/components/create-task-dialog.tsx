@@ -2,7 +2,7 @@
 
 import { AnchorProvider, BN, Program } from '@coral-xyz/anchor'
 import { useAnchorWallet, useConnection, useWallet } from '@solana/wallet-adapter-react'
-import { type PublicKey, SystemProgram } from '@solana/web3.js'
+import { SystemProgram } from '@solana/web3.js'
 import { useState } from 'react'
 import { Icons } from '@/components/icons'
 import { Button } from '@/components/ui/button'
@@ -18,7 +18,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { storeDescription } from '@/lib/api'
-import { getCreatorCounterPda, getPlatformPda, getTaskPda, PROGRAM_ID } from '@/lib/program'
+import { getCreatorCounterPda, getPlatformPda, getTaskPda } from '@/lib/program'
 import IDL from '../../public/idl.json'
 
 interface CreateTaskDialogProps {
@@ -52,16 +52,10 @@ export function CreateTaskDialog({ open, onOpenChange, onSuccess }: CreateTaskDi
     setError(null)
 
     try {
-      console.log('🚀 Starting task creation...')
-      console.log('Wallet:', publicKey.toBase58())
-
       // Check balance first
       const balance = await connection.getBalance(publicKey)
       const requiredBounty = Math.round(parseFloat(bounty) * 1e9)
       const estimatedFees = 0.01 * 1e9 // Estimate 0.01 SOL for fees and rent
-
-      console.log('💰 Balance:', balance / 1e9, 'SOL')
-      console.log('💵 Required:', (requiredBounty + estimatedFees) / 1e9, 'SOL')
 
       if (balance < requiredBounty + estimatedFees) {
         setError(
@@ -80,13 +74,12 @@ export function CreateTaskDialog({ open, onOpenChange, onSuccess }: CreateTaskDi
 
       // Create program instance
       const program = new Program(IDL, provider)
-      console.log('📝 Program initialized:', program.programId.toBase58())
 
       // Convert bounty to lamports
       const bountyLamports = new BN(Math.round(parseFloat(bounty) * 1e9))
 
       // Calculate deadline (current time + days)
-      const deadlineTimestamp = Math.floor(Date.now() / 1000) + parseInt(deadlineDays) * 86400
+      const deadlineTimestamp = Math.floor(Date.now() / 1000) + parseInt(deadlineDays, 10) * 86400
 
       // Hash description (simplified - in production use IPFS/Arweave)
       let descriptionHashArray = new Uint8Array(32)
@@ -109,22 +102,11 @@ export function CreateTaskDialog({ open, onOpenChange, onSuccess }: CreateTaskDi
           const data = counterAccount.data
           taskIndex = new BN(data.readBigUInt64LE(8 + 32)) // After discriminator + creator pubkey
         }
-      } catch (e) {
-        console.log('Creator counter not found, using index 0')
-      }
+      } catch (_e) {}
 
       // Get PDAs
       const platformPda = getPlatformPda()
       const taskPda = getTaskPda(publicKey, BigInt(taskIndex.toString()))
-
-      console.log('📍 PDAs:', {
-        platform: platformPda.toBase58(),
-        task: taskPda.toBase58(),
-        creatorCounter: creatorCounterPda.toBase58(),
-      })
-
-      // Build transaction
-      console.log('🔨 Building transaction...')
       const txBuilder = program.methods
         .createTask(
           title,
@@ -132,7 +114,7 @@ export function CreateTaskDialog({ open, onOpenChange, onSuccess }: CreateTaskDi
           bountyLamports,
           taskIndex,
           new BN(deadlineTimestamp),
-          new BN(parseInt(reputationReward))
+          new BN(parseInt(reputationReward, 10))
         )
         .accounts({
           task: taskPda,
@@ -141,15 +123,11 @@ export function CreateTaskDialog({ open, onOpenChange, onSuccess }: CreateTaskDi
           creator: publicKey,
           systemProgram: SystemProgram.programId,
         })
-
-      console.log('📤 Sending transaction...')
       // Send transaction with increased compute units
-      const tx = await txBuilder.rpc({
+      const _tx = await txBuilder.rpc({
         skipPreflight: false,
         commitment: 'confirmed',
       })
-
-      console.log('✅ Transaction confirmed:', tx)
 
       // Store description text in API database (pre-IPFS)
       if (description) {
@@ -180,35 +158,36 @@ export function CreateTaskDialog({ open, onOpenChange, onSuccess }: CreateTaskDi
       // Close dialog and notify success
       onOpenChange(false)
       onSuccess?.()
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('❌ Error creating task:', err)
+      const error = err as { name?: string; message?: string; code?: number; logs?: unknown }
       console.error('Error details:', {
-        name: err.name,
-        message: err.message,
-        code: err.code,
-        logs: err.logs,
+        name: error.name,
+        message: error.message,
+        code: error.code,
+        logs: error.logs,
       })
 
       // User friendly error messages
-      if (err.message?.includes('User rejected') || err.code === 4001) {
+      if (error.message?.includes('User rejected') || error.code === 4001) {
         setError('Transaction was rejected. Please approve the transaction in your Phantom wallet.')
       } else if (
-        err.message?.includes('Wallet not ready') ||
-        err.message?.includes('wallet is not connected')
+        error.message?.includes('Wallet not ready') ||
+        error.message?.includes('wallet is not connected')
       ) {
         setError('Wallet connection error. Please reconnect your wallet and try again.')
       } else if (
-        err.message?.includes('Insufficient balance') ||
-        err.message?.includes('insufficient funds')
+        error.message?.includes('Insufficient balance') ||
+        error.message?.includes('insufficient funds')
       ) {
         setError('Insufficient SOL balance. Please add more SOL to your wallet.')
-      } else if (err.message?.includes('simulation failed')) {
-        setError(`Transaction would fail: ${err.message}. Check console for details.`)
-      } else if (err.code === -32603) {
+      } else if (error.message?.includes('simulation failed')) {
+        setError(`Transaction would fail: ${error.message}. Check console for details.`)
+      } else if (error.code === -32603) {
         setError('Wallet RPC error. Please refresh the page and try again.')
       } else {
         setError(
-          `Failed to create task: ${err.message || 'Unknown error'}. Check browser console for details.`
+          `Failed to create task: ${error.message || 'Unknown error'}. Check browser console for details.`
         )
       }
     } finally {

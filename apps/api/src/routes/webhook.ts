@@ -54,11 +54,6 @@ app.post('/helius', async (c) => {
     const events = parseHeliusPayload(payload)
     const ingested = await ingestEvents(events)
 
-    console.log(
-      `[Webhook] Received ${Array.isArray(payload) ? payload.length : 1} txn(s), ` +
-        `parsed ${events.length} event(s), ingested ${ingested} new event(s)`
-    )
-
     return c.json({
       ok: true,
       parsed: events.length,

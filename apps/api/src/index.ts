@@ -8,10 +8,8 @@ config({ path: join(__dirname, '../../../.env'), override: true })
 
 // Debug: log DATABASE_URL (masked)
 if (process.env.DATABASE_URL) {
-  const masked = process.env.DATABASE_URL.replace(/\/\/([^:]+):([^@]+)@/, '//***:***@')
-  console.log('[ENV] DATABASE_URL loaded:', masked)
+  const _masked = process.env.DATABASE_URL.replace(/\/\/([^:]+):([^@]+)@/, '//***:***@')
 } else {
-  console.log('[ENV] DATABASE_URL is not set!')
 }
 
 import { serve } from '@hono/node-server'
@@ -107,8 +105,3 @@ serve({
   fetch: app.fetch,
   port,
 })
-
-console.log(`🚀 API Server running at:`)
-console.log(`   - Local:   http://localhost:${port}`)
-console.log(`   - Docs:    http://localhost:${port}/api/v1/docs`)
-console.log(`   - OpenAPI: http://localhost:${port}/api/v1/openapi.json`)

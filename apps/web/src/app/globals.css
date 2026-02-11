@@ -128,50 +128,50 @@
 
 /* Solana Wallet Adapter Modal Fixes */
 .wallet-adapter-modal-wrapper {
-  z-index: 9999 !important;
-  background: rgba(0, 0, 0, 0.5) !important;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0.5);
 }
 
 .wallet-adapter-modal {
-  background: var(--background) !important;
-  border: 1px solid var(--border) !important;
-  border-radius: var(--radius) !important;
-  z-index: 10000 !important;
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  z-index: 10000;
 }
 
 .wallet-adapter-modal-title {
-  color: var(--foreground) !important;
+  color: var(--foreground);
 }
 
 .wallet-adapter-button {
-  background: var(--primary) !important;
-  color: var(--primary-foreground) !important;
-  border-radius: var(--radius) !important;
+  background: var(--primary);
+  color: var(--primary-foreground);
+  border-radius: var(--radius);
 }
 
 .wallet-adapter-button:hover:not([disabled]) {
-  background: var(--primary) !important;
+  background: var(--primary);
   opacity: 0.9;
 }
 
 .wallet-adapter-button-trigger {
-  background: var(--brand) !important;
-  color: var(--brand-foreground) !important;
+  background: var(--brand);
+  color: var(--brand-foreground);
 }
 
 .wallet-adapter-modal-list {
-  background: transparent !important;
+  background: transparent;
 }
 
 .wallet-adapter-modal-list-more {
-  color: var(--foreground) !important;
+  color: var(--foreground);
 }
 
 .dark .wallet-adapter-modal {
-  background: var(--background) !important;
-  color: var(--foreground) !important;
+  background: var(--background);
+  color: var(--foreground);
 }
 
 .dark .wallet-adapter-modal-wrapper {
-  background: rgba(0, 0, 0, 0.75) !important;
+  background: rgba(0, 0, 0, 0.75);
 }

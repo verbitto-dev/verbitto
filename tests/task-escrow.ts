@@ -33,7 +33,6 @@ function loadOrGenerateWallet(name: string): Keypair {
   let keypair: Keypair
   if (wallets[name]) {
     keypair = Keypair.fromSecretKey(Uint8Array.from(wallets[name]))
-    console.log(`✓ Reusing test wallet: ${name} (${keypair.publicKey.toString().slice(0, 8)}...)`)
   } else {
     keypair = Keypair.generate()
     wallets[name] = Array.from(keypair.secretKey)
@@ -51,9 +50,6 @@ function loadOrGenerateWallet(name: string): Keypair {
           null,
           2
         )
-      )
-      console.log(
-        `✓ Generated & saved test wallet: ${name} (${keypair.publicKey.toString().slice(0, 8)}...)`
       )
     } catch (err) {
       console.warn(`Could not save test wallet ${name}: ${err}`)

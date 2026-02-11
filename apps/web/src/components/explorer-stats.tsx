@@ -8,7 +8,7 @@ import { lamportsToSol, useIndexerStats, usePlatform, useTasks } from '@/hooks/u
 export function ExplorerStats() {
   const { platform, loading: pLoading } = usePlatform()
   const { tasks, loading: tLoading } = useTasks()
-  const { stats: ixStats, loading: ixLoading } = useIndexerStats()
+  const { stats: ixStats } = useIndexerStats()
 
   const loading = pLoading || tLoading
 
@@ -16,7 +16,7 @@ export function ExplorerStats() {
   const activeTasks = tasks.length
   const disputedTasks = tasks.filter((t) => t.status === 'Disputed').length
   const settledCount = ixStats?.approvedCount ?? 0
-  const cancelledCount = ixStats?.cancelledCount ?? 0
+  const _cancelledCount = ixStats?.cancelledCount ?? 0
 
   const stats = [
     {

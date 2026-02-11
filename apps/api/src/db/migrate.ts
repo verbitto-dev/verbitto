@@ -88,6 +88,4 @@ export async function migrateDb(): Promise<void> {
   await db.execute(
     sql`CREATE INDEX IF NOT EXISTS idx_desc_task_address ON task_descriptions(task_address)`
   )
-
-  console.log('[DB] Migration complete — all tables and indexes ready')
 }

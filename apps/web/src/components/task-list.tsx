@@ -163,7 +163,7 @@ export function TaskList() {
   // Reset display count when filters change
   useEffect(() => {
     setDisplayCount(TASKS_PER_PAGE)
-  }, [statusFilter, templateFilter])
+  }, [])
 
   // Merge live on-chain tasks with historical (closed) tasks
   const filteredTasks = useMemo(() => {

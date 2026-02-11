@@ -16,12 +16,10 @@ const NETWORK = (process.env.NEXT_PUBLIC_SOLANA_NETWORK || 'devnet') as
 export function SolanaProvider({ children }: { children: ReactNode }) {
   const endpoint = useMemo(() => {
     const rpcUrl = process.env.NEXT_PUBLIC_SOLANA_RPC_URL || clusterApiUrl(NETWORK)
-    console.log('🔗 Connecting to Solana RPC:', rpcUrl, 'Network:', NETWORK)
     return rpcUrl
   }, [])
 
   const wallets = useMemo(() => {
-    console.log('💼 Initializing wallet adapters...')
     return [new PhantomWalletAdapter(), new SolflareWalletAdapter()]
   }, [])
 

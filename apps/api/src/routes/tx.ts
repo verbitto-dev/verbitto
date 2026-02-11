@@ -15,7 +15,6 @@ import {
   getPlatformPda,
   getTaskPda,
   getVotePda,
-  PROGRAM_ID,
 } from '@verbitto/program'
 import BN from 'bn.js'
 import { loadIdl } from '../lib/idl.js'

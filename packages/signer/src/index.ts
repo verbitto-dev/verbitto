@@ -63,9 +63,6 @@ app.post('/verbitto/execute', async (req, res) => {
   }
 
   try {
-    console.log(`[${new Date().toISOString()}] Executing action: ${action}`)
-    console.log('  Params:', JSON.stringify(params, null, 2))
-
     // Step 1: Build unsigned transaction via API
     const buildRes = await fetchWithRetry(`${API_BASE}/tx/build`, {
       method: 'POST',
@@ -118,7 +115,6 @@ app.post('/verbitto/execute', async (req, res) => {
     }
 
     const result = (await sendRes.json()) as { signature: string }
-    console.log(`  ✅ Transaction successful: ${result.signature}`)
 
     res.json({
       success: true,
@@ -150,7 +146,7 @@ app.get('/verbitto/*', async (req, res) => {
   }
 
   const queryString = new URLSearchParams(req.query as Record<string, string>).toString()
-  const url = `${API_BASE}/${sanitized}${queryString ? '?' + queryString : ''}`
+  const url = `${API_BASE}/${sanitized}${queryString ? `?${queryString}` : ''}`
 
   try {
     const response = await fetchWithRetry(url)
@@ -182,33 +178,8 @@ app.get('/health', (_req, res) => {
 // Start
 // ============================================================================
 
-app.listen(PORT, () => {
-  console.log('')
-  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
-  console.log('🦞 Verbitto Transaction Signer')
-  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
-  console.log(`📡 Address: http://localhost:${PORT}`)
-  console.log(`🔑 Wallet: ${keypair.publicKey.toBase58()}`)
-  console.log(`🛡️ Program whitelist: ${ALLOWED_PROGRAM_ID.toBase58()}`)
-  console.log(
-    `🔐 API key auth: ${isApiKeyEnabled() ? 'ENABLED' : 'DISABLED (set SIGNER_API_KEY to enable)'}`
-  )
-  console.log('')
-  console.log('Available endpoints:')
-  console.log('')
-  console.log('  # Register agent')
-  console.log(`  curl -X POST http://localhost:${PORT}/verbitto/execute \\`)
-  console.log('    -H "Content-Type: application/json" \\')
-  console.log('    -d \'{"action":"registerAgent","params":{"skillTags":6}}\'')
-  console.log('')
-  console.log('  # Query tasks')
-  console.log(`  curl http://localhost:${PORT}/verbitto/tasks?status=Open`)
-  console.log('')
-  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
-  console.log('')
-})
+app.listen(PORT, () => {})
 
 process.on('SIGINT', () => {
-  console.log('\n👋 Signer service stopped')
   process.exit(0)
 })

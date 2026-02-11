@@ -1,13 +1,4 @@
-import {
-  bigint,
-  index,
-  integer,
-  jsonb,
-  pgTable,
-  text,
-  timestamp,
-  uniqueIndex,
-} from 'drizzle-orm/pg-core'
+import { index, integer, jsonb, pgTable, text, timestamp } from 'drizzle-orm/pg-core'
 
 // ────────────────────────────────────────────────────────────
 // indexed_events — raw Anchor events from program transactions

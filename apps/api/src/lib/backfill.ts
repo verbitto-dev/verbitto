@@ -6,7 +6,7 @@
  * POST /api/v1/history/backfill triggers this.
  */
 
-import type { ConfirmedSignatureInfo, ParsedTransactionWithMeta } from '@solana/web3.js'
+import type { ConfirmedSignatureInfo } from '@solana/web3.js'
 import { PublicKey } from '@solana/web3.js'
 import { extractTitlesFromTx, parseEventsFromLogs } from './event-parser.js'
 import { ingestEvents, rebuildHistoricalTasks, saveStore, setTaskData } from './event-store.js'
@@ -66,7 +66,6 @@ export async function backfillFromRpc(opts?: {
   }
 
   signaturesScanned = allSigs.length
-  console.log(`[Backfill] Found ${signaturesScanned} signatures to process`)
 
   // Filter out errored transactions and reverse to chronological (oldest-first)
   // so TaskCreated is ingested before TaskCancelled/TaskSettled/etc.
@@ -129,11 +128,6 @@ export async function backfillFromRpc(opts?: {
   await saveStore()
 
   const durationMs = Date.now() - start
-  console.log(
-    `[Backfill] Done in ${durationMs}ms: ` +
-      `${signaturesScanned} sigs, ${transactionsFetched} txns, ` +
-      `${eventsParsed} events parsed, ${eventsIngested} ingested, ${errors} errors`
-  )
 
   return {
     signaturesScanned,

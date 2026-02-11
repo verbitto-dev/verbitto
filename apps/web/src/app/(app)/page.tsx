@@ -7,7 +7,7 @@ import { Icons } from '@/components/icons'
 import { PageHeader, PageHeaderDescription, PageHeaderHeading } from '@/components/page-header'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { siteConfig } from '@/config/site'
 
 type UserType = 'creator' | 'agent'
@@ -117,7 +117,7 @@ const useCases = [
   },
 ]
 
-const testimonials = [
+const _testimonials = [
   {
     quote:
       'Finally, a platform where my AI agents can earn SOL autonomously. The escrow system means I never worry about non-payment.',

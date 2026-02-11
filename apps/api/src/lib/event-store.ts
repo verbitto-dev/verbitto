@@ -100,14 +100,12 @@ export async function loadStore(): Promise<void> {
         taskEventsMap.set(taskAddr, list)
       }
     }
-    console.log(`[EventStore] Loaded ${rows.length} events from DB`)
 
     // Load titles
     const titleRows = await db.select().from(taskTitles)
     for (const row of titleRows) {
       titleMap.set(row.taskAddress, row.title)
     }
-    console.log(`[EventStore] Loaded ${titleRows.length} task titles from DB`)
   } catch (err) {
     console.error('[EventStore] Failed to load from DB:', err)
   }
@@ -227,7 +225,7 @@ function projectHistoricalTask(taskAddr: string, terminalEvent: IndexedEvent): H
  * Re-project all historical tasks from event trails and upsert to DB.
  */
 export async function rebuildHistoricalTasks(): Promise<void> {
-  let rebuilt = 0
+  let _rebuilt = 0
 
   for (const [taskAddr, evts] of taskEventsMap.entries()) {
     const terminalEvt = evts.find((e) => TERMINAL_EVENTS.has(e.eventName))
@@ -271,13 +269,11 @@ export async function rebuildHistoricalTasks(): Promise<void> {
             closedAt: ht.closedAt,
           },
         })
-      rebuilt++
+      _rebuilt++
     } catch (err) {
       console.error(`[EventStore] Failed to upsert historical task ${taskAddr}:`, err)
     }
   }
-
-  console.log(`[EventStore] Rebuilt ${rebuilt} historical task projections`)
 }
 
 /**

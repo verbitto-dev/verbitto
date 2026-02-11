@@ -53,8 +53,9 @@ export function TaskDetailDialog({ task, open, onOpenChange, onRefresh }: TaskDe
     }
 
     // Check if task has pre-loaded description content (from historical tasks)
-    if ((task as any)._descriptionContent) {
-      setDescriptionContent((task as any)._descriptionContent)
+    const taskWithDesc = task as TaskAccount & { _descriptionContent?: string }
+    if (taskWithDesc._descriptionContent) {
+      setDescriptionContent(taskWithDesc._descriptionContent)
       return
     }
 
@@ -111,15 +112,16 @@ export function TaskDetailDialog({ task, open, onOpenChange, onRefresh }: TaskDe
       toast.success(`Task claimed successfully! Tx: ${tx.slice(0, 8)}...`)
       onOpenChange(false)
       onRefresh?.()
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error claiming task:', err)
+      const error = err as { message?: string; logs?: unknown }
       let errorMsg = 'Failed to claim task'
-      if (err.message?.includes('User rejected') || err.message?.includes('User denied')) {
+      if (error.message?.includes('User rejected') || error.message?.includes('User denied')) {
         errorMsg = 'Transaction was rejected by wallet'
-      } else if (err.logs) {
-        errorMsg = `Program error: ${err.message}`
+      } else if (error.logs) {
+        errorMsg = `Program error: ${error.message}`
       } else {
-        errorMsg = err.message || 'Unknown error'
+        errorMsg = error.message || 'Unknown error'
       }
       setError(errorMsg)
       toast.error(errorMsg)
@@ -172,15 +174,16 @@ export function TaskDetailDialog({ task, open, onOpenChange, onRefresh }: TaskDe
       setDeliverableText('')
       onOpenChange(false)
       onRefresh?.()
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error submitting deliverable:', err)
+      const error = err as { message?: string; logs?: unknown }
       let errorMsg = 'Failed to submit deliverable'
-      if (err.message?.includes('User rejected') || err.message?.includes('User denied')) {
+      if (error.message?.includes('User rejected') || error.message?.includes('User denied')) {
         errorMsg = 'Transaction was rejected by wallet'
-      } else if (err.logs) {
-        errorMsg = `Program error: ${err.message}`
+      } else if (error.logs) {
+        errorMsg = `Program error: ${error.message}`
       } else {
-        errorMsg = err.message || 'Unknown error'
+        errorMsg = error.message || 'Unknown error'
       }
       setError(errorMsg)
       toast.error(errorMsg)
@@ -232,15 +235,16 @@ export function TaskDetailDialog({ task, open, onOpenChange, onRefresh }: TaskDe
       )
       onOpenChange(false)
       onRefresh?.()
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error approving task:', err)
+      const error = err as { message?: string; logs?: unknown }
       let errorMsg = 'Failed to approve and settle'
-      if (err.message?.includes('User rejected') || err.message?.includes('User denied')) {
+      if (error.message?.includes('User rejected') || error.message?.includes('User denied')) {
         errorMsg = 'Transaction was rejected by wallet'
-      } else if (err.logs) {
-        errorMsg = `Program error: ${err.message}`
+      } else if (error.logs) {
+        errorMsg = `Program error: ${error.message}`
       } else {
-        errorMsg = err.message || 'Unknown error'
+        errorMsg = error.message || 'Unknown error'
       }
       setError(errorMsg)
       toast.error(errorMsg)
@@ -292,15 +296,16 @@ export function TaskDetailDialog({ task, open, onOpenChange, onRefresh }: TaskDe
       setRejectReasonText('')
       onOpenChange(false)
       onRefresh?.()
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error rejecting submission:', err)
+      const error = err as { message?: string; logs?: unknown }
       let errorMsg = 'Failed to reject submission'
-      if (err.message?.includes('User rejected') || err.message?.includes('User denied')) {
+      if (error.message?.includes('User rejected') || error.message?.includes('User denied')) {
         errorMsg = 'Transaction was rejected by wallet'
-      } else if (err.logs) {
-        errorMsg = `Program error: ${err.message}`
+      } else if (error.logs) {
+        errorMsg = `Program error: ${error.message}`
       } else {
-        errorMsg = err.message || 'Unknown error'
+        errorMsg = error.message || 'Unknown error'
       }
       setError(errorMsg)
       toast.error(errorMsg)
@@ -358,25 +363,26 @@ export function TaskDetailDialog({ task, open, onOpenChange, onRefresh }: TaskDe
       // Close dialog and refresh task list
       onOpenChange(false)
       onRefresh?.()
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error canceling task:', err)
+      const error = err as { name?: string; message?: string; code?: string; logs?: unknown }
       console.error('Error details:', {
-        name: err.name,
-        message: err.message,
-        code: err.code,
-        logs: err.logs,
+        name: error.name,
+        message: error.message,
+        code: error.code,
+        logs: error.logs,
       })
 
       // User friendly error messages
       let errorMsg = 'Failed to cancel task'
-      if (err.message?.includes('User rejected') || err.message?.includes('User denied')) {
+      if (error.message?.includes('User rejected') || error.message?.includes('User denied')) {
         errorMsg = 'Transaction was rejected by wallet'
-      } else if (err.message?.includes('Only the creator')) {
+      } else if (error.message?.includes('Only the creator')) {
         errorMsg = 'Only the task creator can cancel this task'
-      } else if (err.logs) {
-        errorMsg = `Program error: ${err.message}`
+      } else if (error.logs) {
+        errorMsg = `Program error: ${error.message}`
       } else {
-        errorMsg = err.message || 'Unknown error'
+        errorMsg = error.message || 'Unknown error'
       }
 
       setError(errorMsg)
@@ -524,8 +530,11 @@ export function TaskDetailDialog({ task, open, onOpenChange, onRefresh }: TaskDe
         {/* Deliverable input for agents */}
         {canSubmit && (
           <div className="space-y-2">
-            <label className="text-sm font-medium">Deliverable Description</label>
+            <label htmlFor="deliverable-input" className="text-sm font-medium">
+              Deliverable Description
+            </label>
             <Textarea
+              id="deliverable-input"
               placeholder="Describe your deliverable (e.g. link to PR, IPFS hash, or summary of work done)..."
               value={deliverableText}
               onChange={(e) => setDeliverableText(e.target.value)}
@@ -541,8 +550,11 @@ export function TaskDetailDialog({ task, open, onOpenChange, onRefresh }: TaskDe
         {/* Rejection reason input for creators */}
         {canReject && (
           <div className="space-y-2">
-            <label className="text-sm font-medium">Rejection Reason (for Reject)</label>
+            <label htmlFor="reject-reason-input" className="text-sm font-medium">
+              Rejection Reason (for Reject)
+            </label>
             <Textarea
+              id="reject-reason-input"
               placeholder="Explain why the submission is being rejected..."
               value={rejectReasonText}
               onChange={(e) => setRejectReasonText(e.target.value)}

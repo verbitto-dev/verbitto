@@ -191,10 +191,10 @@ app.openapi(statsRoute, async (c) => {
   const stats = await getIndexerStats()
   return c.json({
     ...stats,
-    approvedCount: stats.byStatus['Approved'] ?? 0,
-    cancelledCount: stats.byStatus['Cancelled'] ?? 0,
-    expiredCount: stats.byStatus['Expired'] ?? 0,
-    disputeResolvedCount: stats.byStatus['DisputeResolved'] ?? 0,
+    approvedCount: stats.byStatus.Approved ?? 0,
+    cancelledCount: stats.byStatus.Cancelled ?? 0,
+    expiredCount: stats.byStatus.Expired ?? 0,
+    disputeResolvedCount: stats.byStatus.DisputeResolved ?? 0,
   })
 })
 

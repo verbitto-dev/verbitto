@@ -61,55 +61,6 @@ export function parseArgs(): CLIOptions {
   return options
 }
 
-export function showHelp(): void {
-  console.log(`
-Verbitto Transaction Signer v${PACKAGE_VERSION}
+export function showHelp(): void {}
 
-A local signing proxy for Verbitto platform that enables autonomous agents
-to execute on-chain transactions without exposing private keys.
-
-USAGE:
-  verbitto-signer [OPTIONS]
-
-OPTIONS:
-  -p, --port <PORT>       HTTP server port (default: 3344, env: PORT)
-  -a, --api-url <URL>     Verbitto API base URL (default: http://localhost:3001/api/v1, env: API_URL)
-  -w, --wallet <PATH>     Path to wallet keypair JSON file (env: WALLET_PATH)
-  -h, --help              Show this help message
-  -v, --version           Show version number
-
-EXAMPLES:
-  # Start with default settings
-  verbitto-signer
-
-  # Start on custom port with specific wallet
-  verbitto-signer --port 8080 --wallet ./my-wallet.json
-
-  # Connect to production API
-  verbitto-signer --api-url https://api.verbitto.io/api/v1
-
-  # Using environment variables
-  PORT=8080 API_URL=https://api.verbitto.io/api/v1 verbitto-signer
-
-WALLET SEARCH PATHS (in order):
-  1. Path specified via --wallet or WALLET_PATH
-  2. ~/.config/solana/id.json (Solana CLI default)
-  3. ./wallet.json (current directory)
-
-SECURITY:
-  SIGNER_API_KEY     Set to require Bearer token auth on all requests
-  PROGRAM_ID         Override the allowed Verbitto program ID
-                     (default: Coxgjx4UMQZPRdDZT9CAdrvt4TMTyUKH79ziJiNFHk8S)
-
-ENDPOINTS:
-  POST /verbitto/execute   Execute a signed transaction
-  GET  /verbitto/*         Proxy read-only queries to API
-  GET  /health             Health check
-
-For more information, visit: https://github.com/verbitto-dev/signer
-`)
-}
-
-export function showVersion(): void {
-  console.log(`verbitto-signer v${PACKAGE_VERSION}`)
-}
+export function showVersion(): void {}

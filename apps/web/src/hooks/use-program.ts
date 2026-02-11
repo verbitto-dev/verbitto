@@ -161,7 +161,7 @@ export function useHistoricalTasks(params?: { status?: string; creator?: string;
     } finally {
       setLoading(false)
     }
-  }, [params?.status, params?.creator, params?.agent])
+  }, [params?.status, params?.creator, params?.agent, params])
 
   useEffect(() => {
     fetch()

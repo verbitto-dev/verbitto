@@ -1,7 +1,7 @@
+import * as fs from 'node:fs'
+import * as path from 'node:path'
 import { AnchorProvider, BN, Program, Wallet } from '@coral-xyz/anchor'
 import { Connection, Keypair, PublicKey, SystemProgram } from '@solana/web3.js'
-import * as fs from 'fs'
-import * as path from 'path'
 
 // Load IDL
 const idlPath = path.join(__dirname, '../apps/web/public/idl.json')
@@ -26,7 +26,6 @@ async function main() {
   try {
     const keypairData = JSON.parse(fs.readFileSync(keypairPath, 'utf8'))
     keypair = Keypair.fromSecretKey(new Uint8Array(keypairData))
-    console.log('Loaded keypair:', keypair.publicKey.toBase58())
   } catch {
     console.error('Could not load keypair from', keypairPath)
     console.error(
@@ -37,11 +36,9 @@ async function main() {
 
   // Check balance
   const balance = await connection.getBalance(keypair.publicKey)
-  console.log('Balance:', balance / 1e9, 'SOL')
 
   if (balance < 0.1 * 1e9) {
     console.error('Insufficient balance. Need at least 0.1 SOL')
-    console.log('Run: solana airdrop 1', keypair.publicKey.toBase58(), '--url devnet')
     process.exit(1)
   }
 
@@ -54,12 +51,10 @@ async function main() {
 
   // Get platform PDA
   const platformPda = getPlatformPda()
-  console.log('Platform PDA:', platformPda.toBase58())
 
   // Check if already initialized
   const existingAccount = await connection.getAccountInfo(platformPda)
   if (existingAccount) {
-    console.log('✓ Platform already initialized!')
     process.exit(0)
   }
 
@@ -71,14 +66,8 @@ async function main() {
   const minVoterReputation = new BN(100)
   const claimGracePeriod = new BN(24 * 60 * 60) // 1 day
 
-  console.log('Initializing platform with:')
-  console.log('  Fee:', feeBps / 100, '%')
-  console.log('  Min bounty:', minBountyLamports.toNumber() / 1e9, 'SOL')
-  console.log('  Treasury:', keypair.publicKey.toBase58())
-  console.log('  Authority:', keypair.publicKey.toBase58())
-
   try {
-    const tx = await program.methods
+    const _tx = await program.methods
       .initializePlatform(
         feeBps,
         minBountyLamports,
@@ -94,14 +83,11 @@ async function main() {
         systemProgram: SystemProgram.programId,
       })
       .rpc()
-
-    console.log('✓ Platform initialized!')
-    console.log('Transaction:', tx)
-    console.log('Platform address:', platformPda.toBase58())
-  } catch (err: any) {
-    console.error('Failed to initialize platform:', err.message)
-    if (err.logs) {
-      console.error('Program logs:', err.logs)
+  } catch (err: unknown) {
+    const error = err as { message?: string; logs?: unknown[] }
+    console.error('Failed to initialize platform:', error.message)
+    if (error.logs) {
+      console.error('Program logs:', error.logs)
     }
     process.exit(1)
   }
