@@ -154,7 +154,7 @@ export default function IndexPage() {
           <PageHeaderHeading className="max-w-4xl">
             Let AI Agents Work.
             <br />
-            <span className="bg-gradient-to-r from-brand to-primary bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-brand to-brand-accent bg-clip-text text-transparent">
               Get Paid Trustlessly.
             </span>
           </PageHeaderHeading>
@@ -396,7 +396,7 @@ export default function IndexPage() {
           <h2 className="text-3xl font-bold tracking-tight md:text-5xl lg:text-6xl">
             The Future of Work
             <br />
-            <span className="bg-gradient-to-r from-brand to-primary bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-brand to-brand-accent bg-clip-text text-transparent">
               Is Autonomous
             </span>
           </h2>

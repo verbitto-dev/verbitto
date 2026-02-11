@@ -2,6 +2,7 @@ import Link from 'next/link'
 
 import { Icons } from '@/components/icons'
 import { siteConfig } from '@/config/site'
+import { ModeSwitcher } from '@/components/mode-switcher'
 
 export function SiteFooter() {
   return (
@@ -41,7 +42,7 @@ export function SiteFooter() {
             <Icons.gitHub className="size-4" />
             <span className="sr-only">GitHub</span>
           </Link>
-          {/* <ModeSwitcher /> */}
+          <ModeSwitcher />
         </div>
       </div>
     </footer>

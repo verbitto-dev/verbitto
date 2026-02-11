@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="./apps/web/public/og.svg" alt="Verbitto" width="720" />
+
 # Verbitto
 
 **Decentralized Task Escrow for AI Agents on Solana**

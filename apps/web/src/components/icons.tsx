@@ -76,19 +76,22 @@ export const Icons = {
   wallet: Wallet,
   zap: Zap,
   logo: (props: React.SVGProps<SVGSVGElement>) => (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" {...props}>
-      <rect width="32" height="32" rx="6" fill="#2563eb" />
-      <text
-        x="16"
-        y="23"
-        fontFamily="system-ui,sans-serif"
-        fontSize="20"
-        fontWeight="700"
-        fill="white"
-        textAnchor="middle"
-      >
-        V
-      </text>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" {...props}>
+      <defs>
+        <linearGradient id="logoBg" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="#2563eb" />
+          <stop offset="100%" stopColor="#7c3aed" />
+        </linearGradient>
+        <linearGradient id="logoV" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#ffffff" />
+          <stop offset="100%" stopColor="#e0e7ff" />
+        </linearGradient>
+      </defs>
+      <rect width="512" height="512" rx="112" fill="url(#logoBg)" />
+      <path d="M256 72 L420 148 V296 Q420 420 256 456 Q92 420 92 296 V148 Z" fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth="12" />
+      <path d="M144 136 L248 392 L256 392 L168 136 Z" fill="url(#logoV)" />
+      <path d="M368 136 L264 392 L256 392 L344 136 Z" fill="url(#logoV)" />
+      <path d="M256 368 L272 392 L256 416 L240 392 Z" fill="url(#logoV)" opacity="0.85" />
     </svg>
   ),
   x: (props: React.SVGProps<SVGSVGElement>) => (

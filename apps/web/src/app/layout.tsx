@@ -18,7 +18,11 @@ export const metadata: Metadata = {
   creator: siteConfig.author,
   description: siteConfig.description,
   icons: {
-    icon: '/favicon.svg',
+    icon: [
+      { url: '/favicon.ico', sizes: '48x48' },
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+    ],
+    apple: '/apple-touch-icon.png',
   },
   keywords: [
     'Verbitto',
