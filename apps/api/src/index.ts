@@ -1,4 +1,19 @@
-import 'dotenv/config'
+import { config } from 'dotenv'
+import { fileURLToPath } from 'node:url'
+import { dirname, join } from 'node:path'
+
+// Load .env from project root (2 levels up from src/)
+const __dirname = dirname(fileURLToPath(import.meta.url))
+config({ path: join(__dirname, '../../../.env'), override: true })
+
+// Debug: log DATABASE_URL (masked)
+if (process.env.DATABASE_URL) {
+  const masked = process.env.DATABASE_URL.replace(/\/\/([^:]+):([^@]+)@/, '//***:***@')
+  console.log('[ENV] DATABASE_URL loaded:', masked)
+} else {
+  console.log('[ENV] DATABASE_URL is not set!')
+}
+
 import { serve } from '@hono/node-server'
 import { swaggerUI } from '@hono/swagger-ui'
 import { OpenAPIHono } from '@hono/zod-openapi'

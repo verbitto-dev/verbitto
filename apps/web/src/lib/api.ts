@@ -17,6 +17,8 @@ const API_BASE =
 export interface HistoricalTask {
     address: string
     title: string
+    descriptionHash?: string
+    description?: string | null
     creator: string
     taskIndex: string
     bountyLamports: string

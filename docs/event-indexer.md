@@ -20,7 +20,8 @@ Expired, DisputeResolved states).
                                                            │
                                                     ┌──────▼───────┐
                                                     │ Event Store   │
-                                                    │ (JSON files)  │
+                                                    │ (PostgreSQL + │
+                                                    │  Drizzle ORM) │
                                                     └──────┬───────┘
                                                            │
                                               ┌────────────┼────────────┐
@@ -112,7 +113,12 @@ curl "https://api.helius.xyz/v0/addresses/Coxgjx4UMQZPRdDZT9CAdrvt4TMTyUKH79ziJi
 # Then POST each transaction to your webhook endpoint for processing
 ```
 
-A backfill script may be added in a future version.
+A backfill endpoint is available to replay missed events:
+
+```bash
+# Backfill historical events from Helius
+curl -X POST http://localhost:3001/api/v1/history/backfill
+```
 
 ## API Endpoints
 
@@ -126,11 +132,19 @@ A backfill script may be added in a future version.
 
 ### History
 
-| Method | Path                             | Description                   |
-| ------ | -------------------------------- | ----------------------------- |
-| GET    | `/api/v1/history/tasks`          | List closed tasks (paginated) |
-| GET    | `/api/v1/history/tasks/:address` | Single task with event trail  |
-| GET    | `/api/v1/history/stats`          | Aggregated indexer statistics |
+| Method | Path                             | Description                    |
+| ------ | -------------------------------- | ------------------------------ |
+| GET    | `/api/v1/history/tasks`          | List closed tasks (paginated)  |
+| GET    | `/api/v1/history/tasks/:address` | Single task with event trail   |
+| GET    | `/api/v1/history/stats`          | Aggregated indexer statistics  |
+| POST   | `/api/v1/history/backfill`       | Replay events from Helius API  |
+
+### Descriptions
+
+| Method | Path                                    | Description               |
+| ------ | --------------------------------------- | ------------------------- |
+| POST   | `/api/v1/descriptions`                  | Store a task description  |
+| GET    | `/api/v1/descriptions/:descriptionHash` | Retrieve by hash          |
 
 ### Query Parameters for `/api/v1/history/tasks`
 
@@ -144,13 +158,27 @@ A backfill script may be added in a future version.
 
 ## Data Persistence
 
-Events are stored in JSON files under the `data/` directory:
+Events are stored in PostgreSQL via Drizzle ORM across four tables:
 
-- `data/events.json` — Raw event log (append-only)
-- `data/historical-tasks.json` — Projected task records
+| Table | Description |
+|-------|-------------|
+| `indexed_events` | Raw event log (append-only, with signature, slot, timestamp) |
+| `historical_tasks` | Projected task records for closed accounts |
+| `task_descriptions` | Off-chain task descriptions keyed by SHA-256 hash |
+| `task_titles` | Extracted task titles keyed by task address |
 
-The store flushes to disk every 2 seconds after new events arrive.
-The `data/` directory is gitignored.
+### Database Setup
+
+```bash
+# Set connection string
+export DATABASE_URL="postgresql://user:password@localhost:5432/verbitto"
+
+# Push schema to database
+cd apps/api && npx drizzle-kit push
+```
+
+The schema is defined in `apps/api/src/db/schema.ts` and migrations are
+managed via `drizzle-kit`.
 
 ## Events Indexed
 
@@ -178,10 +206,10 @@ history from all related events and stores it as a `HistoricalTask`.
 
 ## Production Considerations
 
-- **Persistence**: For production, replace the JSON file store with
-  PostgreSQL or another database.
-- **Concurrency**: The current store is single-process. For multi-instance
-  deployments, use a shared database.
-- **Backfill**: Run the backfill script before going live to capture
-  all pre-webhook events.
+- **Database**: PostgreSQL is the default storage backend via Drizzle ORM.
+  Set `DATABASE_URL` in your environment.
+- **Concurrency**: The PostgreSQL store supports multi-instance deployments
+  with proper connection pooling.
+- **Backfill**: Use `POST /api/v1/history/backfill` before going live to
+  capture all pre-webhook events from the Helius API.
 - **Monitoring**: Poll `/api/v1/webhook/status` from your monitoring system.

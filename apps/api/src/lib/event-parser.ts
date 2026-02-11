@@ -366,8 +366,8 @@ const CREATE_TASK_DISC = ixDiscriminator('create_task')
 const CREATE_TASK_FROM_TEMPLATE_DISC = ixDiscriminator('create_task_from_template')
 
 /**
- * Extract task titles from create_task instruction data in a transaction.
- * Returns a map of task PDA address → title string.
+ * Extract task titles and descriptionHashes from create_task instruction data in a transaction.
+ * Returns a map of task PDA address → { title, descriptionHash }
  *
  * Works with versioned transactions (maxSupportedTransactionVersion: 0).
  */
@@ -375,15 +375,15 @@ export function extractTitlesFromTx(
     tx: {
         transaction: { message: { compiledInstructions?: Array<{ programIdIndex: number; data: Uint8Array; accountKeyIndexes?: number[] }>; instructions?: Array<{ programIdIndex: number; data: string; accounts?: number[] }>; staticAccountKeys?: Array<{ toBase58(): string }>; accountKeys?: Array<{ toBase58(): string }> } }
     },
-): Map<string, string> {
-    const titles = new Map<string, string>()
+): Map<string, { title: string; descriptionHash: string }> {
+    const taskData = new Map<string, { title: string; descriptionHash: string }>()
 
     const msg = tx.transaction.message
     const accountKeys = (msg.staticAccountKeys ?? msg.accountKeys ?? []) as Array<{ toBase58(): string }>
 
     // Find our program's index in account keys
     const programIdx = accountKeys.findIndex((k) => k.toBase58() === PROGRAM_ID)
-    if (programIdx === -1) return titles
+    if (programIdx === -1) return taskData
 
     // Handle compiled instructions (versioned tx) and legacy instructions
     const instructions = msg.compiledInstructions ?? msg.instructions ?? []
@@ -413,8 +413,13 @@ export function extractTitlesFromTx(
             // Borsh String = u32 LE length + utf8 bytes
             const titleLen = ixData.readUInt32LE(8)
             if (titleLen > 64 || titleLen === 0) continue // sanity
-            if (ixData.length < 12 + titleLen) continue
+            if (ixData.length < 12 + titleLen + 32) continue // need title + descriptionHash
             const title = ixData.subarray(12, 12 + titleLen).toString('utf8')
+
+            // Extract descriptionHash (32 bytes after title)
+            const descHashOffset = 12 + titleLen
+            const descHashBytes = ixData.subarray(descHashOffset, descHashOffset + 32)
+            const descriptionHash = descHashBytes.toString('hex')
 
             // We need the task account from the instruction's accounts list.
             // Anchor account order for CreateTask: [task, creator_counter, platform, creator, system_program]
@@ -425,7 +430,7 @@ export function extractTitlesFromTx(
                 const taskAccIdx = accountIndexes[0]
                 if (taskAccIdx < accountKeys.length) {
                     const taskAddr = accountKeys[taskAccIdx].toBase58()
-                    titles.set(taskAddr, title)
+                    taskData.set(taskAddr, { title, descriptionHash })
                 }
             }
         } catch {
@@ -433,5 +438,5 @@ export function extractTitlesFromTx(
         }
     }
 
-    return titles
+    return taskData
 }

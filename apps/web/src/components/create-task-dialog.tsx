@@ -53,10 +53,16 @@ export function CreateTaskDialog({ open, onOpenChange, onSuccess }: CreateTaskDi
     setError(null)
 
     try {
+      console.log('🚀 Starting task creation...')
+      console.log('Wallet:', publicKey.toBase58())
+
       // Check balance first
       const balance = await connection.getBalance(publicKey)
       const requiredBounty = Math.round(parseFloat(bounty) * 1e9)
       const estimatedFees = 0.01 * 1e9 // Estimate 0.01 SOL for fees and rent
+
+      console.log('💰 Balance:', balance / 1e9, 'SOL')
+      console.log('💵 Required:', (requiredBounty + estimatedFees) / 1e9, 'SOL')
 
       if (balance < requiredBounty + estimatedFees) {
         setError(`Insufficient balance. You need at least ${(requiredBounty + estimatedFees) / 1e9} SOL`)
@@ -77,6 +83,7 @@ export function CreateTaskDialog({ open, onOpenChange, onSuccess }: CreateTaskDi
 
       // Create program instance
       const program = new Program(IDL, provider)
+      console.log('📝 Program initialized:', program.programId.toBase58())
 
       // Convert bounty to lamports
       const bountyLamports = new BN(Math.round(parseFloat(bounty) * 1e9))
@@ -113,7 +120,14 @@ export function CreateTaskDialog({ open, onOpenChange, onSuccess }: CreateTaskDi
       const platformPda = getPlatformPda()
       const taskPda = getTaskPda(publicKey, BigInt(taskIndex.toString()))
 
+      console.log('📍 PDAs:', {
+        platform: platformPda.toBase58(),
+        task: taskPda.toBase58(),
+        creatorCounter: creatorCounterPda.toBase58(),
+      })
+
       // Build transaction
+      console.log('🔨 Building transaction...')
       const txBuilder = program.methods
         .createTask(
           title,
@@ -131,11 +145,14 @@ export function CreateTaskDialog({ open, onOpenChange, onSuccess }: CreateTaskDi
           systemProgram: SystemProgram.programId,
         })
 
+      console.log('📤 Sending transaction...')
       // Send transaction with increased compute units
       const tx = await txBuilder.rpc({
         skipPreflight: false,
         commitment: 'confirmed',
       })
+
+      console.log('✅ Transaction confirmed:', tx)
 
       // Store description text in API database (pre-IPFS)
       if (description) {
@@ -167,7 +184,7 @@ export function CreateTaskDialog({ open, onOpenChange, onSuccess }: CreateTaskDi
       onOpenChange(false)
       onSuccess?.()
     } catch (err: any) {
-      console.error('Error creating task:', err)
+      console.error('❌ Error creating task:', err)
       console.error('Error details:', {
         name: err.name,
         message: err.message,
@@ -176,14 +193,16 @@ export function CreateTaskDialog({ open, onOpenChange, onSuccess }: CreateTaskDi
       })
 
       // User friendly error messages
-      if (err.message?.includes('User rejected')) {
+      if (err.message?.includes('User rejected') || err.code === 4001) {
         setError('Transaction was rejected. Please approve the transaction in your Phantom wallet.')
+      } else if (err.message?.includes('Wallet not ready') || err.message?.includes('wallet is not connected')) {
+        setError('Wallet connection error. Please reconnect your wallet and try again.')
       } else if (err.message?.includes('Insufficient balance') || err.message?.includes('insufficient funds')) {
         setError('Insufficient SOL balance. Please add more SOL to your wallet.')
       } else if (err.message?.includes('simulation failed')) {
         setError(`Transaction would fail: ${err.message}. Check console for details.`)
-      } else if (err.code === 4001 || err.code === -32603) {
-        setError('Wallet error: Transaction was rejected or failed. Please try again.')
+      } else if (err.code === -32603) {
+        setError('Wallet RPC error. Please refresh the page and try again.')
       } else {
         setError(`Failed to create task: ${err.message || 'Unknown error'}. Check browser console for details.`)
       }

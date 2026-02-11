@@ -43,6 +43,8 @@ export const historicalTasks = pgTable(
         address: text('address').primaryKey(),
         /** Task title from create_task instruction data */
         title: text('title').notNull().default(''),
+        /** SHA-256 hash of the description (hex) */
+        descriptionHash: text('description_hash').notNull().default(''),
         /** Creator public key */
         creator: text('creator').notNull(),
         /** Per-creator task index */

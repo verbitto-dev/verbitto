@@ -61,13 +61,13 @@ export function ExplorerStats() {
       href: '/tasks?status=Disputed',
       description: 'Under arbitration',
     },
-    {
+    /* {
       label: 'Templates',
       value: loading ? '—' : String(platform?.templateCount ?? 0),
       icon: Icons.layoutTemplate,
       href: '/tasks?template=true',
       description: 'View templates',
-    },
+    }, */
   ]
 
   return (

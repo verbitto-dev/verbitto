@@ -10,7 +10,7 @@ import { PublicKey } from '@solana/web3.js'
 import type { ConfirmedSignatureInfo, ParsedTransactionWithMeta } from '@solana/web3.js'
 import { getConnection } from './solana.js'
 import { parseEventsFromLogs, extractTitlesFromTx } from './event-parser.js'
-import { ingestEvents, saveStore, rebuildHistoricalTasks, setTaskTitle } from './event-store.js'
+import { ingestEvents, saveStore, rebuildHistoricalTasks, setTaskData } from './event-store.js'
 
 const PROGRAM_ID = new PublicKey(
     process.env.SOLANA_PROGRAM_ID || 'Coxgjx4UMQZPRdDZT9CAdrvt4TMTyUKH79ziJiNFHk8S',
@@ -110,14 +110,14 @@ export async function backfillFromRpc(opts?: {
                 eventsIngested += await ingestEvents(events)
             }
 
-            // Extract task titles from create_task instruction data
+            // Extract task titles and descriptionHashes from create_task instruction data
             try {
-                const titles = extractTitlesFromTx(tx as Parameters<typeof extractTitlesFromTx>[0])
-                for (const [taskAddr, title] of titles) {
-                    await setTaskTitle(taskAddr, title)
+                const taskDataMap = extractTitlesFromTx(tx as Parameters<typeof extractTitlesFromTx>[0])
+                for (const [taskAddr, data] of taskDataMap) {
+                    await setTaskData(taskAddr, data.title, data.descriptionHash)
                 }
             } catch {
-                // title extraction is best-effort
+                // title/hash extraction is best-effort
             }
         }
     }

@@ -37,6 +37,19 @@ const FINAL_STATUS_MAP: Record<string, TaskStatus> = {
 /** Convert a HistoricalTask to a TaskAccount-compatible shape for unified card rendering */
 function historicalToTaskAccount(h: HistoricalTask): TaskAccount {
   const EMPTY_KEY = PublicKey.default
+
+  // Convert descriptionHash from hex string to Uint8Array
+  let descriptionHashArray = new Uint8Array(32)
+  if (h.descriptionHash && h.descriptionHash.length === 64) {
+    try {
+      for (let i = 0; i < 32; i++) {
+        descriptionHashArray[i] = parseInt(h.descriptionHash.substr(i * 2, 2), 16)
+      }
+    } catch (err) {
+      console.warn('Failed to parse descriptionHash:', err)
+    }
+  }
+
   return {
     publicKey: (() => { try { return new PublicKey(h.address) } catch { return EMPTY_KEY } })(),
     creator: (() => { try { return new PublicKey(h.creator) } catch { return EMPTY_KEY } })(),
@@ -49,11 +62,13 @@ function historicalToTaskAccount(h: HistoricalTask): TaskAccount {
     settledAt: BigInt(h.closedAt || 0),
     reputationReward: 0n,
     title: h.title || `Task #${h.taskIndex != null && h.taskIndex !== '' ? h.taskIndex : '?'}`,
-    descriptionHash: new Uint8Array(32),
+    descriptionHash: descriptionHashArray,
     deliverableHash: new Uint8Array(32),
     templateIndex: 0n,
     rejectionCount: 0,
     bump: 0,
+    // Store description content for later use
+    _descriptionContent: h.description,
   }
 }
 

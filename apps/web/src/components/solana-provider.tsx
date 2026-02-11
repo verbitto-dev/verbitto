@@ -4,22 +4,37 @@ import { ConnectionProvider, WalletProvider } from '@solana/wallet-adapter-react
 import { WalletModalProvider } from '@solana/wallet-adapter-react-ui'
 import { PhantomWalletAdapter, SolflareWalletAdapter } from '@solana/wallet-adapter-wallets'
 import { clusterApiUrl } from '@solana/web3.js'
-import { useMemo } from 'react'
+import { useMemo, type ReactNode } from 'react'
 
 import '@solana/wallet-adapter-react-ui/styles.css'
 
 const NETWORK = (process.env.NEXT_PUBLIC_SOLANA_NETWORK || 'devnet') as 'devnet' | 'testnet' | 'mainnet-beta'
 
-export function SolanaProvider({ children }: { children: React.ReactNode }) {
-  const endpoint = useMemo(
-    () => process.env.NEXT_PUBLIC_SOLANA_RPC_URL || clusterApiUrl(NETWORK),
-    []
-  )
-  const wallets = useMemo(() => [new PhantomWalletAdapter(), new SolflareWalletAdapter()], [])
+export function SolanaProvider({ children }: { children: ReactNode }) {
+  const endpoint = useMemo(() => {
+    const rpcUrl = process.env.NEXT_PUBLIC_SOLANA_RPC_URL || clusterApiUrl(NETWORK)
+    console.log('🔗 Connecting to Solana RPC:', rpcUrl, 'Network:', NETWORK)
+    return rpcUrl
+  }, [])
+
+  const wallets = useMemo(() => {
+    console.log('💼 Initializing wallet adapters...')
+    return [new PhantomWalletAdapter(), new SolflareWalletAdapter()]
+  }, [])
+
+  const onError = useMemo(() => {
+    return (error: Error) => {
+      console.error('❌ Wallet error:', error)
+      // Don't show error toast for user rejection
+      if (error.message?.includes('User rejected')) {
+        return
+      }
+    }
+  }, [])
 
   return (
     <ConnectionProvider endpoint={endpoint}>
-      <WalletProvider wallets={wallets} autoConnect>
+      <WalletProvider wallets={wallets} autoConnect onError={onError}>
         <WalletModalProvider>{children}</WalletModalProvider>
       </WalletProvider>
     </ConnectionProvider>

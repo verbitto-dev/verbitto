@@ -45,6 +45,14 @@ export function TaskDetailDialog({ task, open, onOpenChange, onRefresh }: TaskDe
       setDescriptionContent(null)
       return
     }
+
+    // Check if task has pre-loaded description content (from historical tasks)
+    if ((task as any)._descriptionContent) {
+      setDescriptionContent((task as any)._descriptionContent)
+      return
+    }
+
+    // Otherwise, fetch by hash
     const hashHex = Buffer.from(task.descriptionHash).toString('hex')
     const isZero = task.descriptionHash.every((b) => b === 0)
     if (isZero) return

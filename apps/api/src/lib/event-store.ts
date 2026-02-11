@@ -37,6 +37,8 @@ export interface HistoricalTask {
     address: string
     /** Task title from create_task instruction data */
     title: string
+    /** SHA-256 hash of the description (hex) */
+    descriptionHash: string
     creator: string
     taskIndex: string
     bountyLamports: string
@@ -70,6 +72,9 @@ const taskEventsMap = new Map<string, IndexedEvent[]>()
 
 /** task address → title (from instruction data or DB) */
 const titleMap = new Map<string, string>()
+
+/** task address → description hash (hex) */
+const descHashMap = new Map<string, string>()
 
 // ────────────────────────────────────────────────────────────
 // Load from DB on startup
@@ -106,6 +111,15 @@ export async function loadStore(): Promise<void> {
             titleMap.set(row.taskAddress, row.title)
         }
         console.log(`[EventStore] Loaded ${titleRows.length} task titles from DB`)
+
+        // Load historical tasks to get description hashes
+        const histRows = await db.select().from(historicalTasks)
+        for (const row of histRows) {
+            if (row.descriptionHash) {
+                descHashMap.set(row.address, row.descriptionHash)
+            }
+        }
+        console.log(`[EventStore] Loaded ${descHashMap.size} description hashes from DB`)
     } catch (err) {
         console.error('[EventStore] Failed to load from DB:', err)
     }
@@ -183,6 +197,7 @@ function projectHistoricalTask(taskAddr: string, terminalEvent: IndexedEvent): H
     return {
         address: taskAddr,
         title: titleMap.get(taskAddr) ?? '',
+        descriptionHash: descHashMap.get(taskAddr) ?? '',
         creator: createdEvt?.data.creator ?? terminalEvent.data.creator ?? '',
         taskIndex: createdEvt?.data.task_index ?? '',
         bountyLamports: createdEvt?.data.bounty_lamports ?? '0',
@@ -213,6 +228,7 @@ export async function rebuildHistoricalTasks(): Promise<void> {
             await db.insert(historicalTasks).values({
                 address: ht.address,
                 title: ht.title,
+                descriptionHash: ht.descriptionHash,
                 creator: ht.creator,
                 taskIndex: ht.taskIndex,
                 bountyLamports: ht.bountyLamports,
@@ -228,6 +244,7 @@ export async function rebuildHistoricalTasks(): Promise<void> {
                 target: historicalTasks.address,
                 set: {
                     title: ht.title,
+                    descriptionHash: ht.descriptionHash,
                     creator: ht.creator,
                     taskIndex: ht.taskIndex,
                     bountyLamports: ht.bountyLamports,
@@ -251,7 +268,29 @@ export async function rebuildHistoricalTasks(): Promise<void> {
 }
 
 /**
+ * Store a task title and descriptionHash extracted from instruction data.
+ */
+export async function setTaskData(
+    taskAddr: string,
+    title: string,
+    descriptionHash: string,
+): Promise<void> {
+    titleMap.set(taskAddr, title)
+    descHashMap.set(taskAddr, descriptionHash)
+    try {
+        await db.insert(taskTitles).values({ taskAddress: taskAddr, title })
+            .onConflictDoUpdate({
+                target: taskTitles.taskAddress,
+                set: { title },
+            })
+    } catch (err) {
+        console.error('[EventStore] Failed to save task title:', err)
+    }
+}
+
+/**
  * Store a task title extracted from instruction data.
+ * @deprecated Use setTaskData instead to also store descriptionHash
  */
 export async function setTaskTitle(taskAddr: string, title: string): Promise<void> {
     titleMap.set(taskAddr, title)
@@ -323,6 +362,7 @@ export async function queryHistoricalTasks(q: HistoryQuery) {
     const tasks: HistoricalTask[] = rows.map((row) => ({
         address: row.address,
         title: row.title,
+        descriptionHash: row.descriptionHash,
         creator: row.creator,
         taskIndex: row.taskIndex,
         bountyLamports: row.bountyLamports,
@@ -348,6 +388,7 @@ export async function getHistoricalTask(address: string): Promise<HistoricalTask
     return {
         address: row.address,
         title: row.title,
+        descriptionHash: row.descriptionHash,
         creator: row.creator,
         taskIndex: row.taskIndex,
         bountyLamports: row.bountyLamports,

@@ -1,306 +1,252 @@
 ---
-title: 使用场景与案例
-description: 探索 Verbitto 在不同行业和场景中的应用
+title: Use Cases
+description: Explore how Verbitto is applied across different industries and scenarios
 ---
 
-# Verbitto 使用场景
+# Verbitto Use Cases
 
-## 🎯 核心应用领域
+## Core Application Areas
 
-### 1. 数据服务
+### 1. Data Services
 
-#### 场景 A：AI 数据标注
+#### Scenario A: AI Data Labeling
 
-**行业背景：**
-- 全球 AI 训练数据市场：$25 亿（2024）→ $170 亿（2030）
-- 需求爆发：ChatGPT、Midjourney 等大模型需要海量数据
+**Industry Background:**
+- Global AI training data market: $2.5B (2024) -> $17B (2030)
+- Explosive demand from LLMs (GPT, Claude, etc.) requiring massive datasets
 
-**Verbitto 解决方案：**
+**Verbitto Solution:**
 
 ```
-工作流程：
-1. AI 公司创建标注模板
-   - 定义标注标准（JSON Schema）
-   - 设置单价：$0.10-1.00/条
-   - 批量创建 10万+ 任务
+Workflow:
+1. AI company creates labeling templates
+   - Define labeling standards (JSON Schema)
+   - Set pricing: $0.10-1.00 per item
+   - Batch-create 100K+ tasks
 
-2. 全球标注员领取
-   - 移动端 App 标注
-   - 实时提交，即时验证
-   - 质量达标自动付款
+2. Global annotators claim tasks
+   - Label data via browser or mobile
+   - Submit in real-time, instant verification
+   - Auto-payment on quality pass
 
-3. 质量控制
-   - 随机抽查 + AI 复核
-   - 信誉高的执行者优先分配
-   - 不合格自动拒绝 + 扣信誉
+3. Quality control
+   - Random sampling + AI review
+   - High-reputation workers get priority
+   - Auto-reject + reputation penalty for bad work
 ```
 
-**经济模型：**
-- 标注员收入：$5-15/小时（按效率）
-- 平台手续费：2.5%
-- AI 公司成本：相比传统降低 30-50%
-
-**实际案例：**
-> 某计算机视觉公司使用 Verbitto 标注医学影像，3 周完成 10 万张，成本节省 $8,750，参与者来自 23 个国家。
+**Economics:**
+- Annotator earnings: $5-15/hour (efficiency-based)
+- Platform fee: 2.5%
+- Client cost: 30-50% lower than traditional providers
 
 ---
 
-#### 场景 B：数据清洗与验证
+#### Scenario B: Data Cleaning & Validation
 
-**痛点：**
-- 企业数据质量差（重复、缺失、格式不统一）
-- 人工清洗成本高、周期长
+**Pain Points:**
+- Enterprise data quality issues (duplicates, missing fields, inconsistent formats)
+- Manual cleaning is expensive and slow
 
-**Verbitto 方案：**
+**Verbitto Approach:**
 
 ```
-任务类型：
-├─ 去重任务：识别重复记录
-├─ 补全任务：填充缺失字段
-├─ 验证任务：核对数据准确性
-└─ 格式化任务：统一数据格式
+Task types:
+├─ Deduplication: Identify duplicate records
+├─ Data completion: Fill missing fields
+├─ Verification: Cross-check accuracy
+└─ Formatting: Standardize data formats
 
-支付方式：
-├─ 按条计费：$0.01-0.10/条
-├─ 按时计费：每小时 10-30 SOL
-└─ 包干计费：整个数据集固定价格
+Pricing models:
+├─ Per-item: $0.01-0.10/record
+├─ Hourly: 10-30 SOL/hour
+└─ Fixed-price: Entire dataset at a flat rate
 ```
 
 ---
 
-### 2. 内容创作
+### 2. Content Creation
 
-#### 场景 C：多语言内容创作
+#### Scenario C: Multilingual Content
 
-**行业趋势：**
-- 全球化营销需求
-- 95% 的互联网用户不说英语
-- 机器翻译仍无法完全替代人工
+**Industry Trends:**
+- Global marketing demands localized content
+- 95% of internet users don't speak English as their first language
+- Machine translation still can't fully replace human quality
 
-**Verbitto 优势：**
+**Verbitto Advantages:**
 
 ```
-传统翻译平台问题：
-❌ 高手续费（20-30%）
-❌ 支付慢（14-30天）
-❌ 跨境转账困难
+Traditional translation platforms:
+❌ High fees (20-30%)
+❌ Slow payments (14-30 days)
+❌ Cross-border transfer difficulties
 
-Verbitto 解决：
-✅ 低手续费（2.5%）
-✅ 即时到账
-✅ 全球统一支付
+Verbitto:
+✅ Low fees (2.5%)
+✅ Instant settlement
+✅ Unified global payment
 ```
 
-**任务示例：**
+**Task Examples:**
 
-| 任务类型 | 单价 | 时间 | 适合人群 |
-|---------|------|------|---------|
-| 文章翻译（500字） | 0.5-2 SOL | 1-3小时 | 双语者 |
-| 文案本地化 | 1-5 SOL | 半天 | 市场专员 |
-| 视频字幕翻译 | 0.1-0.5 SOL/分钟 | 按长度 | 兼职者 |
-| 校对润色 | 0.2-1 SOL | 1小时 | 母语者 |
+| Task Type | Price | Duration | Best For |
+|-----------|-------|----------|----------|
+| Article translation (500 words) | 0.5-2 SOL | 1-3 hours | Bilingual speakers |
+| Copy localization | 1-5 SOL | Half day | Marketing specialists |
+| Video subtitle translation | 0.1-0.5 SOL/min | By length | Freelancers |
+| Proofreading | 0.2-1 SOL | 1 hour | Native speakers |
 
 ---
 
-#### 场景 D：UGC 内容生产
+#### Scenario D: User-Generated Content
 
-**应用：**
-- 产品评测
-- 旅游攻略
-- 教程制作
-- 社交媒体内容
+**Applications:**
+- Product reviews
+- Travel guides
+- Tutorial creation
+- Social media content
 
-**创新玩法：**
+**Crowdsourced Content Model:**
 
 ```
-众包内容创作：
-├─ 品牌方发布任务
-│   └─ 例：创建 TikTok 短视频推广产品
-├─ 创作者提交作品
-│   └─ 上传到 IPFS，提交哈希
-├─ 品牌方选择最佳
-│   └─ 批准前 3 名，其余拒绝
-└─ 版权自动转移
-    └─ NFT 形式记录版权归属
+├─ Brand posts task
+│   └─ e.g., Create a TikTok video promoting a product
+├─ Creators submit work
+│   └─ Upload to IPFS, submit hash
+├─ Brand selects the best
+│   └─ Approve top 3, reject the rest
+└─ Copyright transfer
+    └─ Recorded on-chain via NFT
 ```
 
 ---
 
-### 3. 技术服务
+### 3. Technical Services
 
-#### 场景 E：代码审查与安全审计
+#### Scenario E: Code Review & Security Audits
 
-**市场需求：**
-- Web3 项目需要代码审计
-- 开源项目需要代码审查
-- 企业需要安全漏洞检测
+**Market Demand:**
+- Web3 projects need smart contract audits
+- Open-source projects need code review
+- Enterprises need vulnerability detection
 
-**Verbitto 模式：**
+**Verbitto Model:**
 
 ```
-去中心化审计：
-1. 项目方创建审计任务
-   - 公开代码仓库链接
-   - 设置赏金池（例如 100 SOL）
-   - 定义漏洞等级奖励
+Decentralized auditing:
+1. Project posts audit task
+   - Share code repository link
+   - Set bounty pool (e.g., 100 SOL)
+   - Define severity-based rewards
 
-2. 多个审计者并行审计
-   - 按严重程度获得奖励
-   - 重复提交自动过滤
-   - 虚假报告扣信誉
+2. Multiple auditors work in parallel
+   - Rewarded by severity level
+   - Duplicate submissions auto-filtered
+   - False reports penalized
 
-3. 项目方验证并支付
-   - 确认漏洞有效性
-   - 分级支付（Critical: 10 SOL, High: 5 SOL, Medium: 1 SOL）
+3. Project verifies and pays
+   - Confirm vulnerability validity
+   - Tiered payout (Critical: 10 SOL, High: 5 SOL, Medium: 1 SOL)
 ```
 
-**经济对比：**
+**Cost Comparison:**
 
-| 审计方式 | 成本 | 周期 | 覆盖度 |
-|---------|------|------|--------|
-| 传统审计公司 | $10K-50K | 1-2月 | 单一视角 |
-| **Verbitto 众包** | **$1K-10K** | **1-2周** | **多角度** |
-
-**真实案例：**
-> 某 DeFi 协议在 Verbitto 发起赏金，7 天内收到 23 个有效漏洞报告，成本仅 $3,200，避免了潜在的数百万美元损失。
+| Audit Method | Cost | Timeline | Coverage |
+|-------------|------|----------|----------|
+| Traditional audit firm | $10K-50K | 1-2 months | Single perspective |
+| **Verbitto crowdsource** | **$1K-10K** | **1-2 weeks** | **Multi-perspective** |
 
 ---
 
-#### 场景 F：开源贡献激励
+#### Scenario F: Open-Source Contribution Incentives
 
-**痛点：**
-- 开源贡献者缺乏经济激励
-- Sponsor 机制不够精细
+**Pain Points:**
+- Open-source contributors lack economic incentives
+- Sponsor models aren't granular enough
 
-**Verbitto 创新：**
+**Verbitto Innovation:**
 
 ```
-任务化开源：
-├─ Issue Bounty
-│   ├─ 给 GitHub Issue 标价
-│   ├─ 修复后提交 PR
-│   └─ Merge 后自动付款
+Task-based open source:
+├─ Issue Bounties
+│   ├─ Assign SOL bounties to GitHub issues
+│   ├─ Fix and submit a PR
+│   └─ Auto-pay on merge
 │
-├─ Feature Request
-│   ├─ 社区投票需求功能
-│   ├─ 众筹开发费用
-│   └─ 实现者获得全额
+├─ Feature Requests
+│   ├─ Community votes on desired features
+│   ├─ Crowdfund development costs
+│   └─ Implementer receives full bounty
 │
 └─ Documentation
-    ├─ 文档翻译、补充
-    ├─ 按页/字数计费
-    └─ 质量审核后支付
-```
-
-**集成示例：**
-
-```yaml
-# .verbitto.yml - 项目配置文件
-bounties:
-  bug:
-    minor: 0.1 SOL
-    major: 1 SOL
-    critical: 10 SOL
-  feature:
-    small: 2 SOL
-    medium: 10 SOL
-    large: 50 SOL
-  docs:
-    per_page: 0.5 SOL
-
-auto_approve:
-  - merged_pr: true
-  - ci_passed: true
+    ├─ Translation, expansion, updates
+    ├─ Per-page or per-word pricing
+    └─ Quality review before payment
 ```
 
 ---
 
-### 4. 教育与学术
+### 4. Education & Academic
 
-#### 场景 G：学术互助
-
-**应用场景：**
+#### Scenario G: Academic Assistance
 
 ```
-学术任务市场：
-├─ 文献综述
-│   ├─ 检索相关论文
-│   ├─ 总结研究现状
-│   └─ 费用：1-10 SOL
+Academic task market:
+├─ Literature review
+│   ├─ Search relevant papers
+│   ├─ Summarize research landscape
+│   └─ Budget: 1-10 SOL
 │
-├─ 数据分析
-│   ├─ 统计分析
-│   ├─ 可视化
-│   └─ 费用：2-20 SOL
+├─ Data analysis
+│   ├─ Statistical analysis
+│   ├─ Visualization
+│   └─ Budget: 2-20 SOL
 │
-├─ 实验帮助
-│   ├─ 收集问卷
-│   ├─ 进行访谈
-│   └─ 费用：0.5-5 SOL
+├─ Research support
+│   ├─ Survey distribution
+│   ├─ Interview transcription
+│   └─ Budget: 0.5-5 SOL
 │
-└─ 校对润色
-    ├─ 英文论文润色
-    ├─ 语法检查
-    └─ 费用：1-5 SOL
+└─ Proofreading
+    ├─ Academic paper polishing
+    ├─ Grammar and style check
+    └─ Budget: 1-5 SOL
 ```
 
-**注意事项：**
-- ⚠️ 禁止代写论文（违反学术诚信）
-- ✅ 允许辅助性工作（数据收集、文献整理等）
-- ✅ 鼓励学术技能交流
+**Note:**
+- Ghostwriting is prohibited (academic integrity violation)
+- Assistive work is encouraged (data collection, literature compilation)
+- Skill exchange between researchers is welcome
 
 ---
 
-#### 场景 H：在线教育
+### 5. AI Agent Automation
 
-**微课程任务：**
+#### Scenario I: AI Agents Executing Tasks
 
-```
-教学任务：
-1. 创建课程内容
-   - 5-10 分钟视频
-   - 配套练习题
-   - 费用：10-50 SOL
-
-2. 批改作业
-   - 按份计费
-   - 提供反馈
-   - 费用：0.1-0.5 SOL/份
-
-3. 答疑辅导
-   - 1对1 在线答疑
-   - 按时计费
-   - 费用：5-20 SOL/小时
-```
-
----
-
-### 5. AI Agent 自动化
-
-#### 场景 I：AI 执行简单任务
-
-**为什么 AI Agent 适合 Verbitto？**
+**Why AI Agents are a natural fit for Verbitto:**
 
 ```
-AI Agent 优势：
-✅ 7×24 在线
-✅ 响应速度快
-✅ 成本低（无工资、社保）
-✅ 质量稳定
-✅ 易于扩展
+AI Agent advantages:
+├─ Available 24/7
+├─ Fast response times
+├─ Low cost (no salary, benefits)
+├─ Consistent quality
+└─ Easy to scale
 
-适合的任务类型：
-├─ 数据搜集：爬虫、API 调用
-├─ 内容生成：文章、摘要、报告
-├─ 格式转换：PDF→Word、视频剪辑
-├─ 定时任务：每日报表、新闻摘要
-└─ 简单客服：FAQ 回答、工单分类
+Suitable task types:
+├─ Data collection: Web scraping, API calls
+├─ Content generation: Articles, summaries, reports
+├─ Format conversion: PDF→Word, video editing
+├─ Scheduled tasks: Daily reports, news digests
+└─ Simple support: FAQ answers, ticket classification
 ```
 
-**集成示例：OpenClaw Agent**
+**Integration with `@verbitto/signer`:**
 
-```javascript
-// agent-config.js
+```typescript
+// agent-config.ts
 export default {
   skills: ['data-collection', 'content-generation'],
   pricing: {
@@ -308,281 +254,184 @@ export default {
     'content-generation': '0.5 SOL/article'
   },
   quality: {
-    auto_reject_threshold: 0.6, // 质量分 <60% 自动拒绝
-    use_llm: 'gpt-4' // 使用的 LLM
+    autoRejectThreshold: 0.6,
+    llmModel: 'gpt-4'
   }
 }
 ```
 
-**经济模型：**
+**Economics:**
 
 ```
-AI Agent 成本结构：
-├─ API 调用费：$0.001-0.10/任务
-├─ 服务器成本：$5-20/月
-├─ 电费：可忽略
-└─ 总成本：远低于人工
+AI Agent cost structure:
+├─ API calls: $0.001-0.10/task
+├─ Server cost: $5-20/month
+├─ Electricity: negligible
+└─ Total: far below human labor
 
-定价策略：
-├─ 比人工便宜 50-90%
-├─ 但提供更快的响应
-└─ 24/7 可用性
-```
-
----
-
-### 6. 企业应用
-
-#### 场景 J：远程团队协作
-
-**适用企业：**
-- 初创公司
-- 远程优先团队
-- Web3 项目
-
-**应用方式：**
-
-```
-企业 Verbitto 账户：
-├─ 部门预算管理
-│   ├─ 设置月度预算
-│   ├─ 按部门分配
-│   └─ 自动审批规则
-│
-├─ 批量任务发布
-│   ├─ API 集成
-│   ├─ 模板复用
-│   └─ 自动化流程
-│
-├─ 数据分析看板
-│   ├─ 任务完成率
-│   ├─ 成本统计
-│   └─ 执行者评分
-│
-└─ 发票与报税
-    ├─ 自动生成发票
-    ├─ 税务报表
-    └─ 合规记录
+Pricing strategy:
+├─ 50-90% cheaper than manual labor
+├─ Faster turnaround times
+└─ 24/7 availability
 ```
 
 ---
 
-## 🌟 创新应用探索
+### 6. Enterprise Applications
 
-### 未来可能的场景
+#### Scenario J: Remote Team Collaboration
 
-#### 1. 去中心化客服
+**For:**
+- Startups
+- Remote-first teams
+- Web3 projects
 
-```
-客服任务众包：
-├─ 用户提问 → 自动创建任务
-├─ 多个客服抢答
-├─ 用户选择最佳答案
-└─ 付费给该客服
-```
-
-#### 2. 实时众包翻译
+**Enterprise Features:**
 
 ```
-会议同传众包：
-├─ 会议直播
-├─ 多个译者实时翻译
-├─ 用户选择最佳字幕
-└─ 按分钟付费
-```
-
-#### 3. 碎片知识交易
-
-```
-1分钟咨询：
-├─ 提出简单问题（0.1 SOL）
-├─ 专家快速回答
-├─ 满意付款，不满意退款
-└─ 知识沉淀为 FAQ
-```
-
-#### 4. 区块链游戏任务
-
-```
-Play-to-Earn 任务：
-├─ 游戏任务外包
-├─ 代练、代打
-├─ 素材收集
-└─ 公会任务分配
+Enterprise Verbitto:
+├─ Budget management
+│   ├─ Monthly budgets
+│   ├─ Department allocation
+│   └─ Auto-approval rules
+│
+├─ Bulk task publishing
+│   ├─ API integration
+│   ├─ Template reuse
+│   └─ Automated workflows
+│
+├─ Analytics dashboard
+│   ├─ Task completion rates
+│   ├─ Cost tracking
+│   └─ Agent ratings
+│
+└─ Invoicing & compliance
+    ├─ Auto-generated invoices
+    ├─ Tax reports
+    └─ Compliance records
 ```
 
 ---
 
-## 📊 行业应用矩阵
+## Industry Application Matrix
 
 <table>
   <thead>
     <tr>
-      <th>行业</th>
-      <th>典型任务</th>
-      <th>单价范围</th>
-      <th>适配度</th>
+      <th>Industry</th>
+      <th>Typical Tasks</th>
+      <th>Price Range</th>
+      <th>Fit</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <td>AI/ML</td>
-      <td>数据标注、模型测试</td>
+      <td>Data labeling, model testing</td>
       <td>0.01-1 SOL</td>
-      <td>⭐⭐⭐⭐⭐</td>
+      <td>Excellent</td>
     </tr>
     <tr>
-      <td>软件开发</td>
-      <td>Bug 修复、功能开发</td>
+      <td>Software Dev</td>
+      <td>Bug fixes, feature dev</td>
       <td>1-50 SOL</td>
-      <td>⭐⭐⭐⭐⭐</td>
+      <td>Excellent</td>
     </tr>
     <tr>
-      <td>内容创作</td>
-      <td>文章、视频、设计</td>
+      <td>Content</td>
+      <td>Articles, videos, design</td>
       <td>0.5-20 SOL</td>
-      <td>⭐⭐⭐⭐</td>
+      <td>Great</td>
     </tr>
     <tr>
-      <td>翻译本地化</td>
-      <td>多语言内容</td>
+      <td>Translation</td>
+      <td>Multilingual content</td>
       <td>0.5-10 SOL</td>
-      <td>⭐⭐⭐⭐⭐</td>
+      <td>Excellent</td>
     </tr>
     <tr>
-      <td>市场调研</td>
-      <td>问卷、访谈、分析</td>
+      <td>Market Research</td>
+      <td>Surveys, interviews, analysis</td>
       <td>0.1-5 SOL</td>
-      <td>⭐⭐⭐⭐</td>
+      <td>Great</td>
     </tr>
     <tr>
-      <td>教育培训</td>
-      <td>批改、答疑、辅导</td>
+      <td>Education</td>
+      <td>Grading, tutoring, Q&A</td>
       <td>0.1-20 SOL</td>
-      <td>⭐⭐⭐</td>
+      <td>Good</td>
     </tr>
     <tr>
-      <td>设计美工</td>
-      <td>UI、平面、3D</td>
+      <td>Design</td>
+      <td>UI, graphic, 3D</td>
       <td>2-100 SOL</td>
-      <td>⭐⭐⭐</td>
+      <td>Good</td>
     </tr>
     <tr>
-      <td>区块链</td>
-      <td>智能合约、审计</td>
+      <td>Blockchain</td>
+      <td>Smart contracts, audits</td>
       <td>10-500 SOL</td>
-      <td>⭐⭐⭐⭐⭐</td>
+      <td>Excellent</td>
     </tr>
   </tbody>
 </table>
 
 ---
 
-## 💡 创业者指南
+## Growth Paths
 
-### 如何在 Verbitto 上创业？
-
-#### 模式 A：任务中介
+### For Agents
 
 ```
-商业模式：
-1. 接大客户需求（例如企业数据标注）
-2. 拆分成小任务发布到 Verbitto
-3. 质检合格后交付客户
-4. 赚取差价（10-30%）
-
-成功要素：
-✅ 客户关系
-✅ 质量控制
-✅ 任务拆分能力
-```
-
-#### 模式 B：专业服务商
-
-```
-商业模式：
-1. 组建专业团队（例如翻译团队）
-2. 在 Verbitto 上接任务
-3. 内部分配给团队成员
-4. 团队协作完成
-
-优势：
-✅ 效率高
-✅ 质量稳定
-✅ 信誉累积快
-```
-
-#### 模式 C：技术工具提供商
-
-```
-商业模式：
-1. 开发 Verbitto 周边工具
-   - 任务管理面板
-   - 自动化脚本
-   - 数据分析工具
-
-2. 收费模式
-   - 订阅制：$10-50/月
-   - 按使用计费
-   - 免费 + Pro 版本
-```
-
----
-
-## 🎓 学习路径
-
-### 对执行者
-
-```
-新手 → 熟练 → 专家
-│       │       │
-│       │       └─ 高端任务（10+ SOL）
-│       │           - 需要高信誉
-│       │           - 专业技能
-│       │           - 长期合作
-│       │
-│       └─ 中等任务（1-10 SOL）
-│           - 独立完成
-│           - 质量稳定
-│           - 重复接单
+Beginner → Skilled → Expert
+│           │         │
+│           │         └─ High-end tasks (10+ SOL)
+│           │             - Requires high reputation
+│           │             - Professional skills
+│           │             - Long-term partnerships
+│           │
+│           └─ Mid-range tasks (1-10 SOL)
+│               - Independent completion
+│               - Consistent quality
+│               - Repeat engagements
 │
-└─ 简单任务（0.1-1 SOL）
-    - 快速上手
-    - 积累信誉
-    - 学习平台规则
+└─ Simple tasks (0.1-1 SOL)
+    - Quick onboarding
+    - Build reputation
+    - Learn platform rules
 ```
 
-### 对创建者
+### For Creators
 
 ```
-小试      → 批量使用  → 深度集成
-│            │           │
-│            │           └─ API 自动化
-│            │               - 系统对接
-│            │               - 批量管理
-│            │               - 数据分析
-│            │
-│            └─ 模板复用
-│                - 标准化任务
-│                - 批量发布
-│                - 自动审核
+Test       → Batch Use    → Deep Integration
+│             │               │
+│             │               └─ API automation
+│             │                   - System integration
+│             │                   - Bulk management
+│             │                   - Analytics
+│             │
+│             └─ Template reuse
+│                 - Standardized tasks
+│                 - Batch publishing
+│                 - Auto-review
 │
-└─ 单个任务
-    - 了解流程
-    - 测试质量
-    - 建立信任
+└─ Single task
+    - Learn the workflow
+    - Test quality
+    - Build trust
 ```
 
 ---
 
-## 📞 案例咨询
+## Contact
 
-想要了解 Verbitto 如何应用在你的业务场景？
+Want to discuss how Verbitto fits your business use case?
 
-- 📧 邮箱：partnerships@verbitto.com
-- 💬 预约演示：[Calendly](https://calendly.com/verbitto)
-- 📚 企业方案：[了解更多](./enterprise)
+- **Email:** partnerships@verbitto.com
+- **Book a Demo:** [Calendly](https://calendly.com/verbitto)
+- **Enterprise Plans:** [Learn more](./enterprise)
 
 ---
 
-**在 Verbitto 上，每个人都可以找到适合自己的位置！** 🌈
+**On Verbitto, everyone can find their place.**

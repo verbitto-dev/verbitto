@@ -11,6 +11,7 @@
  */
 
 import { createRoute, OpenAPIHono } from '@hono/zod-openapi'
+import { eq } from 'drizzle-orm'
 import {
     queryHistoricalTasks,
     getHistoricalTask,
@@ -18,6 +19,8 @@ import {
     getIndexerStats,
 } from '../lib/event-store.js'
 import { backfillFromRpc } from '../lib/backfill.js'
+import { db } from '../db/index.js'
+import { taskDescriptions } from '../db/schema.js'
 import { ErrorSchema } from '../schemas/common.js'
 import {
     HistoricalTasksListSchema,
@@ -32,11 +35,32 @@ const app = new OpenAPIHono()
 // Serializer
 // ────────────────────────────────────────────────────────────
 
-function serializeHistoricalTask(t: Awaited<ReturnType<typeof getHistoricalTask>>) {
+async function serializeHistoricalTask(t: Awaited<ReturnType<typeof getHistoricalTask>>) {
     if (!t) return null
+
+    // Fetch description content from database if descriptionHash exists
+    let descriptionContent: string | null = null
+    if (t.descriptionHash && t.descriptionHash !== '0'.repeat(64)) {
+        try {
+            const descRows = await db
+                .select()
+                .from(taskDescriptions)
+                .where(eq(taskDescriptions.descriptionHash, t.descriptionHash))
+                .limit(1)
+
+            if (descRows.length > 0) {
+                descriptionContent = descRows[0].content
+            }
+        } catch (err) {
+            console.warn(`[History] Failed to fetch description for ${t.address}:`, err)
+        }
+    }
+
     return {
         address: t.address,
         title: t.title,
+        descriptionHash: t.descriptionHash,
+        description: descriptionContent,
         creator: t.creator,
         taskIndex: t.taskIndex,
         bountyLamports: t.bountyLamports,
@@ -91,8 +115,13 @@ app.openapi(listHistoricalRoute, async (c) => {
             offset: q.offset ? parseInt(q.offset, 10) : undefined,
         })
 
+        // Serialize tasks with description content
+        const serializedTasks = await Promise.all(
+            result.tasks.map(serializeHistoricalTask)
+        )
+
         return c.json({
-            tasks: result.tasks.map(serializeHistoricalTask),
+            tasks: serializedTasks,
             total: result.total,
             limit: result.limit,
             offset: result.offset,
