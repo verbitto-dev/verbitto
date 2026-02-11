@@ -95,31 +95,31 @@ describe('task-escrow', () => {
       program.programId
     )
 
-    // Derive agent profile PDA
-    ;[agentProfilePda] = PublicKey.findProgramAddressSync(
-      [Buffer.from('agent'), agent.publicKey.toBuffer()],
-      program.programId
-    )
+      // Derive agent profile PDA
+      ;[agentProfilePda] = PublicKey.findProgramAddressSync(
+        [Buffer.from('agent'), agent.publicKey.toBuffer()],
+        program.programId
+      )
 
-    // Derive voter profile PDAs
-    ;[voter1ProfilePda] = PublicKey.findProgramAddressSync(
-      [Buffer.from('agent'), voter1.publicKey.toBuffer()],
-      program.programId
-    )
-    ;[voter2ProfilePda] = PublicKey.findProgramAddressSync(
-      [Buffer.from('agent'), voter2.publicKey.toBuffer()],
-      program.programId
-    )
-    ;[voter3ProfilePda] = PublicKey.findProgramAddressSync(
-      [Buffer.from('agent'), voter3.publicKey.toBuffer()],
-      program.programId
-    )
+      // Derive voter profile PDAs
+      ;[voter1ProfilePda] = PublicKey.findProgramAddressSync(
+        [Buffer.from('agent'), voter1.publicKey.toBuffer()],
+        program.programId
+      )
+      ;[voter2ProfilePda] = PublicKey.findProgramAddressSync(
+        [Buffer.from('agent'), voter2.publicKey.toBuffer()],
+        program.programId
+      )
+      ;[voter3ProfilePda] = PublicKey.findProgramAddressSync(
+        [Buffer.from('agent'), voter3.publicKey.toBuffer()],
+        program.programId
+      )
 
-    // Derive creator counter PDA
-    ;[creatorCounterPda] = PublicKey.findProgramAddressSync(
-      [Buffer.from('creator'), creator.publicKey.toBuffer()],
-      program.programId
-    )
+      // Derive creator counter PDA
+      ;[creatorCounterPda] = PublicKey.findProgramAddressSync(
+        [Buffer.from('creator'), creator.publicKey.toBuffer()],
+        program.programId
+      )
 
     // Transfer SOL to test accounts from provider wallet (avoid faucet rate limits)
     // Minimal amounts optimized for devnet airdrop limits (5 SOL/day)
@@ -231,10 +231,10 @@ describe('task-escrow', () => {
     it('creates a task with SOL escrow', async () => {
       const taskIndex = new BN(creatorTaskCount)
 
-      ;[taskPda] = PublicKey.findProgramAddressSync(
-        [Buffer.from('task'), creator.publicKey.toBuffer(), taskIndex.toArrayLike(Buffer, 'le', 8)],
-        program.programId
-      )
+        ;[taskPda] = PublicKey.findProgramAddressSync(
+          [Buffer.from('task'), creator.publicKey.toBuffer(), taskIndex.toArrayLike(Buffer, 'le', 8)],
+          program.programId
+        )
 
       const deadline = Math.floor(Date.now() / 1000) + 3600 // 1 hour
 
@@ -354,10 +354,10 @@ describe('task-escrow', () => {
       const taskIndex = new BN(creatorTaskCount)
       const bounty = 0.5 * LAMPORTS_PER_SOL
 
-      ;[taskPda] = PublicKey.findProgramAddressSync(
-        [Buffer.from('task'), creator.publicKey.toBuffer(), taskIndex.toArrayLike(Buffer, 'le', 8)],
-        program.programId
-      )
+        ;[taskPda] = PublicKey.findProgramAddressSync(
+          [Buffer.from('task'), creator.publicKey.toBuffer(), taskIndex.toArrayLike(Buffer, 'le', 8)],
+          program.programId
+        )
 
       const deadline = Math.floor(Date.now() / 1000) + 3600
 
@@ -414,14 +414,14 @@ describe('task-escrow', () => {
       const platform = await program.account.platform.fetch(platformPda)
       const templateIndex = platform.templateCount
 
-      ;[templatePda] = PublicKey.findProgramAddressSync(
-        [
-          Buffer.from('template'),
-          creator.publicKey.toBuffer(),
-          templateIndex.toArrayLike(Buffer, 'le', 8),
-        ],
-        program.programId
-      )
+        ;[templatePda] = PublicKey.findProgramAddressSync(
+          [
+            Buffer.from('template'),
+            creator.publicKey.toBuffer(),
+            templateIndex.toArrayLike(Buffer, 'le', 8),
+          ],
+          program.programId
+        )
 
       await program.methods
         .createTemplate(
@@ -497,10 +497,10 @@ describe('task-escrow', () => {
       const taskIndex = new BN(creatorTaskCount)
       const bounty = 2 * LAMPORTS_PER_SOL
 
-      ;[taskPda] = PublicKey.findProgramAddressSync(
-        [Buffer.from('task'), creator.publicKey.toBuffer(), taskIndex.toArrayLike(Buffer, 'le', 8)],
-        program.programId
-      )
+        ;[taskPda] = PublicKey.findProgramAddressSync(
+          [Buffer.from('task'), creator.publicKey.toBuffer(), taskIndex.toArrayLike(Buffer, 'le', 8)],
+          program.programId
+        )
 
       const deadline = Math.floor(Date.now() / 1000) + 3600
 
@@ -557,11 +557,11 @@ describe('task-escrow', () => {
         .signers([creator])
         .rpc()
 
-      // 3. Agent opens dispute
-      ;[disputePda] = PublicKey.findProgramAddressSync(
-        [Buffer.from('dispute'), taskPda.toBuffer()],
-        program.programId
-      )
+        // 3. Agent opens dispute
+        ;[disputePda] = PublicKey.findProgramAddressSync(
+          [Buffer.from('dispute'), taskPda.toBuffer()],
+          program.programId
+        )
 
       await program.methods
         .openDispute({ qualityIssue: {} } as any, Array.from(Buffer.alloc(32, 8)) as any)
@@ -665,10 +665,10 @@ describe('task-escrow', () => {
       // Create a fresh task for negative tests
       taskIndex = new BN(creatorTaskCount)
 
-      ;[taskPda] = PublicKey.findProgramAddressSync(
-        [Buffer.from('task'), creator.publicKey.toBuffer(), taskIndex.toArrayLike(Buffer, 'le', 8)],
-        program.programId
-      )
+        ;[taskPda] = PublicKey.findProgramAddressSync(
+          [Buffer.from('task'), creator.publicKey.toBuffer(), taskIndex.toArrayLike(Buffer, 'le', 8)],
+          program.programId
+        )
 
       const deadline = Math.floor(Date.now() / 1000) + 3600
 
@@ -1076,7 +1076,7 @@ describe('task-escrow', () => {
       try {
         await program.methods
           .updatePlatform(
-            6000, // > 5000 (50%)
+            6000, // > 3001 (50%)
             new BN(MIN_BOUNTY),
             new BN(VOTING_PERIOD),
             MIN_VOTES,
@@ -1105,10 +1105,10 @@ describe('task-escrow', () => {
       const taskIndex = new BN(creatorTaskCount)
       const bounty = 0.5 * LAMPORTS_PER_SOL
 
-      ;[taskPda] = PublicKey.findProgramAddressSync(
-        [Buffer.from('task'), creator.publicKey.toBuffer(), taskIndex.toArrayLike(Buffer, 'le', 8)],
-        program.programId
-      )
+        ;[taskPda] = PublicKey.findProgramAddressSync(
+          [Buffer.from('task'), creator.publicKey.toBuffer(), taskIndex.toArrayLike(Buffer, 'le', 8)],
+          program.programId
+        )
 
       const deadline = Math.floor(Date.now() / 1000) + 3600
 

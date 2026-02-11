@@ -322,29 +322,20 @@ pub fn reject_submission(ctx: Context<RejectSubmission>, reason_hash: [u8; 32]) 
 }
 
 /// Cancel an open (unclaimed) task and refund the escrowed SOL.
+/// The task PDA is closed and all lamports (bounty + rent) are returned to the creator.
+/// Historical record is preserved via the `TaskCancelled` event.
 pub fn cancel_task(ctx: Context<CancelTask>) -> Result<()> {
     let task_key = ctx.accounts.task.key();
     let creator_key = ctx.accounts.creator.key();
-    let task = &mut ctx.accounts.task;
+    let task = &ctx.accounts.task;
     require!(task.status == TaskStatus::Open, VerbittoError::TaskNotOpen);
     require!(task.creator == creator_key, VerbittoError::NotTaskCreator);
 
-    let refund = task.bounty_lamports;
-
-    // Refund bounty to creator
-    **task.to_account_info().try_borrow_mut_lamports()? -= refund;
-    **ctx
-        .accounts
-        .creator
-        .to_account_info()
-        .try_borrow_mut_lamports()? += refund;
-
-    task.status = TaskStatus::Cancelled;
-
+    // bounty + rent will be returned to creator via `close = creator`
     emit!(TaskCancelled {
         task: task_key,
         creator: creator_key,
-        refunded_lamports: refund,
+        refunded_lamports: task.bounty_lamports,
     });
 
     Ok(())

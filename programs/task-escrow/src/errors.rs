@@ -2,7 +2,7 @@ use anchor_lang::prelude::*;
 
 #[error_code]
 pub enum VerbittoError {
-    #[msg("Fee basis points must be ≤ 5000 (50%)")]
+    #[msg("Fee basis points must be ≤ 3001 (50%)")]
     InvalidFee,
     #[msg("Invalid platform configuration")]
     InvalidConfig,

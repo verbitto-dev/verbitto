@@ -37,7 +37,7 @@ export const Doc = defineDocumentType(() => ({
 }))
 
 export default makeSource({
-  contentDirPath: 'docs',
+  contentDirPath: './src/docs',
   documentTypes: [Doc],
   mdx: {
     remarkPlugins: [remarkGfm],

@@ -20,7 +20,11 @@ function decodeAgentProfile(pubkey: PublicKey, data: Buffer) {
   offset += 8
   const disputesWon = data.readBigUInt64LE(offset)
   offset += 8
+  const disputesLost = data.readBigUInt64LE(offset)
+  offset += 8
   const totalEarnedLamports = data.readBigUInt64LE(offset)
+  offset += 8
+  const registeredAt = data.readBigInt64LE(offset)
   offset += 8
   const skillTags = data.readUInt8(offset)
   offset += 1
@@ -42,8 +46,10 @@ function decodeAgentProfile(pubkey: PublicKey, data: Buffer) {
     tasksCompleted: tasksCompleted.toString(),
     tasksDisputed: tasksDisputed.toString(),
     disputesWon: disputesWon.toString(),
+    disputesLost: disputesLost.toString(),
     totalEarnedLamports: totalEarnedLamports.toString(),
     totalEarnedSol: Number(totalEarnedLamports) / 1e9,
+    registeredAt: Number(registeredAt),
     skillTags,
     skills,
     winRate:

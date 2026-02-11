@@ -10,6 +10,7 @@ import {
   type TransactionInstruction,
 } from '@solana/web3.js'
 import {
+  decodePlatform,
   getAgentProfilePda,
   getCreatorCounterPda,
   getDisputePda,
@@ -46,7 +47,7 @@ function loadIdl() {
       try {
         const idlData = readFileSync(idlPath, 'utf-8')
         return JSON.parse(idlData)
-      } catch {}
+      } catch { }
     }
 
     throw new Error('IDL not found in any expected location')
@@ -285,9 +286,11 @@ app.openapi(buildTransactionRoute, async (c) => {
 
         // Fetch treasury from platform account
         const platformInfo = await connection.getAccountInfo(platform)
-        const treasury = platformInfo
-          ? new PublicKey(platformInfo.data.subarray(8 + 32, 8 + 32 + 32))
-          : signerKey
+        let treasury = signerKey
+        if (platformInfo) {
+          const platformData = decodePlatform(Buffer.from(platformInfo.data))
+          treasury = platformData.treasury
+        }
 
         ix = await program.methods
           .approveAndSettle()

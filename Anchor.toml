@@ -12,7 +12,7 @@ task_escrow = "Coxgjx4UMQZPRdDZT9CAdrvt4TMTyUKH79ziJiNFHk8S"
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "devnet"                  # Default cluster for most operations
+cluster = "devnet"
 wallet = "~/.config/solana/id.json"
 
 [scripts]

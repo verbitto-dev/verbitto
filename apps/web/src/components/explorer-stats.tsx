@@ -1,49 +1,72 @@
 'use client'
 
+import Link from 'next/link'
 import { Icons } from '@/components/icons'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { lamportsToSol, usePlatform, useTasks } from '@/hooks/use-program'
+import { lamportsToSol, usePlatform, useTasks, useIndexerStats } from '@/hooks/use-program'
 
 export function ExplorerStats() {
   const { platform, loading: pLoading } = usePlatform()
   const { tasks, loading: tLoading } = useTasks()
+  const { stats: ixStats, loading: ixLoading } = useIndexerStats()
 
   const loading = pLoading || tLoading
 
   const openTasks = tasks.filter((t) => t.status === 'Open').length
-  const settledTasks = tasks.filter((t) => t.status === 'Approved').length
+  const activeTasks = tasks.length
   const disputedTasks = tasks.filter((t) => t.status === 'Disputed').length
+  const settledCount = ixStats?.approvedCount ?? 0
+  const cancelledCount = ixStats?.cancelledCount ?? 0
 
   const stats = [
     {
-      label: 'Total Tasks',
-      value: loading ? '—' : String(platform?.taskCount ?? tasks.length),
+      label: 'Tasks Created',
+      value: loading ? '—' : String(platform?.taskCount ?? 0),
       icon: Icons.listChecks,
+      href: '/tasks',
+      description: 'Cumulative tasks created',
+    },
+    {
+      label: 'Active Tasks',
+      value: loading ? '—' : String(activeTasks),
+      icon: Icons.zap,
+      href: '/tasks',
+      description: 'Tasks currently on-chain',
     },
     {
       label: 'Tasks Settled',
-      value: loading ? '—' : String(settledTasks),
+      value: loading ? '—' : String(settledCount),
       icon: Icons.checkCircle,
+      href: '/tasks?status=Approved',
+      description: 'Completed & settled',
     },
     {
       label: 'Total Settled (SOL)',
       value: loading ? '—' : platform ? lamportsToSol(platform.totalSettledLamports) : '0',
       icon: Icons.wallet,
+      href: '/tasks',
+      description: 'Cumulative settled volume',
     },
     {
       label: 'Open Tasks',
       value: loading ? '—' : String(openTasks),
-      icon: Icons.zap,
+      icon: Icons.checkCircle,
+      href: '/tasks?status=Open',
+      description: 'Awaiting claims',
     },
     {
       label: 'Open Disputes',
       value: loading ? '—' : String(disputedTasks),
       icon: Icons.scale,
+      href: '/tasks?status=Disputed',
+      description: 'Under arbitration',
     },
     {
       label: 'Templates',
       value: loading ? '—' : String(platform?.templateCount ?? 0),
       icon: Icons.layoutTemplate,
+      href: '/tasks?template=true',
+      description: 'View templates',
     },
   ]
 
@@ -52,15 +75,22 @@ export function ExplorerStats() {
       {/* Stats Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {stats.map((stat) => (
-          <Card key={stat.label}>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardDescription>{stat.label}</CardDescription>
-              <stat.icon className="size-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stat.value}</div>
-            </CardContent>
-          </Card>
+          <Link key={stat.label} href={stat.href} className="no-underline">
+            <Card className="group hover:border-brand/40 transition-colors cursor-pointer h-full">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardDescription className="group-hover:text-foreground transition-colors">
+                  {stat.label}
+                </CardDescription>
+                <stat.icon className="size-4 text-muted-foreground group-hover:text-brand transition-colors" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold group-hover:text-brand transition-colors">
+                  {stat.value}
+                </div>
+                <p className="text-xs text-muted-foreground mt-2">{stat.description}</p>
+              </CardContent>
+            </Card>
+          </Link>
         ))}
       </div>
 

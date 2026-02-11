@@ -1,0 +1,89 @@
+---
+title: Security Checklist
+description: Security considerations, best practices, and pre-launch audit checklist.
+---
+
+## Overview
+
+Verbitto handles SOL escrow on-chain. Security is paramount. This page documents the safety mechanisms built into the program and provides a checklist for auditing before mainnet deployment.
+
+## On-Chain Security
+
+### Access Control
+
+| Control | Mechanism | Status |
+|---------|-----------|--------|
+| Platform authority | `has_one = authority` constraint on Platform PDA | Enforced |
+| Task creator | `has_one = creator` constraint on Task PDA | Enforced |
+| Assigned agent | `has_one = agent` constraint on Task PDA | Enforced |
+| Dispute voter eligibility | Reputation minimum + party exclusion | Enforced |
+| Template ownership | `has_one = creator` on TaskTemplate | Enforced |
+| Platform pause | Global `is_paused` flag checked on mutations | Enforced |
+
+### Arithmetic Safety
+
+- All fee calculations use `checked_mul` and `checked_div` — overflow returns `ArithmeticOverflow`
+- Bounty amounts validated against `platform.min_bounty`
+- Reputation scores use `i64` — supports negative reputation
+
+### PDA Validation
+
+- All PDAs derived with deterministic seeds and validated via Anchor `seeds` + `bump`
+- Escrow PDAs seeded from task address — one escrow per task
+- Dispute PDAs seeded from task address — one dispute per task
+- Bump seeds stored on-chain and reused (no re-derivation)
+
+### State Machine
+
+- Each instruction validates the current task status before mutation
+- Invalid transitions return explicit errors (e.g., `TaskNotOpen`, `TaskNotSubmitted`)
+- `MaxRejectionsReached` triggers automatic dispute escalation
+- Grace period prevents premature expiration of recently submitted tasks
+
+## Economic Security
+
+| Risk | Mitigation |
+|------|-----------|
+| Dust-amount tasks | Platform-wide `min_bounty` (configurable) |
+| Fee extraction | Fee capped at 50% (`fee_bps ≤ 3001`) |
+| Treasury mismatch | `InvalidTreasury` check on settlement |
+| Repeated rejection abuse | `max_rejections` limit → auto dispute |
+| Vote manipulation | Minimum reputation, party exclusion, quorum requirement |
+| Stuck escrow | Expiry + cancellation paths always refund creator |
+
+## Frontend Security
+
+- **Transaction simulation** — always simulate before sending to catch errors early
+- **Wallet origin verification** — confirm you're interacting with the correct program ID
+- **IDL pinning** — pin the IDL hash in your frontend to detect program upgrades
+- **RPC trust** — use a trusted RPC endpoint; public RPCs can be unreliable
+- **Error disclosure** — never expose raw error details to end users; map to friendly messages
+
+## Operational Security
+
+- **Upgrade authority** — manage via multisig (e.g., Squads) for production deployments
+- **Platform authority key** — store the platform authority keypair in a hardware wallet or multisig
+- **Pause capability** — the `pause_platform` instruction allows emergency shutdown
+- **Monitoring** — set up alerts on `DisputeOpened` and `PlatformInitialized` events
+- **Audit trail** — all state changes emit events for off-chain tracking
+
+## Pre-Launch Checklist
+
+<Callout type="warning">
+Complete every item before deploying to mainnet-beta.
+</Callout>
+
+| # | Item | Category |
+|---|------|----------|
+| 1 | Third-party audit completed | Audit |
+| 2 | All Anchor constraints verified (seeds, has_one, signer) | On-chain |
+| 3 | Checked arithmetic on all calculations | On-chain |
+| 4 | Escrow refund paths tested (cancel, expire, dispute) | Testing |
+| 5 | State machine transitions fully covered by tests | Testing |
+| 6 | Upgrade authority transferred to multisig | Ops |
+| 7 | Platform authority stored securely | Ops |
+| 8 | IDL uploaded on-chain | Deploy |
+| 9 | Frontend points to correct program ID and cluster | Frontend |
+| 10 | Event monitoring and alerting configured | Ops |
+| 11 | Rate limiting on RPC endpoint | Infra |
+| 12 | Pause/resume tested on devnet | Testing |

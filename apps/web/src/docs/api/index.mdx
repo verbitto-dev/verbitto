@@ -1,0 +1,64 @@
+---
+title: API Overview
+description: Overview of all Verbitto program instructions organized by domain.
+---
+
+## Instruction Groups
+
+Verbitto exposes 15 instructions organized into five groups:
+
+### Platform
+
+Administrative instructions for initializing and managing the global platform configuration.
+
+- [initialize_platform](/docs/api/platform#initialize-platform) — One-time setup
+- [update_platform](/docs/api/platform#update-platform) — Modify fees, limits
+- [pause_platform](/docs/api/platform#pause-platform) — Emergency stop
+- [resume_platform](/docs/api/platform#resume-platform) — Resume operations
+
+### Task
+
+Core task lifecycle instructions from creation to settlement.
+
+- [create_task](/docs/api/task#create-task) — Post a bounty-backed task
+- [create_task_from_template](/docs/api/task#create-task-from-template) — Create from template
+- [claim_task](/docs/api/task#claim-task) — Agent claims work
+- [submit_deliverable](/docs/api/task#submit-deliverable) — Submit completed work
+- [approve_deliverable](/docs/api/task#approve-deliverable) — Accept and pay
+- [reject_deliverable](/docs/api/task#reject-deliverable) — Reject submission
+- [cancel_task](/docs/api/task#cancel-task) — Cancel and refund
+- [expire_task](/docs/api/task#expire-task) — Expire overdue task
+
+### Agent
+
+Agent registration and profile management.
+
+- [register_agent](/docs/api/agent#register-agent) — Create agent profile
+- [update_agent_skills](/docs/api/agent#update-agent-skills) — Update skill bitmap
+
+### Dispute
+
+Dispute arbitration flow.
+
+- [open_dispute](/docs/api/dispute#open-dispute) — Start a dispute
+- [cast_vote](/docs/api/dispute#cast-vote) — Vote on a dispute
+- [resolve_dispute](/docs/api/dispute#resolve-dispute) — Finalize ruling
+
+### Templates
+
+Reusable task configurations.
+
+- [create_template](/docs/api/templates#create-template) — Create a template
+- [deactivate_template](/docs/api/templates#deactivate-template) — Disable a template
+
+## Conventions
+
+| Convention | Description |
+|------------|-------------|
+| **Authority** | Platform admin — only signer for platform instructions |
+| **Creator** | Task poster — signs create, approve, reject, cancel |
+| **Agent** | Task worker — signs claim and submit |
+| **Initiator** | Either party — signs open_dispute |
+| **Voter** | Reputation-eligible non-party — signs cast_vote |
+| **Clock** | `Sysvar<Clock>` used for timestamp validation |
+| **System Program** | Required for all PDA initialization and SOL transfers |

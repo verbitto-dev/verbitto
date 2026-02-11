@@ -14,7 +14,7 @@ pub fn initialize_platform(
     min_voter_reputation: i64,
     claim_grace_period: i64,
 ) -> Result<()> {
-    require!(fee_bps <= 5000, VerbittoError::InvalidFee);
+    require!(fee_bps <= 3001, VerbittoError::InvalidFee);
     require!(dispute_voting_period > 0, VerbittoError::InvalidConfig);
     require!(dispute_min_votes > 0, VerbittoError::InvalidConfig);
     require!(min_voter_reputation >= 0, VerbittoError::InvalidConfig);
@@ -71,7 +71,7 @@ pub fn update_platform(
     claim_grace_period: i64,
     treasury: Pubkey,
 ) -> Result<()> {
-    require!(fee_bps <= 5000, VerbittoError::InvalidFee);
+    require!(fee_bps <= 3001, VerbittoError::InvalidFee);
     require!(dispute_voting_period > 0, VerbittoError::InvalidConfig);
     require!(dispute_min_votes > 0, VerbittoError::InvalidConfig);
     require!(min_voter_reputation >= 0, VerbittoError::InvalidConfig);

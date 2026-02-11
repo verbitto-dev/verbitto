@@ -10,8 +10,14 @@ import idlRoutes from './routes/idl.js'
 import platformRoutes from './routes/platform.js'
 import tasksRoutes from './routes/tasks.js'
 import txRoutes from './routes/tx.js'
+import webhookRoutes from './routes/webhook.js'
+import historyRoutes from './routes/history.js'
+import { loadStore } from './lib/event-store.js'
 
 const app = new OpenAPIHono()
+
+// Load event store from disk on startup
+loadStore()
 
 // Middleware
 app.use('*', logger())
@@ -35,6 +41,8 @@ app.route('/api/v1/tasks', tasksRoutes)
 app.route('/api/v1/agents', agentsRoutes)
 app.route('/api/v1/tx', txRoutes)
 app.route('/api/v1/idl', idlRoutes)
+app.route('/api/v1/webhook', webhookRoutes)
+app.route('/api/v1/history', historyRoutes)
 
 // OpenAPI JSON
 app.doc('/api/v1/openapi.json', {
@@ -46,7 +54,7 @@ app.doc('/api/v1/openapi.json', {
   },
   servers: [
     {
-      url: process.env.API_BASE_URL || 'http://localhost:5000',
+      url: process.env.API_BASE_URL || 'http://localhost:3001',
       description: 'API Server',
     },
   ],
@@ -60,7 +68,7 @@ app.get('/', (c) => {
   return c.redirect('/api/v1/docs')
 })
 
-const port = parseInt(process.env.API_PORT || '5000', 10)
+const port = parseInt(process.env.API_PORT || '3001', 10)
 
 serve({
   fetch: app.fetch,

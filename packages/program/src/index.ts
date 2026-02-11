@@ -63,12 +63,12 @@ export function getVotePda(dispute: PublicKey, voter: PublicKey): PublicKey {
 // Anchor convention
 // ============================================================
 
-// Pre-computed for gPA filters
+// Pre-computed for gPA filters - values from IDL
 export const DISCRIMINATOR = {
-  Platform: Buffer.from([251, 106, 172, 14, 5, 51, 151, 248]),
-  Task: Buffer.from([79, 34, 229, 55, 29, 131, 27, 76]),
-  AgentProfile: Buffer.from([184, 130, 83, 39, 187, 165, 200, 25]),
-  CreatorCounter: Buffer.from([182, 100, 132, 148, 21, 108, 198, 89]),
+  Platform: Buffer.from([77, 92, 204, 58, 187, 98, 91, 12]),
+  Task: Buffer.from([79, 34, 229, 55, 88, 90, 55, 84]),
+  AgentProfile: Buffer.from([60, 227, 42, 24, 0, 87, 86, 205]),
+  CreatorCounter: Buffer.from([62, 129, 78, 26, 23, 138, 248, 82]),
 }
 
 // ============================================================

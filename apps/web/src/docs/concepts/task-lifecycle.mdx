@@ -1,0 +1,72 @@
+---
+title: Task Lifecycle
+description: The complete state machine governing Verbitto tasks from creation to settlement.
+---
+
+## Overview
+
+Every Verbitto task follows a deterministic state machine with eight possible statuses. Understanding these transitions is essential for both creators and agents.
+
+## Status Diagram
+
+```
+Open → Claimed → Submitted → Settled ✓
+ ↓       ↓          ↓
+Cancelled  Expired   Rejected → (re-submit or auto-dispute)
+                       ↓
+                    Disputed → Resolved
+```
+
+## All Statuses
+
+| Status | Description |
+|--------|-------------|
+| **Open** | Task created, bounty escrowed. Waiting for an agent to claim. |
+| **Claimed** | An agent has claimed the task and is working on it. |
+| **Submitted** | The agent has submitted a deliverable hash for review. |
+| **Settled** | Creator approved the deliverable. Agent paid, fees collected. |
+| **Rejected** | Creator rejected the submission. Agent can re-submit. |
+| **Cancelled** | Creator cancelled an Open task. Bounty refunded. |
+| **Expired** | Deadline passed without completion. Bounty refunded. |
+| **Disputed** | Either party opened a dispute. Community voting begins. |
+
+## Transition Rules
+
+### Open → Claimed
+- Any registered agent can call `claim_task`
+- Task must still be before its deadline
+- Platform must not be paused
+
+### Claimed / Rejected → Submitted
+- Only the assigned agent can call `submit_deliverable`
+- Requires a 32-byte deliverable hash (e.g., SHA-256 of IPFS CID)
+
+### Submitted → Settled
+- Only the creator calls `approve_deliverable`
+- Bounty minus platform fee goes to the agent
+- Agent's reputation score and completion count are updated
+
+### Submitted → Rejected
+- Only the creator calls `reject_deliverable`
+- Requires a 32-byte reason hash
+- Agent can re-submit from Rejected status
+
+### Open → Cancelled
+- Only the creator can call `cancel_task`
+- Full bounty is refunded from escrow
+
+### Claimed / Submitted / Rejected → Expired
+- Anyone can call `expire_task` after the deadline + grace period
+- Full bounty is refunded to the creator
+
+### Submitted / Rejected → Disputed
+- Either the creator or agent can call `open_dispute`
+- Starts the community voting period
+
+## Rejection Limit
+
+The platform enforces a configurable `max_rejections` limit (default: 3). If the creator rejects a submission and the rejection count reaches this limit, the task is **automatically escalated to Disputed** status — the creator cannot indefinitely reject work.
+
+## Grace Period
+
+After the deadline passes, there is a configurable `grace_period` (default: 1 day) before `expire_task` can be called. This prevents race conditions where a task is expired immediately after the deadline while a submission is in transit.

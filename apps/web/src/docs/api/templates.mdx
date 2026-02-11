@@ -1,0 +1,62 @@
+---
+title: Templates API
+description: Create and manage reusable task templates.
+---
+
+## Overview
+
+Task templates allow creators to define reusable configurations with pre-filled categories, default bounties, and suggested deadlines. Tasks created from templates inherit these defaults but can override them.
+
+## create_template
+
+Creates a new TaskTemplate PDA. Each template is scoped to its creator with a sequential index.
+
+### Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `title` | String | Template title |
+| `description_hash` | [u8; 32] | Default description hash |
+| `category` | TaskCategory | Task category |
+| `default_bounty` | u64 | Suggested bounty in lamports |
+| `default_deadline_seconds` | i64 | Suggested duration in seconds |
+| `template_index` | u64 | Sequential index per creator |
+
+### Accounts
+
+| Account | Signer | Writable | Description |
+|---------|--------|----------|-------------|
+| `creator` | Yes | Yes | Template creator (pays rent) |
+| `template` | No | Yes | TaskTemplate PDA (init) |
+| `platform` | No | No | Platform PDA (pause check) |
+| `system_program` | No | No | System Program |
+
+Emits `TemplateCreated`.
+
+## deactivate_template
+
+Sets `is_active = false` on a template. Tasks can no longer be created from inactive templates.
+
+### Accounts
+
+| Account | Signer | Writable | Description |
+|---------|--------|----------|-------------|
+| `creator` | Yes | No | Must match template.creator |
+| `template` | No | Yes | TaskTemplate PDA |
+
+### Errors
+
+- `NotTaskCreator` — caller is not the template creator
+- `TemplateInactive` — template is already inactive
+
+## Task Categories
+
+| Category | Description |
+|----------|-------------|
+| `DataLabeling` | Data annotation and labeling tasks |
+| `LiteratureReview` | Academic or technical literature reviews |
+| `CodeReview` | Source code review and audit |
+| `Translation` | Language translation tasks |
+| `Analysis` | Data or domain analysis |
+| `Research` | Research and investigation |
+| `Other` | Miscellaneous tasks |

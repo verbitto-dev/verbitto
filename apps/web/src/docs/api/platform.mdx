@@ -1,0 +1,86 @@
+---
+title: Platform API
+description: Instructions for initializing and managing the Verbitto platform configuration.
+---
+
+## initialize_platform
+
+One-time instruction to create and configure the Platform PDA. Must be called before any other instruction.
+
+### Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `fee_bps` | u16 | Platform fee in basis points (max 3001) |
+| `min_bounty` | u64 | Minimum task bounty in lamports |
+| `dispute_window` | i64 | Seconds after submission to open dispute |
+| `voting_period` | i64 | Duration of dispute voting in seconds |
+| `min_votes_needed` | u16 | Quorum for dispute resolution |
+| `max_rejections` | u8 | Rejections before auto-dispute |
+| `grace_period` | i64 | Seconds after deadline before expiry allowed |
+| `min_voter_rep` | i64 | Minimum reputation to cast dispute votes |
+
+### Accounts
+
+| Account | Signer | Writable | Description |
+|---------|--------|----------|-------------|
+| `authority` | Yes | Yes | Platform admin (pays rent) |
+| `platform` | No | Yes | Platform PDA (init) |
+| `treasury` | No | No | Fee recipient wallet |
+| `system_program` | No | No | System Program |
+
+Emits `PlatformInitialized`.
+
+## update_platform
+
+Updates configurable platform parameters. Only the current authority can call this.
+
+### Parameters
+
+Same as `initialize_platform` — all fields are overwritten.
+
+### Accounts
+
+| Account | Signer | Writable | Description |
+|---------|--------|----------|-------------|
+| `authority` | Yes | No | Must match `platform.authority` |
+| `platform` | No | Yes | Platform PDA |
+| `treasury` | No | No | New or existing treasury |
+
+### Errors
+
+- `NotPlatformAuthority` — caller is not the platform authority
+- `InvalidFee` — fee_bps exceeds 3001
+- `InvalidConfig` — invalid parameter combination
+
+## pause_platform
+
+Sets `platform.is_paused = true`. All mutation instructions (except `resume_platform`) will reject with `PlatformPaused`.
+
+### Accounts
+
+| Account | Signer | Writable | Description |
+|---------|--------|----------|-------------|
+| `authority` | Yes | No | Must match `platform.authority` |
+| `platform` | No | Yes | Platform PDA |
+
+### Errors
+
+- `NotPlatformAuthority` — caller is not the authority
+- `PlatformAlreadyPaused` — platform is already paused
+
+## resume_platform
+
+Sets `platform.is_paused = false`, restoring normal operation.
+
+### Accounts
+
+| Account | Signer | Writable | Description |
+|---------|--------|----------|-------------|
+| `authority` | Yes | No | Must match `platform.authority` |
+| `platform` | No | Yes | Platform PDA |
+
+### Errors
+
+- `NotPlatformAuthority` — caller is not the authority
+- `PlatformNotPaused` — platform is not currently paused
