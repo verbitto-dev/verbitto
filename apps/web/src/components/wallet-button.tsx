@@ -50,12 +50,22 @@ export function WalletButton() {
     )
   }
 
+  const handleConnect = () => {
+    // Show devnet reminder via native confirm dialog
+    const ok = window.confirm(
+      '⚠️ Solana Devnet Only\n\nThis app is running on Solana Devnet.\nPlease make sure your wallet is set to Devnet.\nDo not send real SOL — use devnet tokens only.\n\nContinue?'
+    )
+    if (ok) {
+      setVisible(true)
+    }
+  }
+
   return (
     <Button
       variant="brand"
       size="sm"
       className="rounded-lg gap-1.5"
-      onClick={() => setVisible(true)}
+      onClick={handleConnect}
       disabled={connecting}
     >
       <Icons.wallet className="size-3.5" />
