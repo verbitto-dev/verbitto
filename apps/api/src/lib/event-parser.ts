@@ -16,7 +16,7 @@ import type { IndexedEvent } from './event-store.js'
 // Program ID
 // ────────────────────────────────────────────────────────────
 
-const PROGRAM_ID = process.env.SOLANA_PROGRAM_ID || 'Coxgjx4UMQZPRdDZT9CAdrvt4TMTyUKH79ziJiNFHk8S'
+const PROGRAM_ID = process.env.SOLANA_PROGRAM_ID || 'FL4r4cpufpsdbhxLe4Gr3CMpPxAyeAu7WgRZHGb21Tor'
 
 // ────────────────────────────────────────────────────────────
 // Event discriminator computation

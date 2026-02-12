@@ -5,6 +5,7 @@ import { useAnchorWallet, useConnection, useWallet } from '@solana/wallet-adapte
 import { SystemProgram } from '@solana/web3.js'
 import { useState } from 'react'
 import { Icons } from '@/components/icons'
+import { MarkdownEditor } from '@/components/markdown-editor'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -16,7 +17,6 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
 import { storeDescription } from '@/lib/api'
 import { getCreatorCounterPda, getPlatformPda, getTaskPda } from '@/lib/program'
 import IDL from '../../public/idl.json'
@@ -219,19 +219,15 @@ export function CreateTaskDialog({ open, onOpenChange, onSuccess }: CreateTaskDi
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
-            <Textarea
-              id="description"
-              placeholder="Detailed task description..."
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              rows={4}
-            />
-            <p className="text-xs text-muted-foreground">
-              In production, this would be stored on IPFS/Arweave
-            </p>
-          </div>
+          <MarkdownEditor
+            id="description"
+            label="Description"
+            value={description}
+            onChange={setDescription}
+            placeholder="Detailed task description (Markdown supported)..."
+            rows={4}
+            hint="Supports Markdown formatting. Stored as SHA-256 hash on-chain."
+          />
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">

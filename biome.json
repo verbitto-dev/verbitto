@@ -79,11 +79,22 @@
       }
     },
     {
-      "includes": ["tests/**", "migrations/**"],
+      "includes": ["tests/**", "migrations/**", "scripts/**"],
       "linter": {
         "rules": {
           "suspicious": {
-            "noExplicitAny": "off"
+            "noExplicitAny": "off",
+            "noConsole": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["apps/web/src/components/create-from-template-dialog.tsx"],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noConsole": "off"
           }
         }
       }

@@ -58,7 +58,7 @@ Key variables:
 | ------------------- | ------------------------------------------------------ | --------------------- |
 | `DATABASE_URL`      | `postgres://postgres:postgres@localhost:5432/verbitto` | PostgreSQL connection |
 | `SOLANA_RPC_URL`    | `https://api.devnet.solana.com`                        | Solana RPC endpoint   |
-| `SOLANA_PROGRAM_ID` | `Coxgjx4UMQZPRdDZT9CAdrvt4TMTyUKH79ziJiNFHk8S`         | Deployed program ID   |
+| `SOLANA_PROGRAM_ID` | `FL4r4cpufpsdbhxLe4Gr3CMpPxAyeAu7WgRZHGb21Tor`         | Deployed program ID   |
 | `API_PORT`          | `3001`                                                 | API server port       |
 
 ### 3. Start Development

@@ -12,10 +12,12 @@ import {
 import {
   decodePlatform,
   decodeTask,
+  decodeTaskTemplate,
   getPlatformPda,
   type PlatformAccount,
   PROGRAM_ID,
   type TaskAccount,
+  type TaskTemplateAccount,
 } from '@/lib/program'
 
 // ============================================================
@@ -102,6 +104,65 @@ export function useTasks() {
   }, [fetch])
 
   return { tasks, loading, error, refetch: fetch }
+}
+
+// ============================================================
+// useTemplates — fetch all active TaskTemplate accounts
+// ============================================================
+
+const TEMPLATE_DISCRIMINATOR = Buffer.from([254, 91, 117, 85, 27, 252, 247, 172])
+
+async function fetchAllTemplates(connection: Connection): Promise<TaskTemplateAccount[]> {
+  const accounts = await connection.getProgramAccounts(PROGRAM_ID, {
+    filters: [
+      {
+        memcmp: {
+          offset: 0,
+          bytes: TEMPLATE_DISCRIMINATOR.toString('base64'),
+          encoding: 'base64',
+        },
+      },
+    ],
+  })
+
+  return (
+    accounts
+      .map(({ pubkey, account }) => {
+        try {
+          return decodeTaskTemplate(pubkey, Buffer.from(account.data))
+        } catch {
+          return null
+        }
+      })
+      // biome-ignore lint/complexity/useOptionalChain: Type guard requires explicit null check
+      .filter((t): t is TaskTemplateAccount => t !== null && t.isActive)
+      .sort((a, b) => Number(a.templateIndex - b.templateIndex))
+  )
+}
+
+export function useTemplates() {
+  const { connection } = useConnection()
+  const [templates, setTemplates] = useState<TaskTemplateAccount[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  const fetch = useCallback(async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      setTemplates(await fetchAllTemplates(connection))
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Failed to fetch templates')
+    } finally {
+      setLoading(false)
+    }
+  }, [connection])
+
+  useEffect(() => {
+    fetch()
+  }, [fetch])
+
+  return { templates, loading, error, refetch: fetch }
 }
 
 // ============================================================

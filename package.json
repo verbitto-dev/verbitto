@@ -16,7 +16,9 @@
     "format": "biome format --write .",
     "check": "biome check --write . && pnpm -r typecheck",
     "typecheck": "pnpm -r typecheck",
-    "test": "node --env-file=.env --loader tsx --no-warnings ./node_modules/.bin/ts-mocha -p ./tests/tsconfig.json -t 1000000 tests/**/*.ts"
+    "test": "node --env-file=.env --loader tsx --no-warnings ./node_modules/.bin/ts-mocha -p ./tests/tsconfig.json -t 1000000 tests/**/*.ts",
+    "deploy:init": "tsx --env-file=.env scripts/initialize-platform.ts",
+    "deploy:templates": "tsx --env-file=.env scripts/init-templates.ts"
   },
   "dependencies": {
     "@coral-xyz/anchor": "0.31.1",

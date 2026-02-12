@@ -7,6 +7,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 
+import { CreateFromTemplateDialog } from '@/components/create-from-template-dialog'
 import { CreateTaskDialog } from '@/components/create-task-dialog'
 import { Icons } from '@/components/icons'
 import { TaskDetailDialog } from '@/components/task-detail-dialog'
@@ -145,6 +146,7 @@ export function TaskList() {
   } = useHistoricalTasks()
   const [mounted, setMounted] = useState(false)
   const [createDialogOpen, setCreateDialogOpen] = useState(false)
+  const [templateDialogOpen, setTemplateDialogOpen] = useState(false)
   const [selectedTask, setSelectedTask] = useState<TaskAccount | null>(null)
   const [detailDialogOpen, setDetailDialogOpen] = useState(false)
   const [displayCount, setDisplayCount] = useState(TASKS_PER_PAGE)
@@ -245,8 +247,7 @@ export function TaskList() {
   }
 
   const handleCreateFromTemplate = () => {
-    // TODO: Implement template selection
-    toast.info('Create from Template feature coming soon!')
+    setTemplateDialogOpen(true)
   }
 
   const handleTaskCreated = () => {
@@ -553,6 +554,13 @@ export function TaskList() {
       <CreateTaskDialog
         open={createDialogOpen}
         onOpenChange={setCreateDialogOpen}
+        onSuccess={handleTaskCreated}
+      />
+
+      {/* Create from template dialog */}
+      <CreateFromTemplateDialog
+        open={templateDialogOpen}
+        onOpenChange={setTemplateDialogOpen}
         onSuccess={handleTaskCreated}
       />
 

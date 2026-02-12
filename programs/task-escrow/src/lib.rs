@@ -31,7 +31,7 @@ pub mod state;
 use contexts::*;
 use state::*;
 
-declare_id!("Coxgjx4UMQZPRdDZT9CAdrvt4TMTyUKH79ziJiNFHk8S");
+declare_id!("FL4r4cpufpsdbhxLe4Gr3CMpPxAyeAu7WgRZHGb21Tor");
 
 // ============================================================
 // Program — thin delegation layer
@@ -131,8 +131,9 @@ pub mod task_escrow {
         deadline: i64,
         reputation_reward: i64,
         task_index: u64,
+        description_hash: [u8; 32],
     ) -> Result<()> {
-        instructions::create_task_from_template(ctx, bounty_lamports, deadline, reputation_reward, task_index)
+        instructions::create_task_from_template(ctx, bounty_lamports, deadline, reputation_reward, task_index, description_hash)
     }
 
     pub fn claim_task(ctx: Context<ClaimTask>) -> Result<()> {

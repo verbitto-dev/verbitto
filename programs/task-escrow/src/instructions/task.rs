@@ -90,6 +90,7 @@ pub fn create_task_from_template(
     deadline: i64,
     reputation_reward: i64,
     task_index: u64,
+    description_hash: [u8; 32],
 ) -> Result<()> {
     let platform = &mut ctx.accounts.platform;
     let template = &mut ctx.accounts.template;
@@ -148,7 +149,7 @@ pub fn create_task_from_template(
     task.settled_at = 0;
     task.reputation_reward = reputation_reward;
     task.title = template.title.clone();
-    task.description_hash = template.description_hash;
+    task.description_hash = description_hash;
     task.deliverable_hash = [0u8; 32];
     task.template_index = template.template_index + 1; // 1-indexed, 0 = no template
     task.rejection_count = 0;

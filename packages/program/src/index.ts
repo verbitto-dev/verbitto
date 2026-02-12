@@ -7,7 +7,7 @@ import { PublicKey } from '@solana/web3.js'
 // Read from environment variable, fallback to devnet deployment
 const PROGRAM_ID_STRING =
   (typeof process !== 'undefined' && process.env?.SOLANA_PROGRAM_ID) ||
-  'Coxgjx4UMQZPRdDZT9CAdrvt4TMTyUKH79ziJiNFHk8S' // Default: current devnet deployment
+  'FL4r4cpufpsdbhxLe4Gr3CMpPxAyeAu7WgRZHGb21Tor' // Default: current devnet deployment
 
 export const PROGRAM_ID = new PublicKey(PROGRAM_ID_STRING)
 
@@ -79,6 +79,7 @@ export const DISCRIMINATOR = {
   Task: Buffer.from([79, 34, 229, 55, 88, 90, 55, 84]),
   AgentProfile: Buffer.from([60, 227, 42, 24, 0, 87, 86, 205]),
   CreatorCounter: Buffer.from([62, 129, 78, 26, 23, 138, 248, 82]),
+  TaskTemplate: Buffer.from([254, 91, 117, 85, 27, 252, 247, 172]),
 }
 
 // ============================================================
@@ -129,6 +130,31 @@ export interface PlatformAccount {
   minVoterReputation: bigint
   claimGracePeriod: bigint
   isPaused: boolean
+  bump: number
+}
+
+export const TASK_CATEGORY = [
+  'DataLabeling',
+  'LiteratureReview',
+  'CodeReview',
+  'Translation',
+  'Analysis',
+  'Research',
+  'Other',
+] as const
+
+export type TaskCategory = (typeof TASK_CATEGORY)[number]
+
+export interface TaskTemplateAccount {
+  publicKey: PublicKey
+  creator: PublicKey
+  templateIndex: bigint
+  title: string
+  descriptionHash: Uint8Array
+  defaultBountyLamports: bigint
+  timesUsed: bigint
+  category: TaskCategory
+  isActive: boolean
   bump: number
 }
 
@@ -197,6 +223,47 @@ export function decodePlatform(data: Buffer): PlatformAccount {
     minVoterReputation,
     claimGracePeriod,
     isPaused,
+    bump,
+  }
+}
+
+export function decodeTaskTemplate(pubkey: PublicKey, data: Buffer): TaskTemplateAccount {
+  let offset = 8 // skip discriminator
+
+  const creator = new PublicKey(data.subarray(offset, offset + 32))
+  offset += 32
+  const templateIndex = data.readBigUInt64LE(offset)
+  offset += 8
+
+  // String: 4-byte length prefix + utf8
+  const titleLen = data.readUInt32LE(offset)
+  offset += 4
+  const title = data.subarray(offset, offset + titleLen).toString('utf8')
+  offset += titleLen
+
+  const descriptionHash = new Uint8Array(data.subarray(offset, offset + 32))
+  offset += 32
+  const defaultBountyLamports = data.readBigUInt64LE(offset)
+  offset += 8
+  const timesUsed = data.readBigUInt64LE(offset)
+  offset += 8
+  const categoryByte = data.readUInt8(offset)
+  offset += 1
+  const category = TASK_CATEGORY[categoryByte] ?? 'Other'
+  const isActive = data.readUInt8(offset) === 1
+  offset += 1
+  const bump = data.readUInt8(offset)
+
+  return {
+    publicKey: pubkey,
+    creator,
+    templateIndex,
+    title,
+    descriptionHash,
+    defaultBountyLamports,
+    timesUsed,
+    category,
+    isActive,
     bump,
   }
 }

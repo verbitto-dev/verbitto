@@ -12,7 +12,7 @@ import { Icons } from './icons'
 export function Logo() {
   return (
     <Link href="/" className="hidden items-center gap-2 font-bold md:flex px-2">
-      <Icons.logo className="h-7 w-7 shrink-0" />
+      <Icons.logo className="h-6 w-6 shrink-0" />
       <span className="text-lg">{siteConfig.name}</span>
     </Link>
   )

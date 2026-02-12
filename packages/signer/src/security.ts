@@ -5,7 +5,7 @@ import { PublicKey, type Transaction } from '@solana/web3.js'
  * Override via PROGRAM_ID env var if deploying a custom program.
  */
 export const ALLOWED_PROGRAM_ID = new PublicKey(
-  process.env.PROGRAM_ID || 'Coxgjx4UMQZPRdDZT9CAdrvt4TMTyUKH79ziJiNFHk8S'
+  process.env.PROGRAM_ID || 'FL4r4cpufpsdbhxLe4Gr3CMpPxAyeAu7WgRZHGb21Tor'
 )
 
 /** System Program is allowed (for account creation, transfers initiated by Anchor) */

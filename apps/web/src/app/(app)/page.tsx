@@ -4,13 +4,7 @@ import Link from 'next/link'
 import * as React from 'react'
 
 import { Icons } from '@/components/icons'
-import {
-  OceanScene,
-  OceanBubbles,
-  OceanRays,
-  CoralReef,
-  KawaiiLobster,
-} from '@/components/ocean-scene'
+import { KawaiiLobster, OceanBubbles, OceanScene } from '@/components/ocean-scene'
 import { PageHeader, PageHeaderDescription, PageHeaderHeading } from '@/components/page-header'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'

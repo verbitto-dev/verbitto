@@ -13,7 +13,7 @@ import { ingestEvents, rebuildHistoricalTasks, saveStore, setTaskData } from './
 import { getConnection } from './solana.js'
 
 const PROGRAM_ID = new PublicKey(
-  process.env.SOLANA_PROGRAM_ID || 'Coxgjx4UMQZPRdDZT9CAdrvt4TMTyUKH79ziJiNFHk8S'
+  process.env.SOLANA_PROGRAM_ID || 'FL4r4cpufpsdbhxLe4Gr3CMpPxAyeAu7WgRZHGb21Tor'
 )
 
 /** Max signatures to fetch per getSignaturesForAddress call */

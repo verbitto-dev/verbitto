@@ -97,8 +97,8 @@ export const Icons = {
           <stop offset="100%" stopColor="#7c3aed" />
         </linearGradient>
         <linearGradient id="claw" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#f87171" />
-          <stop offset="100%" stopColor="#dc2626" />
+          <stop offset="0%" stopColor="#ffffff" />
+          <stop offset="100%" stopColor="#c7d2fe" />
         </linearGradient>
         <filter id="glow">
           <feGaussianBlur stdDeviation="10" result="blur" />
@@ -111,45 +111,56 @@ export const Icons = {
 
       <rect width="512" height="512" rx="108" fill="url(#bg)" />
 
+      {/* shield outline ring */}
+      <path
+        d="M256 72 L420 148 V296 Q420 420 256 456 Q92 420 92 296 V148 Z"
+        fill="none"
+        stroke="rgba(255,255,255,0.10)"
+        strokeWidth="10"
+      />
+
       <g filter="url(#glow)">
+        {/* LEFT CLAW */}
         <path
           d="
-      M244 390
-      L118 168
-      L92 95
-      Q82 60, 112 60
-      Q140 60, 137 90
-      L134 140
-      L158 140
-      L155 90
-      Q152 60, 182 60
-      Q210 60, 200 95
-      L176 168
-      L264 390
+      M248 378
+      L135 172
+      L115 105
+      Q108 78, 130 78
+      Q150 78, 148 100
+      L146 140
+      L160 140
+      L158 100
+      Q156 78, 178 78
+      Q198 78, 190 105
+      L178 172
+      L258 378
       Z
     "
           fill="url(#claw)"
         />
 
+        {/* RIGHT CLAW */}
         <path
           d="
-      M268 390
-      L394 168
-      L420 95
-      Q430 60, 400 60
-      Q372 60, 375 90
-      L378 140
-      L354 140
-      L357 90
-      Q360 60, 330 60
-      Q302 60, 312 95
-      L336 168
-      L248 390
+      M264 378
+      L377 172
+      L397 105
+      Q404 78, 382 78
+      Q362 78, 364 100
+      L366 140
+      L352 140
+      L354 100
+      Q356 78, 334 78
+      Q314 78, 322 105
+      L334 172
+      L254 378
       Z
     "
           fill="url(#claw)"
         />
 
+        {/* ANTENNAE long */}
         <path
           d="M200 118 Q172 75, 122 48"
           fill="none"
@@ -165,6 +176,7 @@ export const Icons = {
           strokeLinecap="round"
         />
 
+        {/* ANTENNAE short */}
         <path
           d="M214 112 Q196 80, 160 62"
           fill="none"
@@ -182,6 +194,7 @@ export const Icons = {
           opacity="0.6"
         />
 
+        {/* TAIL FAN */}
         <path
           d="
       M256 365

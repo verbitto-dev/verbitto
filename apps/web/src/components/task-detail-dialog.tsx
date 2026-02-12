@@ -5,6 +5,7 @@ import { useAnchorWallet, useConnection, useWallet } from '@solana/wallet-adapte
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { Icons } from '@/components/icons'
+import { MarkdownRenderer } from '@/components/markdown-renderer'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -462,22 +463,35 @@ export function TaskDetailDialog({ task, open, onOpenChange, onRefresh }: TaskDe
             className={`flex-1 overflow-y-auto p-6 sm:border-r ${mobileTab !== 'details' ? 'hidden sm:block' : ''}`}
           >
             <DialogHeader className="sm:items-center items-start text-left">
-              <DialogTitle className="text-xl text-left">
-                {task.title || 'Untitled Task'}
-              </DialogTitle>
-              <div className="flex items-center gap-2 flex-wrap text-sm text-muted-foreground">
-                <span
-                  title={`Creator PDA Index: Task #${task.taskIndex.toString()} by this creator`}
+              <div className="flex items-start justify-between w-full gap-4">
+                <div className="flex-1 space-y-2">
+                  <DialogTitle className="text-xl text-left">
+                    {task.title || 'Untitled Task'}
+                  </DialogTitle>
+                  <div className="flex items-center gap-2 flex-wrap text-sm text-muted-foreground">
+                    <span
+                      title={`Creator PDA Index: Task #${task.taskIndex.toString()} by this creator`}
+                    >
+                      PDA #{task.taskIndex.toString()}
+                    </span>
+                    <span>•</span>
+                    <Badge
+                      variant={STATUS_VARIANTS[task.status as TaskStatus] ?? 'outline'}
+                      className="text-xs"
+                    >
+                      {task.status}
+                    </Badge>
+                  </div>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="shrink-0 size-8 -mt-1 -mr-1"
+                  onClick={() => onOpenChange(false)}
                 >
-                  PDA #{task.taskIndex.toString()}
-                </span>
-                <span>•</span>
-                <Badge
-                  variant={STATUS_VARIANTS[task.status as TaskStatus] ?? 'outline'}
-                  className="text-xs"
-                >
-                  {task.status}
-                </Badge>
+                  <Icons.close className="size-4" />
+                  <span className="sr-only">Close</span>
+                </Button>
               </div>
             </DialogHeader>
 
@@ -545,7 +559,7 @@ export function TaskDetailDialog({ task, open, onOpenChange, onRefresh }: TaskDe
                 </div>
                 {descriptionContent ? (
                   <div className="bg-muted p-3 rounded space-y-2">
-                    <p className="text-sm whitespace-pre-wrap">{descriptionContent}</p>
+                    <MarkdownRenderer content={descriptionContent} />
                     <p className="font-mono text-[10px] text-muted-foreground break-all">
                       SHA-256: {Buffer.from(task.descriptionHash).toString('hex')}
                     </p>
