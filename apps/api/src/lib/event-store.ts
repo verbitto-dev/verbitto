@@ -9,7 +9,13 @@
 
 import { and, desc, eq, sql } from 'drizzle-orm'
 import { db } from '../db/index.js'
-import { deliverableDescriptions, historicalTasks, indexedEvents, taskDescriptions, taskTitles } from '../db/schema.js'
+import {
+  deliverableDescriptions,
+  historicalTasks,
+  indexedEvents,
+  taskDescriptions,
+  taskTitles,
+} from '../db/schema.js'
 
 // ────────────────────────────────────────────────────────────
 // Types
@@ -364,7 +370,7 @@ function mapTerminalStatus(eventName: string): HistoricalTask['finalStatus'] {
  */
 async function publicizeDeliverables(taskAddress: string): Promise<void> {
   try {
-    const result = await db
+    const _result = await db
       .update(deliverableDescriptions)
       .set({ visibility: 'public' })
       .where(eq(deliverableDescriptions.taskAddress, taskAddress))

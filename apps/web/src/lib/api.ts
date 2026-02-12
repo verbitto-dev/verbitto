@@ -175,3 +175,32 @@ export async function fetchDescription(hash: string): Promise<TaskDescription | 
     return null
   }
 }
+
+// ── Messages ──
+
+export interface TaskMessage {
+  id: number
+  taskAddress: string
+  sender: string
+  content: string
+  createdAt: string
+}
+
+/**
+ * Fetch messages for a task (demo mode — no requester check).
+ * In production, this would require ?requester=<pubkey> for access control.
+ */
+export async function fetchMessages(
+  taskAddress: string,
+  requester?: string
+): Promise<{ messages: TaskMessage[]; total: number }> {
+  try {
+    const url = new URL(`${API_BASE}/v1/messages/${taskAddress}`)
+    if (requester) url.searchParams.set('requester', requester)
+    const res = await fetch(url.toString())
+    if (!res.ok) return { messages: [], total: 0 }
+    return await res.json()
+  } catch {
+    return { messages: [], total: 0 }
+  }
+}

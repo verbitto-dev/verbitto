@@ -22,7 +22,7 @@ export function loadIdl(): Idl {
       const idlData = readFileSync(idlPath, 'utf-8')
       cachedIdl = JSON.parse(idlData) as Idl
       return cachedIdl
-    } catch { }
+    } catch {}
   }
 
   throw new Error("IDL file not found. Run 'anchor build' first.")

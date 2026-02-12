@@ -18,7 +18,11 @@ import { createRoute, OpenAPIHono } from '@hono/zod-openapi'
 import { eq } from 'drizzle-orm'
 import { db } from '../db/index.js'
 import { deliverableDescriptions, taskDescriptions } from '../db/schema.js'
-import { getTaskParticipants, isTaskParticipant, isTerminalPublicStatus } from '../lib/task-access.js'
+import {
+  getTaskParticipants,
+  isTaskParticipant,
+  isTerminalPublicStatus,
+} from '../lib/task-access.js'
 import { ErrorSchema } from '../schemas/common.js'
 import { DescriptionResponseSchema, StoreDescriptionBodySchema } from '../schemas/descriptions.js'
 

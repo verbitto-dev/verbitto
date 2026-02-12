@@ -17,7 +17,7 @@ import {
 import { Separator } from '@/components/ui/separator'
 import { Textarea } from '@/components/ui/textarea'
 import { formatDeadline, lamportsToSol, shortKey } from '@/hooks/use-program'
-import { fetchDescription } from '@/lib/api'
+import { fetchDescription, fetchMessages, type TaskMessage } from '@/lib/api'
 import {
   decodePlatform,
   getAgentProfilePda,
@@ -44,6 +44,9 @@ export function TaskDetailDialog({ task, open, onOpenChange, onRefresh }: TaskDe
   const [deliverableText, setDeliverableText] = useState('')
   const [rejectReasonText, setRejectReasonText] = useState('')
   const [descriptionContent, setDescriptionContent] = useState<string | null>(null)
+  const [messages, setMessages] = useState<TaskMessage[]>([])
+  const [messagesLoading, setMessagesLoading] = useState(false)
+  const [mobileTab, setMobileTab] = useState<'details' | 'messages'>('details')
 
   // Fetch description content from API when dialog opens
   useEffect(() => {
@@ -67,6 +70,24 @@ export function TaskDetailDialog({ task, open, onOpenChange, onRefresh }: TaskDe
     fetchDescription(hashHex).then((desc) => {
       if (desc) setDescriptionContent(desc.content)
     })
+  }, [open, task])
+
+  // Fetch messages when dialog opens
+  useEffect(() => {
+    if (!open || !task) {
+      setMessages([])
+      return
+    }
+
+    const taskAddr = task.publicKey.toBase58()
+    // In demo mode, we pass the creator as requester so messages are always visible
+    const requester = task.creator.toBase58()
+
+    setMessagesLoading(true)
+    fetchMessages(taskAddr, requester)
+      .then((data) => setMessages(data.messages))
+      .catch(() => setMessages([]))
+      .finally(() => setMessagesLoading(false))
   }, [open, task])
 
   if (!task) return null
@@ -397,230 +418,371 @@ export function TaskDetailDialog({ task, open, onOpenChange, onRefresh }: TaskDe
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px]">
-        <DialogHeader>
-          <DialogTitle className="text-xl">{task.title || 'Untitled Task'}</DialogTitle>
-          <div className="flex items-center gap-2 flex-wrap text-sm text-muted-foreground">
-            <span title={`Creator PDA Index: Task #${task.taskIndex.toString()} by this creator`}>
-              PDA #{task.taskIndex.toString()}
-            </span>
-            <span>•</span>
-            <Badge
-              variant={STATUS_VARIANTS[task.status as TaskStatus] ?? 'outline'}
-              className="text-xs"
-            >
-              {task.status}
-            </Badge>
-          </div>
-        </DialogHeader>
-
-        <div className="space-y-4">
-          {/* Bounty and Deadline */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1">
-              <p className="text-sm text-muted-foreground">Bounty</p>
-              <p className="text-2xl font-bold flex items-center gap-2">
-                <Icons.wallet className="size-5" />
-                {lamportsToSol(task.bountyLamports)} SOL
-              </p>
-            </div>
-            <div className="space-y-1">
-              <p className="text-sm text-muted-foreground">Deadline</p>
-              <p className="text-lg font-medium">{formatDeadline(task.deadline)}</p>
-              <p className="text-xs text-muted-foreground">
-                {deadlineDate.toLocaleDateString()} {deadlineDate.toLocaleTimeString()}
-              </p>
-            </div>
-          </div>
-
-          <Separator />
-
-          {/* Details */}
-          <div className="space-y-3">
-            <div className="grid grid-cols-2 gap-3 text-sm">
-              <div>
-                <p className="text-muted-foreground">Creator</p>
-                <p className="font-mono">{shortKey(task.creator, 8)}</p>
-              </div>
-              <div>
-                <p className="text-muted-foreground">Agent</p>
-                <p className="font-mono">
-                  {task.agent.toBase58() === '11111111111111111111111111111111'
-                    ? 'Not assigned'
-                    : shortKey(task.agent, 8)}
-                </p>
-              </div>
-              <div>
-                <p className="text-muted-foreground">Reputation Reward</p>
-                <p className="font-medium">+{task.reputationReward.toString()} points</p>
-              </div>
-              <div>
-                <p className="text-muted-foreground">Created</p>
-                <p className="text-xs">{createdDate.toLocaleDateString()}</p>
-              </div>
-            </div>
-
-            {task.rejectionCount > 0 && (
-              <div className="rounded-md bg-destructive/10 p-3 text-sm">
-                <p className="font-medium text-destructive">
-                  ⚠️ Rejected {task.rejectionCount} time{task.rejectionCount > 1 ? 's' : ''}
-                </p>
-              </div>
-            )}
-          </div>
-
-          <Separator />
-
-          {/* Description Hash */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <p className="text-sm text-muted-foreground">Description</p>
-            </div>
-            {descriptionContent ? (
-              <div className="bg-muted p-3 rounded space-y-2">
-                <p className="text-sm whitespace-pre-wrap">{descriptionContent}</p>
-                <p className="font-mono text-[10px] text-muted-foreground break-all">
-                  SHA-256: {Buffer.from(task.descriptionHash).toString('hex')}
-                </p>
-              </div>
-            ) : (
-              <>
-                <p className="font-mono text-xs break-all bg-muted p-3 rounded">
-                  {Buffer.from(task.descriptionHash).toString('hex') ||
-                    '0000000000000000000000000000000000000000000000000000000000000000'}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  Full description text not available. Only the on-chain SHA-256 hash is shown.
-                </p>
-              </>
-            )}
-          </div>
-
-          {task.deliverableHash.some((b) => b !== 0) && (
-            <div className="space-y-2">
-              <p className="text-sm text-muted-foreground">Deliverable Hash (SHA-256)</p>
-              <p className="font-mono text-xs break-all bg-muted p-3 rounded">
-                {Buffer.from(task.deliverableHash).toString('hex')}
-              </p>
-              <p className="text-xs text-muted-foreground">
-                SHA-256 hash of the deliverable content submitted by the agent.
-              </p>
-            </div>
-          )}
-
-          {/* View on Explorer */}
-          <a
-            href={`https://explorer.solana.com/address/${task.publicKey.toBase58()}?cluster=devnet`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="w-full"
+      <DialogContent className="h-[100dvh] max-h-[100dvh] sm:h-auto sm:max-h-[85vh] sm:max-w-[960px] overflow-hidden p-0 sm:rounded-lg rounded-none">
+        {/* Mobile tab switcher */}
+        <div className="flex sm:hidden border-b">
+          <button
+            type="button"
+            onClick={() => setMobileTab('details')}
+            className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium transition-colors ${
+              mobileTab === 'details'
+                ? 'border-b-2 border-primary text-primary'
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
           >
-            <Button variant="outline" size="sm" className="w-full">
-              <Icons.externalLink className="mr-2 size-3" />
-              View on Solana Explorer
-            </Button>
-          </a>
+            <Icons.fileText className="size-4" />
+            Details
+          </button>
+          <button
+            type="button"
+            onClick={() => setMobileTab('messages')}
+            className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium transition-colors ${
+              mobileTab === 'messages'
+                ? 'border-b-2 border-primary text-primary'
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            <Icons.messageCircle className="size-4" />
+            Messages
+            {messages.length > 0 && (
+              <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                {messages.length}
+              </Badge>
+            )}
+          </button>
         </div>
 
-        {/* Error message */}
-        {error && (
-          <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">{error}</div>
-        )}
-
-        {/* Deliverable input for agents */}
-        {canSubmit && (
-          <div className="space-y-2">
-            <label htmlFor="deliverable-input" className="text-sm font-medium">
-              Deliverable Description
-            </label>
-            <Textarea
-              id="deliverable-input"
-              placeholder="Describe your deliverable (e.g. link to PR, IPFS hash, or summary of work done)..."
-              value={deliverableText}
-              onChange={(e) => setDeliverableText(e.target.value)}
-              rows={3}
-              disabled={loading}
-            />
-            <p className="text-xs text-muted-foreground">
-              This text will be SHA-256 hashed and stored on-chain.
-            </p>
-          </div>
-        )}
-
-        {/* Rejection reason input for creators */}
-        {canReject && (
-          <div className="space-y-2">
-            <label htmlFor="reject-reason-input" className="text-sm font-medium">
-              Rejection Reason (for Reject)
-            </label>
-            <Textarea
-              id="reject-reason-input"
-              placeholder="Explain why the submission is being rejected..."
-              value={rejectReasonText}
-              onChange={(e) => setRejectReasonText(e.target.value)}
-              rows={2}
-              disabled={loading}
-            />
-            <p className="text-xs text-muted-foreground">
-              Required when rejecting. This text will be SHA-256 hashed.
-            </p>
-          </div>
-        )}
-
-        <DialogFooter className="flex-col sm:flex-row gap-2">
-          {canClaim && (
-            <Button variant="brand" onClick={handleClaim} disabled={loading} className="w-full">
-              <Icons.users className="mr-2 size-4" />
-              Claim Task
-            </Button>
-          )}
-
-          {canSubmit && (
-            <Button variant="brand" onClick={handleSubmit} disabled={loading} className="w-full">
-              <Icons.upload className="mr-2 size-4" />
-              Submit Deliverable
-            </Button>
-          )}
-
-          {canApprove && (
-            <Button variant="default" onClick={handleApprove} disabled={loading} className="w-full">
-              <Icons.check className="mr-2 size-4" />
-              Approve & Settle
-            </Button>
-          )}
-
-          {canReject && (
-            <Button
-              variant="destructive"
-              onClick={handleReject}
-              disabled={loading}
-              className="w-full"
-            >
-              <Icons.close className="mr-2 size-4" />
-              Reject
-            </Button>
-          )}
-
-          {canCancel && (
-            <Button variant="outline" onClick={handleCancel} disabled={loading} className="w-full">
-              {loading ? (
-                <Icons.clock className="mr-2 size-4 animate-spin" />
-              ) : (
-                <Icons.close className="mr-2 size-4" />
-              )}
-              {loading ? 'Canceling...' : 'Cancel Task'}
-            </Button>
-          )}
-
-          <Button
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-            disabled={loading}
-            className="w-full"
+        {/* Two-column layout (desktop) / tab content (mobile) */}
+        <div className="flex flex-col sm:flex-row h-full sm:max-h-[85vh]">
+          {/* ── Left Column: Task Details ── */}
+          <div
+            className={`flex-1 overflow-y-auto p-6 sm:border-r ${mobileTab !== 'details' ? 'hidden sm:block' : ''}`}
           >
-            Close
-          </Button>
-        </DialogFooter>
+            <DialogHeader>
+              <DialogTitle className="text-xl">{task.title || 'Untitled Task'}</DialogTitle>
+              <div className="flex items-center gap-2 flex-wrap text-sm text-muted-foreground">
+                <span
+                  title={`Creator PDA Index: Task #${task.taskIndex.toString()} by this creator`}
+                >
+                  PDA #{task.taskIndex.toString()}
+                </span>
+                <span>•</span>
+                <Badge
+                  variant={STATUS_VARIANTS[task.status as TaskStatus] ?? 'outline'}
+                  className="text-xs"
+                >
+                  {task.status}
+                </Badge>
+              </div>
+            </DialogHeader>
+
+            <div className="space-y-4 mt-4">
+              {/* Bounty and Deadline */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <p className="text-sm text-muted-foreground">Bounty</p>
+                  <p className="text-2xl font-bold flex items-center gap-2">
+                    <Icons.wallet className="size-5" />
+                    {lamportsToSol(task.bountyLamports)} SOL
+                  </p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-sm text-muted-foreground">Deadline</p>
+                  <p className="text-lg font-medium">{formatDeadline(task.deadline)}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {deadlineDate.toLocaleDateString()} {deadlineDate.toLocaleTimeString()}
+                  </p>
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Details */}
+              <div className="space-y-3">
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  <div>
+                    <p className="text-muted-foreground">Creator</p>
+                    <p className="font-mono">{shortKey(task.creator, 8)}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Agent</p>
+                    <p className="font-mono">
+                      {task.agent.toBase58() === '11111111111111111111111111111111'
+                        ? 'Not assigned'
+                        : shortKey(task.agent, 8)}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Reputation Reward</p>
+                    <p className="font-medium">+{task.reputationReward.toString()} points</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Created</p>
+                    <p className="text-xs">{createdDate.toLocaleDateString()}</p>
+                  </div>
+                </div>
+
+                {task.rejectionCount > 0 && (
+                  <div className="rounded-md bg-destructive/10 p-3 text-sm">
+                    <p className="font-medium text-destructive">
+                      ⚠️ Rejected {task.rejectionCount} time{task.rejectionCount > 1 ? 's' : ''}
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              <Separator />
+
+              {/* Description Hash */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm text-muted-foreground">Description</p>
+                </div>
+                {descriptionContent ? (
+                  <div className="bg-muted p-3 rounded space-y-2">
+                    <p className="text-sm whitespace-pre-wrap">{descriptionContent}</p>
+                    <p className="font-mono text-[10px] text-muted-foreground break-all">
+                      SHA-256: {Buffer.from(task.descriptionHash).toString('hex')}
+                    </p>
+                  </div>
+                ) : (
+                  <>
+                    <p className="font-mono text-xs break-all bg-muted p-3 rounded">
+                      {Buffer.from(task.descriptionHash).toString('hex') ||
+                        '0000000000000000000000000000000000000000000000000000000000000000'}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Full description text not available. Only the on-chain SHA-256 hash is shown.
+                    </p>
+                  </>
+                )}
+              </div>
+
+              {task.deliverableHash.some((b) => b !== 0) && (
+                <div className="space-y-2">
+                  <p className="text-sm text-muted-foreground">Deliverable Hash (SHA-256)</p>
+                  <p className="font-mono text-xs break-all bg-muted p-3 rounded">
+                    {Buffer.from(task.deliverableHash).toString('hex')}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    SHA-256 hash of the deliverable content submitted by the agent.
+                  </p>
+                </div>
+              )}
+
+              {/* View on Explorer */}
+              <a
+                href={`https://explorer.solana.com/address/${task.publicKey.toBase58()}?cluster=devnet`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full"
+              >
+                <Button variant="outline" size="sm" className="w-full">
+                  <Icons.externalLink className="mr-2 size-3" />
+                  View on Solana Explorer
+                </Button>
+              </a>
+            </div>
+
+            {/* Error message */}
+            {error && (
+              <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive mt-4">
+                {error}
+              </div>
+            )}
+
+            {/* Deliverable input for agents */}
+            {canSubmit && (
+              <div className="space-y-2 mt-4">
+                <label htmlFor="deliverable-input" className="text-sm font-medium">
+                  Deliverable Description
+                </label>
+                <Textarea
+                  id="deliverable-input"
+                  placeholder="Describe your deliverable (e.g. link to PR, IPFS hash, or summary of work done)..."
+                  value={deliverableText}
+                  onChange={(e) => setDeliverableText(e.target.value)}
+                  rows={3}
+                  disabled={loading}
+                />
+                <p className="text-xs text-muted-foreground">
+                  This text will be SHA-256 hashed and stored on-chain.
+                </p>
+              </div>
+            )}
+
+            {/* Rejection reason input for creators */}
+            {canReject && (
+              <div className="space-y-2 mt-4">
+                <label htmlFor="reject-reason-input" className="text-sm font-medium">
+                  Rejection Reason (for Reject)
+                </label>
+                <Textarea
+                  id="reject-reason-input"
+                  placeholder="Explain why the submission is being rejected..."
+                  value={rejectReasonText}
+                  onChange={(e) => setRejectReasonText(e.target.value)}
+                  rows={2}
+                  disabled={loading}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Required when rejecting. This text will be SHA-256 hashed.
+                </p>
+              </div>
+            )}
+
+            <DialogFooter className="flex-col sm:flex-row gap-2 mt-4">
+              {canClaim && (
+                <Button variant="brand" onClick={handleClaim} disabled={loading} className="w-full">
+                  <Icons.users className="mr-2 size-4" />
+                  Claim Task
+                </Button>
+              )}
+
+              {canSubmit && (
+                <Button
+                  variant="brand"
+                  onClick={handleSubmit}
+                  disabled={loading}
+                  className="w-full"
+                >
+                  <Icons.upload className="mr-2 size-4" />
+                  Submit Deliverable
+                </Button>
+              )}
+
+              {canApprove && (
+                <Button
+                  variant="default"
+                  onClick={handleApprove}
+                  disabled={loading}
+                  className="w-full"
+                >
+                  <Icons.check className="mr-2 size-4" />
+                  Approve & Settle
+                </Button>
+              )}
+
+              {canReject && (
+                <Button
+                  variant="destructive"
+                  onClick={handleReject}
+                  disabled={loading}
+                  className="w-full"
+                >
+                  <Icons.close className="mr-2 size-4" />
+                  Reject
+                </Button>
+              )}
+
+              {canCancel && (
+                <Button
+                  variant="outline"
+                  onClick={handleCancel}
+                  disabled={loading}
+                  className="w-full"
+                >
+                  {loading ? (
+                    <Icons.clock className="mr-2 size-4 animate-spin" />
+                  ) : (
+                    <Icons.close className="mr-2 size-4" />
+                  )}
+                  {loading ? 'Canceling...' : 'Cancel Task'}
+                </Button>
+              )}
+
+              <Button
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+                disabled={loading}
+                className="w-full"
+              >
+                Close
+              </Button>
+            </DialogFooter>
+          </div>
+
+          {/* ── Right Column: Messages ── */}
+          <div
+            className={`w-full sm:w-[320px] flex flex-col bg-muted/20 overflow-hidden ${mobileTab !== 'messages' ? 'hidden sm:flex' : ''}`}
+          >
+            <div className="hidden sm:flex items-center gap-2 px-4 py-3 border-b">
+              <Icons.messageCircle className="size-4 text-muted-foreground" />
+              <p className="text-sm font-medium">Messages</p>
+              {messages.length > 0 && (
+                <Badge variant="secondary" className="text-xs">
+                  {messages.length}
+                </Badge>
+              )}
+            </div>
+
+            {/* Demo banner */}
+            <div className="mx-3 mt-3 rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-700 dark:text-amber-400">
+              <Icons.shield className="inline size-3 mr-1 -mt-0.5" />
+              Demo only — in production, only the task creator and assigned agent can view messages.
+            </div>
+
+            {/* Messages list */}
+            <div className="flex-1 overflow-y-auto p-3">
+              {task.agent.toBase58() === '11111111111111111111111111111111' ? (
+                <div className="flex flex-col items-center justify-center h-full text-center py-8">
+                  <Icons.users className="size-8 text-muted-foreground/40 mb-2" />
+                  <p className="text-sm text-muted-foreground">No agent assigned yet.</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Messaging becomes available once an agent claims this task.
+                  </p>
+                </div>
+              ) : messagesLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <Icons.loader className="size-4 animate-spin text-muted-foreground" />
+                  <span className="ml-2 text-sm text-muted-foreground">Loading...</span>
+                </div>
+              ) : messages.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-full text-center py-8">
+                  <Icons.messageCircle className="size-8 text-muted-foreground/40 mb-2" />
+                  <p className="text-sm text-muted-foreground">No messages yet.</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Creator and agent can exchange messages via the Signer CLI.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {messages.map((msg) => {
+                    const isMsgCreator = msg.sender === task.creator.toBase58()
+                    const roleLabel = isMsgCreator ? 'Creator' : 'Agent'
+                    const roleColor = isMsgCreator
+                      ? 'text-blue-600 dark:text-blue-400'
+                      : 'text-green-600 dark:text-green-400'
+                    return (
+                      <div
+                        key={msg.id}
+                        className="rounded-md bg-background p-2.5 text-sm shadow-sm"
+                      >
+                        <div className="flex items-center justify-between mb-1">
+                          <div className="flex items-center gap-1.5">
+                            <Badge
+                              variant="outline"
+                              className={`text-[10px] px-1.5 py-0 ${roleColor}`}
+                            >
+                              {roleLabel}
+                            </Badge>
+                            <span className="font-mono text-[10px] text-muted-foreground">
+                              {shortKey(msg.sender, 4)}
+                            </span>
+                          </div>
+                          <span className="text-[10px] text-muted-foreground">
+                            {new Date(msg.createdAt).toLocaleString()}
+                          </span>
+                        </div>
+                        <p className="text-sm whitespace-pre-wrap break-words">{msg.content}</p>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       </DialogContent>
     </Dialog>
   )
