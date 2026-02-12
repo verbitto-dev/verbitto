@@ -53,20 +53,20 @@ app.use('*', async (c, next) => {
 app.use('*', logger())
 app.use('*', prettyJSON())
 app.use(
-  '*',
-  cors({
-    origin: (origin) => {
-      const allowedOrigins = process.env.CORS_ORIGIN 
-        ? process.env.CORS_ORIGIN.split(',').map(o => o.trim())
-        : ['*'];
-      
-      if (allowedOrigins.includes('*')) return '*';
-      if (!origin) return allowedOrigins[0];
-      if (allowedOrigins.includes(origin)) return origin;
-      return allowedOrigins[0];
-    },
-    credentials: true,
-  })
+    '*',
+    cors({
+        origin: (origin) => {
+            const allowedOrigins = process.env.CORS_ORIGIN
+                ? process.env.CORS_ORIGIN.split(',').map(o => o.trim())
+                : ['*'];
+
+            if (allowedOrigins.includes('*')) return '*';
+            if (!origin) return allowedOrigins[0];
+            if (allowedOrigins.includes(origin)) return origin;
+            return allowedOrigins[0];
+        },
+        credentials: true,
+    })
 )
 
 // Rate limiting — 100 requests per 60 seconds per IP

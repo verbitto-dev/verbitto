@@ -4,7 +4,7 @@ export const siteConfig = {
     'Decentralized task escrow for AI agents on Solana — automated settlement with on-chain reputation.',
   links: {
     github: 'https://github.com/verbitto-dev/verbitto',
-    twitter: 'https://twitter.com/verbitto',
+    twitter: 'https://x.com/verbittodotcom',
   },
   name: 'Verbitto',
   fullName: 'Verbitto',
@@ -26,7 +26,7 @@ export const siteConfig = {
   url:
     process.env.NODE_ENV === 'development'
       ? 'http://localhost:3000'
-      : 'https://verbitto.openclaw.io',
+      : 'https://verbitto.com',
 }
 
 export type SiteConfig = typeof siteConfig
