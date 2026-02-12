@@ -1,7 +1,10 @@
 import { defineDocumentType, makeSource } from 'contentlayer2/source-files'
 import rehypeAutolinkHeadings from 'rehype-autolink-headings'
+import rehypePrettyCode from 'rehype-pretty-code'
 import rehypeSlug from 'rehype-slug'
 import remarkGfm from 'remark-gfm'
+import { visit } from 'unist-util-visit'
+import { rehypeMermaid } from './src/lib/rehype-mermaid.js'
 
 const DIRECTORY_PATTERN_REGEX = /\(([^)]*)\)\//g
 
@@ -43,6 +46,49 @@ export default makeSource({
     remarkPlugins: [remarkGfm],
     rehypePlugins: [
       rehypeSlug,
+      // Transform mermaid code blocks into Mermaid components (must run BEFORE rehype-pretty-code)
+      rehypeMermaid,
+      // Pre-process: Extract raw string from code blocks for copy functionality
+      () => (tree) => {
+        visit(tree, (node) => {
+          if (node?.type === 'element' && node?.tagName === 'pre') {
+            const [codeEl] = node.children
+            if (codeEl?.tagName !== 'code') return
+            node.__rawString__ = codeEl.children?.[0]?.value
+          }
+        })
+      },
+      // Syntax highlighting with rehype-pretty-code
+      [
+        rehypePrettyCode,
+        {
+          theme: 'github-dark',
+          keepBackground: true,
+          onVisitLine(node) {
+            // Prevent empty lines from collapsing in grid mode
+            if (node.children.length === 0) {
+              node.children = [{ type: 'text', value: ' ' }]
+            }
+          },
+          onVisitHighlightedLine(node) {
+            node.properties.className = [...(node.properties.className || []), 'line--highlighted']
+          },
+          onVisitHighlightedChars(node) {
+            node.properties.className = ['word--highlighted']
+          },
+        },
+      ],
+      // Post-process: Pass raw string to pre element for copy button
+      () => (tree) => {
+        visit(tree, (node) => {
+          if (node?.type === 'element' && node?.tagName === 'div') {
+            if (!('data-rehype-pretty-code-fragment' in node.properties)) return
+            const preElement = node.children.at(-1)
+            if (preElement?.tagName !== 'pre') return
+            preElement.properties.__rawString__ = node.__rawString__
+          }
+        })
+      },
       [
         rehypeAutolinkHeadings,
         {

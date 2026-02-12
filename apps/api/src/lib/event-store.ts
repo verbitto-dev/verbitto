@@ -370,7 +370,7 @@ function mapTerminalStatus(eventName: string): HistoricalTask['finalStatus'] {
  */
 async function publicizeDeliverables(taskAddress: string): Promise<void> {
   try {
-    const _result = await db
+    await db
       .update(deliverableDescriptions)
       .set({ visibility: 'public' })
       .where(eq(deliverableDescriptions.taskAddress, taskAddress))

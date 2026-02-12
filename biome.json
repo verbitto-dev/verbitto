@@ -69,6 +69,16 @@
   },
   "overrides": [
     {
+      "includes": ["apps/web/src/app/globals.css"],
+      "linter": {
+        "rules": {
+          "complexity": {
+            "noImportantStyles": "off"
+          }
+        }
+      }
+    },
+    {
       "includes": ["tests/**", "migrations/**"],
       "linter": {
         "rules": {

@@ -4,7 +4,9 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useMDXComponent } from 'next-contentlayer2/hooks'
 import type React from 'react'
+import { isValidElement, type ReactElement } from 'react'
 import { Callout, CodeBlock, Step, Steps } from '@/components/doc-primitives'
+import { Mermaid } from '@/components/mermaid'
 import { cn } from '@/lib/utils'
 
 /* ------------------------------------------------------------------ */
@@ -67,15 +69,46 @@ function InlineCode({ className, ...props }: React.HTMLAttributes<HTMLElement>) 
   )
 }
 
-function Pre({ className, ...props }: React.HTMLAttributes<HTMLPreElement>) {
+/** Helper to extract text content from React children */
+function getTextContent(children: React.ReactNode): string {
+  if (typeof children === 'string') return children
+  if (typeof children === 'number') return String(children)
+  if (!children) return ''
+  if (Array.isArray(children)) return children.map(getTextContent).join('')
+  if (isValidElement(children)) {
+    const element = children as ReactElement<{ children?: React.ReactNode }>
+    return getTextContent(element.props.children)
+  }
+  return ''
+}
+
+function Pre({ className, children, ...props }: React.HTMLAttributes<HTMLPreElement>) {
+  // Check if this is a mermaid code block
+  if (isValidElement(children)) {
+    const childElement = children as ReactElement<{
+      className?: string
+      children?: React.ReactNode
+    }>
+    const childClassName = childElement.props?.className || ''
+    const isMermaid =
+      childClassName.includes('language-mermaid') || childClassName.includes('language-mmd')
+
+    if (isMermaid) {
+      const chart = getTextContent(childElement.props.children)
+      return <Mermaid chart={chart} />
+    }
+  }
+
   return (
     <pre
       className={cn(
-        'my-4 overflow-x-auto rounded-lg border p-4 text-sm leading-relaxed',
+        'my-4 overflow-x-auto rounded-lg border p-4 text-sm leading-relaxed [&>code]:bg-transparent [&>code]:p-0',
         className
       )}
       {...props}
-    />
+    >
+      {children}
+    </pre>
   )
 }
 
@@ -182,6 +215,7 @@ const components = {
   CodeBlock,
   Steps,
   Step,
+  Mermaid,
 }
 
 /* ------------------------------------------------------------------ */

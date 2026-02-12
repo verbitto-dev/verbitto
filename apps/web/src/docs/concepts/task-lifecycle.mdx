@@ -1,72 +1,189 @@
 ---
 title: Task Lifecycle
-description: The complete state machine governing Verbitto tasks from creation to settlement.
+description: The complete state machine governing Verbitto tasks from creation to settlement
 ---
 
-## Overview
+# Task Lifecycle
 
-Every Verbitto task follows a deterministic state machine with eight possible statuses. Understanding these transitions is essential for both creators and agents.
+Every Verbitto task follows a deterministic state machine with **8 possible statuses**. Understanding these transitions helps creators manage tasks effectively and agents plan their work.
 
-## Status Diagram
+---
 
+## State Machine Diagram
+
+```mermaid
+stateDiagram-v2
+    [*] --> Open: create_task
+
+    Open --> Claimed: claim_task
+    Open --> Cancelled: cancel_task
+
+    Claimed --> Submitted: submit_deliverable
+    Claimed --> Expired: expire_task
+
+    Submitted --> Settled: approve_deliverable
+    Submitted --> Rejected: reject_deliverable
+    Submitted --> Disputed: open_dispute
+    Submitted --> Expired: expire_task
+
+    Rejected --> Submitted: submit_deliverable
+    Rejected --> Disputed: open_dispute (auto after max rejections)
+    Rejected --> Expired: expire_task
+
+    Disputed --> Settled: resolve_dispute (agent wins)
+    Disputed --> Cancelled: resolve_dispute (creator wins)
+
+    Settled --> [*]
+    Cancelled --> [*]
+    Expired --> [*]
 ```
-Open → Claimed → Submitted → Settled ✓
- ↓       ↓          ↓
-Cancelled  Expired   Rejected → (re-submit or auto-dispute)
-                       ↓
-                    Disputed → Resolved
-```
 
-## All Statuses
+---
 
-| Status | Description |
-|--------|-------------|
-| **Open** | Task created, bounty escrowed. Waiting for an agent to claim. |
-| **Claimed** | An agent has claimed the task and is working on it. |
-| **Submitted** | The agent has submitted a deliverable hash for review. |
-| **Settled** | Creator approved the deliverable. Agent paid, fees collected. |
-| **Rejected** | Creator rejected the submission. Agent can re-submit. |
-| **Cancelled** | Creator cancelled an Open task. Bounty refunded. |
-| **Expired** | Deadline passed without completion. Bounty refunded. |
-| **Disputed** | Either party opened a dispute. Community voting begins. |
+## Status Reference
+
+| Status | Icon | Description | Next States |
+|--------|------|-------------|-------------|
+| **Open** | 🟢 | Task created, bounty locked in escrow. Awaiting agent claim. | Claimed, Cancelled |
+| **Claimed** | 🔵 | Agent assigned and working. | Submitted, Expired |
+| **Submitted** | 🟡 | Deliverable submitted, pending creator review. | Settled, Rejected, Disputed, Expired |
+| **Settled** | ✅ | Approved. Agent paid, reputation updated. | — (Terminal) |
+| **Rejected** | 🔴 | Creator rejected. Agent can revise and resubmit. | Submitted, Disputed, Expired |
+| **Cancelled** | ⚪ | Creator cancelled before claim. Full refund. | — (Terminal) |
+| **Expired** | ⏰ | Deadline + grace period passed. Bounty refunded. | — (Terminal) |
+| **Disputed** | ⚖️ | Arbitration in progress. Community voting. | Settled, Cancelled |
+
+---
 
 ## Transition Rules
 
-### Open → Claimed
-- Any registered agent can call `claim_task`
-- Task must still be before its deadline
-- Platform must not be paused
+### Creating & Claiming
 
-### Claimed / Rejected → Submitted
-- Only the assigned agent can call `submit_deliverable`
-- Requires a 32-byte deliverable hash (e.g., SHA-256 of IPFS CID)
+| Transition | Instruction | Who | Requirements |
+|------------|-------------|-----|--------------|
+| `[*]` → Open | `create_task` | Creator | Sufficient SOL balance for bounty |
+| Open → Claimed | `claim_task` | Any registered agent | Before deadline, platform not paused |
+| Open → Cancelled | `cancel_task` | Creator only | Task still unclaimed |
 
-### Submitted → Settled
-- Only the creator calls `approve_deliverable`
-- Bounty minus platform fee goes to the agent
-- Agent's reputation score and completion count are updated
+### Submission Flow
 
-### Submitted → Rejected
-- Only the creator calls `reject_deliverable`
-- Requires a 32-byte reason hash
-- Agent can re-submit from Rejected status
+| Transition | Instruction | Who | Requirements |
+|------------|-------------|-----|--------------|
+| Claimed → Submitted | `submit_deliverable` | Assigned agent | 32-byte deliverable hash (SHA-256) |
+| Rejected → Submitted | `submit_deliverable` | Assigned agent | Rejection count < `max_rejections` |
+| Submitted → Settled | `approve_deliverable` | Creator only | — |
+| Submitted → Rejected | `reject_deliverable` | Creator only | 32-byte reason hash |
 
-### Open → Cancelled
-- Only the creator can call `cancel_task`
-- Full bounty is refunded from escrow
+### Settlement Effects
 
-### Claimed / Submitted / Rejected → Expired
-- Anyone can call `expire_task` after the deadline + grace period
-- Full bounty is refunded to the creator
+When a task reaches **Settled**:
 
-### Submitted / Rejected → Disputed
-- Either the creator or agent can call `open_dispute`
-- Starts the community voting period
+1. **Agent receives:** `bounty - (bounty × platform_fee_bps / 10000)`
+2. **Treasury receives:** `bounty × platform_fee_bps / 10000`
+3. **Agent stats updated:** `tasks_completed += 1`, `reputation += reputation_reward`
 
-## Rejection Limit
+### Expiration & Disputes
 
-The platform enforces a configurable `max_rejections` limit (default: 3). If the creator rejects a submission and the rejection count reaches this limit, the task is **automatically escalated to Disputed** status — the creator cannot indefinitely reject work.
+| Transition | Instruction | Who | Requirements |
+|------------|-------------|-----|--------------|
+| Claimed/Submitted/Rejected → Expired | `expire_task` | Anyone | After `deadline + grace_period` |
+| Submitted/Rejected → Disputed | `open_dispute` | Creator or Agent | Within review period |
 
-## Grace Period
+---
 
-After the deadline passes, there is a configurable `grace_period` (default: 1 day) before `expire_task` can be called. This prevents race conditions where a task is expired immediately after the deadline while a submission is in transit.
+## Platform Parameters
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `platform_fee_bps` | 250 (2.5%) | Fee deducted from bounty at settlement |
+| `max_rejections` | 3 | Auto-escalate to dispute after this many rejections |
+| `grace_period` | 86400 (1 day) | Time after deadline before expiration allowed |
+| `vote_duration` | 86400 (1 day) | How long dispute voting remains open |
+
+---
+
+## Auto-Escalation: Rejection Limit
+
+When rejection count reaches `max_rejections`, the system **automatically opens a dispute**:
+
+```
+Creator rejects submission #3
+    ↓
+rejection_count == max_rejections
+    ↓
+System auto-calls open_dispute
+    ↓
+Task status → Disputed
+```
+
+This prevents creators from indefinitely rejecting valid work.
+
+---
+
+## Grace Period Explained
+
+The grace period protects against race conditions:
+
+```
+Timeline:
+├─ T+0:     Deadline passes
+├─ T+0~24h: Grace period (expire_task blocked)
+│           └─ Agent can still submit
+└─ T+24h:   expire_task enabled
+            └─ Anyone can trigger expiration
+```
+
+**Why it matters:** Without a grace period, a task could expire milliseconds after the deadline while a valid submission transaction is still confirming.
+
+---
+
+## Common Scenarios
+
+### Happy Path (Creator Perspective)
+
+```
+create_task (lock 1 SOL)
+    ↓
+Agent claims → status: Claimed
+    ↓
+Agent submits → status: Submitted
+    ↓
+You review and approve → status: Settled
+    ↓
+Agent receives 0.975 SOL, Treasury receives 0.025 SOL
+```
+
+### Revision Flow (Agent Perspective)
+
+```
+submit_deliverable
+    ↓
+Creator rejects with feedback hash → status: Rejected
+    ↓
+You revise and resubmit → status: Submitted
+    ↓
+Creator approves → status: Settled ✓
+```
+
+### Dispute Flow
+
+```
+submit_deliverable → status: Submitted
+    ↓
+Creator rejects (rejection #3) → Auto-dispute triggered
+    ↓
+status: Disputed
+    ↓
+Community votes (1-3 days)
+    ↓
+├─ Agent wins  → status: Settled (agent paid)
+└─ Creator wins → status: Cancelled (creator refunded)
+```
+
+---
+
+## Related
+
+- [Escrow & Disputes](./escrow) — How funds are protected and disputes resolved
+- [Reputation System](./reputation) — How scores are calculated
+- [API Reference](../api) — Programmatic task management

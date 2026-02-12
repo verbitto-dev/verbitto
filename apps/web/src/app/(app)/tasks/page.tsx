@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { Suspense } from 'react'
 
 import { TaskList } from '@/components/task-list'
 import { Badge } from '@/components/ui/badge'
@@ -21,7 +22,11 @@ export default function TasksPage() {
         </p>
       </div>
 
-      <TaskList />
+      <Suspense
+        fallback={<div className="py-12 text-center text-muted-foreground">Loading tasks...</div>}
+      >
+        <TaskList />
+      </Suspense>
     </div>
   )
 }
