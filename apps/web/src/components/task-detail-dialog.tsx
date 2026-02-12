@@ -418,16 +418,19 @@ export function TaskDetailDialog({ task, open, onOpenChange, onRefresh }: TaskDe
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="h-[100dvh] max-h-[100dvh] sm:h-auto sm:max-h-[85vh] sm:max-w-[960px] overflow-hidden p-0 sm:rounded-lg rounded-none">
+      <DialogContent
+        hideClose
+        className="flex flex-col gap-0 top-0 translate-y-0 sm:top-[50%] sm:translate-y-[-50%] h-[100dvh] max-h-[100dvh] sm:h-auto sm:max-h-[85vh] sm:max-w-[960px] overflow-hidden p-0 sm:rounded-lg rounded-none"
+      >
         {/* Mobile tab switcher */}
-        <div className="flex sm:hidden border-b">
+        <div className="flex sm:hidden h-11 shrink-0 border-b">
           <button
             type="button"
             onClick={() => setMobileTab('details')}
-            className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium transition-colors ${
+            className={`flex-1 flex items-center justify-center gap-2 px-4 h-full text-sm font-medium transition-colors border-b-2 ${
               mobileTab === 'details'
-                ? 'border-b-2 border-primary text-primary'
-                : 'text-muted-foreground hover:text-foreground'
+                ? 'border-primary text-primary'
+                : 'border-transparent text-muted-foreground hover:text-foreground'
             }`}
           >
             <Icons.fileText className="size-4" />
@@ -436,10 +439,10 @@ export function TaskDetailDialog({ task, open, onOpenChange, onRefresh }: TaskDe
           <button
             type="button"
             onClick={() => setMobileTab('messages')}
-            className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium transition-colors ${
+            className={`flex-1 flex items-center justify-center gap-2 px-4 h-full text-sm font-medium transition-colors border-b-2 ${
               mobileTab === 'messages'
-                ? 'border-b-2 border-primary text-primary'
-                : 'text-muted-foreground hover:text-foreground'
+                ? 'border-primary text-primary'
+                : 'border-transparent text-muted-foreground hover:text-foreground'
             }`}
           >
             <Icons.messageCircle className="size-4" />
@@ -453,13 +456,15 @@ export function TaskDetailDialog({ task, open, onOpenChange, onRefresh }: TaskDe
         </div>
 
         {/* Two-column layout (desktop) / tab content (mobile) */}
-        <div className="flex flex-col sm:flex-row h-full sm:max-h-[85vh]">
+        <div className="flex flex-col sm:flex-row flex-1 min-h-0 sm:max-h-[85vh]">
           {/* ── Left Column: Task Details ── */}
           <div
             className={`flex-1 overflow-y-auto p-6 sm:border-r ${mobileTab !== 'details' ? 'hidden sm:block' : ''}`}
           >
-            <DialogHeader>
-              <DialogTitle className="text-xl">{task.title || 'Untitled Task'}</DialogTitle>
+            <DialogHeader className="sm:items-center items-start text-left">
+              <DialogTitle className="text-xl text-left">
+                {task.title || 'Untitled Task'}
+              </DialogTitle>
               <div className="flex items-center gap-2 flex-wrap text-sm text-muted-foreground">
                 <span
                   title={`Creator PDA Index: Task #${task.taskIndex.toString()} by this creator`}
@@ -725,7 +730,7 @@ export function TaskDetailDialog({ task, open, onOpenChange, onRefresh }: TaskDe
             {/* Messages list */}
             <div className="flex-1 overflow-y-auto p-3">
               {task.agent.toBase58() === '11111111111111111111111111111111' ? (
-                <div className="flex flex-col items-center justify-center h-full text-center py-8">
+                <div className="flex flex-col items-center sm:justify-center justify-start h-full text-center py-8">
                   <Icons.users className="size-8 text-muted-foreground/40 mb-2" />
                   <p className="text-sm text-muted-foreground">No agent assigned yet.</p>
                   <p className="text-xs text-muted-foreground mt-1">
@@ -738,7 +743,7 @@ export function TaskDetailDialog({ task, open, onOpenChange, onRefresh }: TaskDe
                   <span className="ml-2 text-sm text-muted-foreground">Loading...</span>
                 </div>
               ) : messages.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-full text-center py-8">
+                <div className="flex flex-col items-center sm:justify-center justify-start h-full text-center py-8">
                   <Icons.messageCircle className="size-8 text-muted-foreground/40 mb-2" />
                   <p className="text-sm text-muted-foreground">No messages yet.</p>
                   <p className="text-xs text-muted-foreground mt-1">
