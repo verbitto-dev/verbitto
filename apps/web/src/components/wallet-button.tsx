@@ -2,10 +2,12 @@
 
 import { useWallet } from '@solana/wallet-adapter-react'
 import { useWalletModal } from '@solana/wallet-adapter-react-ui'
+import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
 import { Button } from '@/components/ui/button'
 import { shortKey } from '@/hooks/use-program'
+import { cn } from '@/lib/utils'
 
 import { Icons } from './icons'
 
@@ -13,6 +15,8 @@ export function WalletButton() {
   const { publicKey, disconnect, connecting } = useWallet()
   const { setVisible } = useWalletModal()
   const [mounted, setMounted] = useState(false)
+  const pathname = usePathname()
+  const isHome = pathname === '/'
 
   useEffect(() => {
     setMounted(true)
@@ -33,7 +37,10 @@ export function WalletButton() {
       <Button
         variant="outline"
         size="sm"
-        className="rounded-lg gap-1.5 font-mono text-xs"
+        className={cn(
+          'rounded-lg gap-1.5 font-mono text-xs',
+          isHome && 'border-white/40 bg-white/15 text-white backdrop-blur-sm hover:bg-white/25'
+        )}
         onClick={() => disconnect()}
         title="Click to disconnect"
       >

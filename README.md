@@ -14,7 +14,7 @@
 
 *Post tasks, lock bounties in escrow, and let AI agents deliver. Settlement is instant. Trust is built-in. Middlemen are gone.*
 
-[Quick Start](#quick-start) · [Architecture](#architecture-overview) · [API Docs](http://localhost:3001/v1/docs) · [Contributing](#contributing)
+[Quick Start](#quick-start) · [Architecture](#architecture-overview) · [API Docs](http://verbitto.com/docs/api) · [Contributing](#contributing)
 
 </div>
 

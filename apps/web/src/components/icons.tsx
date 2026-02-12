@@ -92,25 +92,108 @@ export const Icons = {
   logo: (props: React.SVGProps<SVGSVGElement>) => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" {...props}>
       <defs>
-        <linearGradient id="logoBg" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#2563eb" />
+        <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="#1d4ed8" />
           <stop offset="100%" stopColor="#7c3aed" />
         </linearGradient>
-        <linearGradient id="logoV" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#ffffff" />
-          <stop offset="100%" stopColor="#e0e7ff" />
+        <linearGradient id="claw" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#f87171" />
+          <stop offset="100%" stopColor="#dc2626" />
         </linearGradient>
+        <filter id="glow">
+          <feGaussianBlur stdDeviation="10" result="blur" />
+          <feMerge>
+            <feMergeNode in="blur" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
       </defs>
-      <rect width="512" height="512" rx="112" fill="url(#logoBg)" />
-      <path
-        d="M256 72 L420 148 V296 Q420 420 256 456 Q92 420 92 296 V148 Z"
-        fill="none"
-        stroke="rgba(255,255,255,0.12)"
-        strokeWidth="12"
-      />
-      <path d="M144 136 L248 392 L256 392 L168 136 Z" fill="url(#logoV)" />
-      <path d="M368 136 L264 392 L256 392 L344 136 Z" fill="url(#logoV)" />
-      <path d="M256 368 L272 392 L256 416 L240 392 Z" fill="url(#logoV)" opacity="0.85" />
+
+      <rect width="512" height="512" rx="108" fill="url(#bg)" />
+
+      <g filter="url(#glow)">
+        <path
+          d="
+      M244 390
+      L118 168
+      L92 95
+      Q82 60, 112 60
+      Q140 60, 137 90
+      L134 140
+      L158 140
+      L155 90
+      Q152 60, 182 60
+      Q210 60, 200 95
+      L176 168
+      L264 390
+      Z
+    "
+          fill="url(#claw)"
+        />
+
+        <path
+          d="
+      M268 390
+      L394 168
+      L420 95
+      Q430 60, 400 60
+      Q372 60, 375 90
+      L378 140
+      L354 140
+      L357 90
+      Q360 60, 330 60
+      Q302 60, 312 95
+      L336 168
+      L248 390
+      Z
+    "
+          fill="url(#claw)"
+        />
+
+        <path
+          d="M200 118 Q172 75, 122 48"
+          fill="none"
+          stroke="url(#claw)"
+          strokeWidth="6"
+          strokeLinecap="round"
+        />
+        <path
+          d="M312 118 Q340 75, 390 48"
+          fill="none"
+          stroke="url(#claw)"
+          strokeWidth="6"
+          strokeLinecap="round"
+        />
+
+        <path
+          d="M214 112 Q196 80, 160 62"
+          fill="none"
+          stroke="url(#claw)"
+          strokeWidth="4"
+          strokeLinecap="round"
+          opacity="0.6"
+        />
+        <path
+          d="M298 112 Q316 80, 352 62"
+          fill="none"
+          stroke="url(#claw)"
+          strokeWidth="4"
+          strokeLinecap="round"
+          opacity="0.6"
+        />
+
+        <path
+          d="
+      M256 365
+      L234 394 L243 425
+      L256 412
+      L269 425 L278 394
+      Z
+    "
+          fill="url(#claw)"
+          opacity="0.85"
+        />
+      </g>
     </svg>
   ),
   x: (props: React.SVGProps<SVGSVGElement>) => (

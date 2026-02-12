@@ -1,10 +1,23 @@
+'use client'
+
+import { usePathname } from 'next/navigation'
+
 import { Logo, MainNav } from './main-nav'
 import { MobileNav } from './mobile-nav'
 import { WalletButton } from './wallet-button'
 
 export function SiteHeader() {
+  const pathname = usePathname()
+  const isHome = pathname === '/'
+
   return (
-    <header className="sticky top-0 z-50 w-full bg-background border-border/40 border-b">
+    <header
+      className={
+        isHome
+          ? 'sticky top-0 z-50 w-full bg-transparent text-white'
+          : 'sticky top-0 z-50 w-full bg-background border-border/40 border-b'
+      }
+    >
       <div className="mx-auto max-w-screen-2xl">
         <div className="flex h-(--header-height) items-center gap-2 px-4 xl:px-6">
           {/* Mobile */}

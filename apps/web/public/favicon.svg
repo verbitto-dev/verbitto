@@ -1,34 +1,79 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#2563eb"/>
+      <stop offset="0%" stop-color="#1d4ed8"/>
       <stop offset="100%" stop-color="#7c3aed"/>
     </linearGradient>
-    <linearGradient id="v" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#ffffff"/>
-      <stop offset="100%" stop-color="#e0e7ff"/>
+    <linearGradient id="claw" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f87171"/>
+      <stop offset="100%" stop-color="#dc2626"/>
     </linearGradient>
-    <!-- subtle glow behind the V -->
+    <!-- subtle glow behind the claw-V -->
     <filter id="glow">
-      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feGaussianBlur stdDeviation="10" result="blur"/>
       <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
     </filter>
   </defs>
 
   <!-- rounded-square background -->
-  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <rect width="512" height="512" rx="108" fill="url(#bg)"/>
 
-  <!-- shield outline ring (trust motif) -->
-  <path d="M256 72 L420 148 V296 Q420 420 256 456 Q92 420 92 296 V148 Z"
-        fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="12"/>
-
-  <!-- Geometric V mark -->
   <g filter="url(#glow)">
-    <!-- left stroke of V -->
-    <path d="M144 136 L248 392 L256 392 L168 136 Z" fill="url(#v)"/>
-    <!-- right stroke of V -->
-    <path d="M368 136 L264 392 L256 392 L344 136 Z" fill="url(#v)"/>
-    <!-- small diamond link at bottom (chain/escrow motif) -->
-    <path d="M256 368 L272 392 L256 416 L240 392 Z" fill="url(#v)" opacity="0.85"/>
+
+    <!-- ===== LEFT CLAW: thicker V-arm with lobster pincer fork ===== -->
+    <path d="
+      M244 390
+      L118 168
+      L92 95
+      Q82 60, 112 60
+      Q140 60, 137 90
+      L134 140
+      L158 140
+      L155 90
+      Q152 60, 182 60
+      Q210 60, 200 95
+      L176 168
+      L264 390
+      Z
+    " fill="url(#claw)"/>
+
+    <!-- ===== RIGHT CLAW: mirrored thicker pincer V-arm ===== -->
+    <path d="
+      M268 390
+      L394 168
+      L420 95
+      Q430 60, 400 60
+      Q372 60, 375 90
+      L378 140
+      L354 140
+      L357 90
+      Q360 60, 330 60
+      Q302 60, 312 95
+      L336 168
+      L248 390
+      Z
+    " fill="url(#claw)"/>
+
+    <!-- ===== ANTENNAE: long pair sweeping outward ===== -->
+    <path d="M200 118 Q172 75, 122 48"
+          fill="none" stroke="url(#claw)" stroke-width="6" stroke-linecap="round"/>
+    <path d="M312 118 Q340 75, 390 48"
+          fill="none" stroke="url(#claw)" stroke-width="6" stroke-linecap="round"/>
+
+    <!-- ===== ANTENNAE: short pair ===== -->
+    <path d="M214 112 Q196 80, 160 62"
+          fill="none" stroke="url(#claw)" stroke-width="4" stroke-linecap="round" opacity="0.6"/>
+    <path d="M298 112 Q316 80, 352 62"
+          fill="none" stroke="url(#claw)" stroke-width="4" stroke-linecap="round" opacity="0.6"/>
+
+    <!-- ===== TAIL FAN: three-lobe fan below the V ===== -->
+    <path d="
+      M256 365
+      L234 394 L243 425
+      L256 412
+      L269 425 L278 394
+      Z
+    " fill="url(#claw)" opacity="0.85"/>
+
   </g>
 </svg>

@@ -184,6 +184,73 @@ pre code {
   background: rgba(0, 0, 0, 0.75);
 }
 
+/* ============================================================ */
+/* Ocean scene animations                                        */
+/* ============================================================ */
+
+/* Gentle floating motion for lobsters */
+@keyframes ocean-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.ocean-float {
+  animation: ocean-float 4s ease-in-out infinite;
+  animation-delay: var(--float-delay, 0s);
+}
+
+/* Bubble rising animation */
+@keyframes bubble-rise {
+  0% {
+    transform: translateY(0) translateX(0) scale(1);
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateY(-100px) translateX(10px) scale(0.4);
+    opacity: 0;
+  }
+}
+
+.ocean-bubble {
+  animation: bubble-rise var(--bubble-dur, 8s) ease-in infinite;
+  animation-delay: var(--bubble-delay, 0s);
+}
+
+/* Subtle sway for seaweed / corals */
+@keyframes coral-sway {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(2deg);
+  }
+}
+
+/* Wave shimmer on ocean section top edge */
+@keyframes wave-shimmer {
+  0% {
+    background-position: 0% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.ocean-wave-top {
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.06), transparent);
+  background-size: 50% 100%;
+  animation: wave-shimmer 8s linear infinite;
+}
+
 /* ------------------------------------------------------------------ */
 /* Code Syntax Highlighting (rehype-pretty-code / shiki)               */
 /* ------------------------------------------------------------------ */
