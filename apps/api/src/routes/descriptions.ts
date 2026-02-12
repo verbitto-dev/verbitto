@@ -7,12 +7,18 @@
  *
  * POST /v1/descriptions       — store a description
  * GET  /v1/descriptions/:hash — fetch description by hash
+ *
+ * Deliverable visibility:
+ * - Deliverables start as 'private' — only task creator + assigned agent can read
+ * - Once the task reaches Approved / DisputeResolved, they become 'public'
+ * - GET /deliverables/:hash accepts optional ?requester=<pubkey> for private access
  */
 
 import { createRoute, OpenAPIHono } from '@hono/zod-openapi'
 import { eq } from 'drizzle-orm'
 import { db } from '../db/index.js'
 import { deliverableDescriptions, taskDescriptions } from '../db/schema.js'
+import { getTaskParticipants, isTaskParticipant, isTerminalPublicStatus } from '../lib/task-access.js'
 import { ErrorSchema } from '../schemas/common.js'
 import { DescriptionResponseSchema, StoreDescriptionBodySchema } from '../schemas/descriptions.js'
 
@@ -228,6 +234,7 @@ const getDeliverableRoute = createRoute({
 // @ts-expect-error - Hono OpenAPI type inference limitation
 app.openapi(getDeliverableRoute, async (c) => {
   const hash = c.req.param('hash')
+  const requester = c.req.query('requester')
 
   const rows = await db
     .select()
@@ -240,6 +247,34 @@ app.openapi(getDeliverableRoute, async (c) => {
   }
 
   const row = rows[0]
+
+  // ── Visibility check ──
+  if (row.visibility === 'private') {
+    if (!requester) {
+      return c.json(
+        { error: 'This deliverable is private. Provide ?requester=<pubkey> to verify access.' },
+        403
+      )
+    }
+
+    // Look up the task to verify the requester is a participant
+    if (row.taskAddress) {
+      const participants = await getTaskParticipants(row.taskAddress)
+      if (participants) {
+        // Auto-upgrade to public if task reached terminal status
+        if (isTerminalPublicStatus(participants.status)) {
+          await db
+            .update(deliverableDescriptions)
+            .set({ visibility: 'public' })
+            .where(eq(deliverableDescriptions.deliverableHash, hash))
+          // Fall through — allow access
+        } else if (!isTaskParticipant(participants, requester)) {
+          return c.json({ error: 'Access denied: you are not a participant of this task' }, 403)
+        }
+      }
+    }
+  }
+
   return c.json({
     descriptionHash: row.deliverableHash,
     content: row.content,

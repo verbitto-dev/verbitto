@@ -8,12 +8,18 @@ export const BuildTransactionRequestSchema = z
         'claimTask',
         'submitDeliverable',
         'createTask',
+        'createTaskFromTemplate',
         'openDispute',
         'castVote',
         'updateAgentSkills',
         'approveAndSettle',
         'rejectSubmission',
         'cancelTask',
+        'expireTask',
+        'resolveDispute',
+        'createTemplate',
+        'deactivateTemplate',
+        'reactivateTemplate',
       ])
       .openapi({
         example: 'registerAgent',

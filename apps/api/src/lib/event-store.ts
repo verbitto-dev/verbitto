@@ -9,7 +9,7 @@
 
 import { and, desc, eq, sql } from 'drizzle-orm'
 import { db } from '../db/index.js'
-import { historicalTasks, indexedEvents, taskDescriptions, taskTitles } from '../db/schema.js'
+import { deliverableDescriptions, historicalTasks, indexedEvents, taskDescriptions, taskTitles } from '../db/schema.js'
 
 // ────────────────────────────────────────────────────────────
 // Types
@@ -119,6 +119,9 @@ export async function loadStore(): Promise<void> {
 
 const TERMINAL_EVENTS = new Set(['TaskSettled', 'TaskCancelled', 'TaskExpired', 'DisputeResolved'])
 
+/** Events that should auto-publicize deliverables (task completed successfully) */
+const PUBLICIZE_EVENTS = new Set(['TaskSettled', 'DisputeResolved'])
+
 /**
  * Ingest a batch of parsed events from a single transaction.
  * Returns the number of *new* events actually stored.
@@ -160,6 +163,13 @@ export async function ingestEvents(batch: IndexedEvent[]): Promise<number> {
       await db.insert(indexedEvents).values(toInsert).onConflictDoNothing()
     } catch (err) {
       console.error('[EventStore] Failed to insert events:', err)
+    }
+  }
+
+  // Auto-publicize deliverables when tasks are approved/resolved
+  for (const evt of batch) {
+    if (PUBLICIZE_EVENTS.has(evt.eventName) && evt.data.task) {
+      await publicizeDeliverables(evt.data.task)
     }
   }
 
@@ -345,6 +355,22 @@ function mapTerminalStatus(eventName: string): HistoricalTask['finalStatus'] {
       return 'DisputeResolved'
     default:
       return 'Approved'
+  }
+}
+
+/**
+ * Mark all deliverable descriptions linked to a task as 'public'.
+ * Called automatically when a task reaches Approved / DisputeResolved status.
+ */
+async function publicizeDeliverables(taskAddress: string): Promise<void> {
+  try {
+    const result = await db
+      .update(deliverableDescriptions)
+      .set({ visibility: 'public' })
+      .where(eq(deliverableDescriptions.taskAddress, taskAddress))
+    console.info(`[EventStore] Publicized deliverables for task ${taskAddress}`)
+  } catch (err) {
+    console.error(`[EventStore] Failed to publicize deliverables for ${taskAddress}:`, err)
   }
 }
 

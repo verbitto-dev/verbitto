@@ -131,8 +131,38 @@ export const deliverableDescriptions = pgTable(
     taskAddress: text('task_address'),
     /** Agent who submitted it */
     agent: text('agent'),
+    /**
+     * Visibility: 'private' means only task creator + assigned agent can read.
+     * 'public' means anyone can read (auto-set when task is Approved / DisputeResolved).
+     */
+    visibility: text('visibility').notNull().default('private').$type<'private' | 'public'>(),
 
     createdAt: timestamp('created_at').defaultNow().notNull(),
   },
   (t) => [index('idx_deliverable_task_address').on(t.taskAddress)]
+)
+
+// ────────────────────────────────────────────────────────────
+// task_messages — private messages between task creator & agent
+// ────────────────────────────────────────────────────────────
+
+export const taskMessages = pgTable(
+  'task_messages',
+  {
+    /** Auto-increment id */
+    id: integer('id').primaryKey().generatedAlwaysAsIdentity(),
+    /** Task PDA address this message belongs to */
+    taskAddress: text('task_address').notNull(),
+    /** Sender public key (must be task creator or assigned agent) */
+    sender: text('sender').notNull(),
+    /** Message content */
+    content: text('content').notNull(),
+
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+  },
+  (t) => [
+    index('idx_msg_task_address').on(t.taskAddress),
+    index('idx_msg_sender').on(t.sender),
+    index('idx_msg_created_at').on(t.createdAt),
+  ]
 )

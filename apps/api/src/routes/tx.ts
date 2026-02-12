@@ -14,6 +14,7 @@ import {
   getDisputePda,
   getPlatformPda,
   getTaskPda,
+  getTemplatePda,
   getVotePda,
 } from '@verbitto/program'
 import BN from 'bn.js'
@@ -313,6 +314,180 @@ app.openapi(buildTransactionRoute, async (c) => {
           .accounts({
             task: taskPda,
             creator: signerKey,
+          })
+          .instruction()
+        break
+      }
+
+      case 'expireTask': {
+        if (!params?.task) {
+          return c.json({ error: 'Missing params.task' }, 400)
+        }
+        const taskPda = new PublicKey(params.task as string)
+
+        // Fetch task to get creator
+        const taskInfo = await connection.getAccountInfo(taskPda)
+        if (!taskInfo) {
+          return c.json({ error: 'Task account not found' }, 400)
+        }
+        // creator pubkey is at offset 8 (after discriminator)
+        const taskCreator = new PublicKey(taskInfo.data.subarray(8, 40))
+
+        ix = await program.methods
+          .expireTask()
+          .accounts({
+            task: taskPda,
+            creator: taskCreator,
+            platform: getPlatformPda(),
+            caller: signerKey,
+          })
+          .instruction()
+        break
+      }
+
+      case 'resolveDispute': {
+        if (!params?.task) {
+          return c.json({ error: 'Missing params.task' }, 400)
+        }
+        const taskPda = new PublicKey(params.task as string)
+        const disputePda = getDisputePda(taskPda)
+        const platform = getPlatformPda()
+
+        // Fetch task to get creator and agent
+        const taskAcct = await connection.getAccountInfo(taskPda)
+        if (!taskAcct) {
+          return c.json({ error: 'Task account not found' }, 400)
+        }
+        const taskCreatorKey = new PublicKey(taskAcct.data.subarray(8, 40))
+        // agent is at offset 57 (disc:8 + creator:32 + taskIndex:8 + bounty:8 + status:1)
+        const taskAgentKey = new PublicKey(taskAcct.data.subarray(57, 89))
+
+        // Fetch treasury from platform
+        const platInfo = await connection.getAccountInfo(platform)
+        let treasuryKey = signerKey
+        if (platInfo) {
+          const platData = decodePlatform(Buffer.from(platInfo.data))
+          treasuryKey = platData.treasury
+        }
+
+        ix = await program.methods
+          .resolveDispute()
+          .accounts({
+            dispute: disputePda,
+            task: taskPda,
+            platform,
+            creator: taskCreatorKey,
+            agent: taskAgentKey,
+            agentProfile: getAgentProfilePda(taskAgentKey),
+            treasury: treasuryKey,
+            caller: signerKey,
+          })
+          .instruction()
+        break
+      }
+
+      case 'createTemplate': {
+        if (!params?.title || !params?.category) {
+          return c.json({ error: 'Missing required params: title, category' }, 400)
+        }
+        const platform = getPlatformPda()
+
+        // Fetch template count from platform
+        const platAcct = await connection.getAccountInfo(platform)
+        let templateIndex = 0n
+        if (platAcct) {
+          const platData = decodePlatform(Buffer.from(platAcct.data))
+          templateIndex = platData.templateCount
+        }
+
+        const templatePda = getTemplatePda(signerKey, templateIndex)
+        const descHash = params.descriptionHash
+          ? Array.from(Buffer.from(params.descriptionHash as string, 'hex'))
+          : Array.from(Buffer.alloc(32))
+        const defaultBounty = new BN((params.defaultBountyLamports as string | number) ?? 0)
+
+        ix = await program.methods
+          .createTemplate(params.title as string, descHash, defaultBounty, params.category)
+          .accounts({
+            template: templatePda,
+            platform,
+            creator: signerKey,
+            systemProgram: SystemProgram.programId,
+          })
+          .instruction()
+        break
+      }
+
+      case 'deactivateTemplate': {
+        if (!params?.template) {
+          return c.json({ error: 'Missing params.template' }, 400)
+        }
+        const templatePda = new PublicKey(params.template as string)
+
+        ix = await program.methods
+          .deactivateTemplate()
+          .accounts({
+            template: templatePda,
+            platform: getPlatformPda(),
+            creator: signerKey,
+          })
+          .instruction()
+        break
+      }
+
+      case 'reactivateTemplate': {
+        if (!params?.template) {
+          return c.json({ error: 'Missing params.template' }, 400)
+        }
+        const templatePda = new PublicKey(params.template as string)
+
+        ix = await program.methods
+          .reactivateTemplate()
+          .accounts({
+            template: templatePda,
+            platform: getPlatformPda(),
+            creator: signerKey,
+          })
+          .instruction()
+        break
+      }
+
+      case 'createTaskFromTemplate': {
+        if (!params?.template || !params?.bountyLamports || !params?.deadline) {
+          return c.json(
+            { error: 'Missing required params: template, bountyLamports, deadline' },
+            400
+          )
+        }
+
+        const counterPda = getCreatorCounterPda(signerKey)
+        let taskIndex = 0n
+        try {
+          const info = await connection.getAccountInfo(counterPda)
+          if (info) {
+            taskIndex = Buffer.from(info.data).readBigUInt64LE(8 + 32)
+          }
+        } catch {
+          /* first task */
+        }
+
+        const taskPda = getTaskPda(signerKey, taskIndex)
+        const templatePda = new PublicKey(params.template as string)
+
+        ix = await program.methods
+          .createTaskFromTemplate(
+            new BN(params.bountyLamports as string | number),
+            new BN(params.deadline as string | number),
+            new BN((params.reputationReward as number) ?? 50),
+            new BN(taskIndex.toString())
+          )
+          .accounts({
+            task: taskPda,
+            creatorCounter: counterPda,
+            template: templatePda,
+            platform: getPlatformPda(),
+            creator: signerKey,
+            systemProgram: SystemProgram.programId,
           })
           .instruction()
         break

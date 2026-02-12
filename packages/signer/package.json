@@ -15,12 +15,16 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsx src/index.ts",
-    "start": "node dist/index.js",
-    "start:bg": "nohup node dist/index.js > signer.log 2>&1 &",
-    "stop": "pkill -f 'dist/index.js'",
+    "start": "node dist/index.js start",
+    "start:daemon": "node dist/index.js start",
+    "start:fg": "node dist/index.js",
+    "stop": "node dist/index.js stop",
+    "restart": "node dist/index.js restart",
+    "status": "node dist/index.js status",
     "logs": "tail -f signer.log",
+    "logs:error": "tail -f signer.err.log",
     "typecheck": "tsc --noEmit",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist *.log *.pid"
   },
   "keywords": [
     "verbitto",

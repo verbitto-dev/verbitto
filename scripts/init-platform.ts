@@ -21,7 +21,7 @@ async function main() {
   // Load keypair from environment or create new one
   let keypair: Keypair
   const keypairPath =
-    process.env.ANCHOR_WALLET || path.join(process.env.HOME!, '.config/solana/id.json')
+    process.env.ANCHOR_WALLET || path.join(process.env.HOME ?? '~', '.config/solana/id.json')
 
   try {
     const keypairData = JSON.parse(fs.readFileSync(keypairPath, 'utf8'))

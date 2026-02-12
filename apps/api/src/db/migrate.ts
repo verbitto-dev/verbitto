@@ -88,4 +88,40 @@ export async function migrateDb(): Promise<void> {
   await db.execute(
     sql`CREATE INDEX IF NOT EXISTS idx_desc_task_address ON task_descriptions(task_address)`
   )
+
+  // ── deliverable_descriptions ──────────────────────────────
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS deliverable_descriptions (
+      deliverable_hash TEXT PRIMARY KEY,
+      content TEXT NOT NULL,
+      task_address TEXT,
+      agent TEXT,
+      visibility TEXT NOT NULL DEFAULT 'private',
+      created_at TIMESTAMP DEFAULT NOW() NOT NULL
+    )
+  `)
+  await db.execute(
+    sql`CREATE INDEX IF NOT EXISTS idx_deliverable_task_address ON deliverable_descriptions(task_address)`
+  )
+  // Add visibility column if missing (for existing DBs)
+  await db.execute(sql`
+    ALTER TABLE deliverable_descriptions
+    ADD COLUMN IF NOT EXISTS visibility TEXT NOT NULL DEFAULT 'private'
+  `)
+
+  // ── task_messages ─────────────────────────────────────────
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS task_messages (
+      id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+      task_address TEXT NOT NULL,
+      sender TEXT NOT NULL,
+      content TEXT NOT NULL,
+      created_at TIMESTAMP DEFAULT NOW() NOT NULL
+    )
+  `)
+  await db.execute(
+    sql`CREATE INDEX IF NOT EXISTS idx_msg_task_address ON task_messages(task_address)`
+  )
+  await db.execute(sql`CREATE INDEX IF NOT EXISTS idx_msg_sender ON task_messages(sender)`)
+  await db.execute(sql`CREATE INDEX IF NOT EXISTS idx_msg_created_at ON task_messages(created_at)`)
 }

@@ -58,6 +58,16 @@ export function getVotePda(dispute: PublicKey, voter: PublicKey): PublicKey {
   return pda
 }
 
+export function getTemplatePda(creator: PublicKey, templateIndex: bigint): PublicKey {
+  const buf = Buffer.alloc(8)
+  buf.writeBigUInt64LE(templateIndex)
+  const [pda] = PublicKey.findProgramAddressSync(
+    [Buffer.from('template'), creator.toBuffer(), buf],
+    PROGRAM_ID
+  )
+  return pda
+}
+
 // ============================================================
 // Account discriminators (first 8 bytes of sha256("account:<Name>"))
 // Anchor convention

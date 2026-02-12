@@ -8,7 +8,7 @@ let cachedIdl: Idl | null = null
  * Load IDL from local file (with caching).
  * Searches multiple possible paths relative to cwd.
  */
-export function loadIdl() {
+export function loadIdl(): Idl {
   if (cachedIdl) return cachedIdl
 
   const possiblePaths = [
@@ -20,7 +20,7 @@ export function loadIdl() {
   for (const idlPath of possiblePaths) {
     try {
       const idlData = readFileSync(idlPath, 'utf-8')
-      cachedIdl = JSON.parse(idlData)
+      cachedIdl = JSON.parse(idlData) as Idl
       return cachedIdl
     } catch { }
   }

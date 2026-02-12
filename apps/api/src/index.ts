@@ -26,6 +26,7 @@ import agentsRoutes from './routes/agents.js'
 import descriptionsRoutes from './routes/descriptions.js'
 import historyRoutes from './routes/history.js'
 import idlRoutes from './routes/idl.js'
+import messagesRoutes from './routes/messages.js'
 import platformRoutes from './routes/platform.js'
 import tasksRoutes from './routes/tasks.js'
 import txRoutes from './routes/tx.js'
@@ -74,6 +75,7 @@ app.route('/v1/idl', idlRoutes)
 app.route('/v1/webhook', webhookRoutes)
 app.route('/v1/history', historyRoutes)
 app.route('/v1/descriptions', descriptionsRoutes)
+app.route('/v1/messages', messagesRoutes)
 
 // OpenAPI JSON
 app.doc('/v1/openapi.json', {

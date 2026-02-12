@@ -3,6 +3,7 @@ import { type Keypair, Transaction } from '@solana/web3.js'
 import express from 'express'
 import { authMiddleware, isApiKeyEnabled } from './auth.js'
 import { parseArgs, showHelp, showVersion } from './cli.js'
+import { restartDaemon, setupDaemonLogging, showStatus, startDaemon, stopDaemon } from './daemon.js'
 import { fetchWithRetry } from './fetch.js'
 import { ALLOWED_PROGRAM_ID, validateTransaction } from './security.js'
 import { loadWallet } from './wallet.js'
@@ -21,6 +22,37 @@ if (CLI_OPTIONS.help) {
 if (CLI_OPTIONS.version) {
   showVersion()
   process.exit(0)
+}
+
+// Handle daemon commands
+if (CLI_OPTIONS.start || CLI_OPTIONS.daemon) {
+  const args = process.argv
+    .slice(2)
+    .filter((arg) => arg !== 'start' && arg !== '--daemon' && arg !== '-d')
+  startDaemon(args)
+  process.exit(0)
+}
+
+if (CLI_OPTIONS.stop) {
+  stopDaemon()
+  process.exit(0)
+}
+
+if (CLI_OPTIONS.restart) {
+  const args = process.argv.slice(2).filter((arg) => arg !== 'restart')
+  restartDaemon(args)
+  process.exit(0)
+}
+
+if (CLI_OPTIONS.status) {
+  showStatus()
+  process.exit(0)
+}
+
+// If running as daemon child, setup logging
+if (CLI_OPTIONS.daemonChild) {
+  await setupDaemonLogging()
+  console.info('Verbitto Signer daemon starting...')
 }
 
 // ============================================================================
@@ -134,6 +166,7 @@ app.post('/verbitto/execute', async (req, res) => {
 /**
  * GET /verbitto/*
  * Proxy read-only queries to Verbitto API (no signing required)
+ * Automatically injects ?requester=<wallet> for access-controlled endpoints.
  */
 app.get('/verbitto/*', async (req, res) => {
   const endpoint = (req.params as Record<string, string>)[0]
@@ -145,11 +178,51 @@ app.get('/verbitto/*', async (req, res) => {
     return
   }
 
-  const queryString = new URLSearchParams(req.query as Record<string, string>).toString()
+  const query = { ...(req.query as Record<string, string>) }
+
+  // Automatically inject requester for access-controlled endpoints
+  if (!query.requester) {
+    if (sanitized.startsWith('descriptions/deliverables/') || sanitized.startsWith('messages/')) {
+      query.requester = keypair.publicKey.toBase58()
+    }
+  }
+
+  const queryString = new URLSearchParams(query).toString()
   const url = `${API_BASE}/${sanitized}${queryString ? `?${queryString}` : ''}`
 
   try {
     const response = await fetchWithRetry(url)
+    const data = await response.json()
+    res.status(response.status).json(data)
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err)
+    res.status(500).json({ error: message })
+  }
+})
+
+/**
+ * POST /verbitto/messages
+ * Send a private message in a task context. Sender is auto-set to the signer wallet.
+ */
+app.post('/verbitto/messages', async (req, res) => {
+  const { taskAddress, content } = req.body as { taskAddress?: string; content?: string }
+
+  if (!taskAddress || !content) {
+    res.status(400).json({ error: 'Missing required fields: taskAddress, content' })
+    return
+  }
+
+  try {
+    const response = await fetchWithRetry(`${API_BASE}/messages`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        taskAddress,
+        sender: keypair.publicKey.toBase58(),
+        content,
+      }),
+    })
+
     const data = await response.json()
     res.status(response.status).json(data)
   } catch (err) {
@@ -178,8 +251,36 @@ app.get('/health', (_req, res) => {
 // Start
 // ============================================================================
 
-app.listen(PORT, () => {})
+app.listen(PORT, () => {
+  const mode = CLI_OPTIONS.daemonChild ? 'DAEMON' : 'FOREGROUND'
+  console.info(`
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Verbitto Signer [${mode}]
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ Server running on port ${PORT}
+🔑 Wallet: ${keypair.publicKey.toBase58()}
+🌐 API: ${API_BASE}
+🛡️  Auth: ${isApiKeyEnabled() ? 'Enabled' : 'Disabled'}
+🔐 Whitelist: ${ALLOWED_PROGRAM_ID.toBase58()}
+
+Endpoints:
+  POST /verbitto/execute    Execute signed transaction
+  POST /verbitto/messages   Send private message
+  GET  /verbitto/*         Proxy read-only queries
+  GET  /health             Health check
+
+Ready to sign transactions! 🚀
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+`)
+})
 
 process.on('SIGINT', () => {
+  console.info('\n👋 Shutting down gracefully...')
+  process.exit(0)
+})
+
+process.on('SIGTERM', () => {
+  console.info('\n👋 Received SIGTERM, shutting down...')
   process.exit(0)
 })

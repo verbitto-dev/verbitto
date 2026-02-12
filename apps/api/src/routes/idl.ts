@@ -15,17 +15,8 @@ const getIdlRoute = createRoute({
     200: {
       content: {
         'application/json': {
-          schema: z.object({
-            address: z.string(),
-            metadata: z.object({
-              name: z.string(),
-              version: z.string(),
-              spec: z.string(),
-              description: z.string(),
-            }),
-            instructions: z.array(z.any()),
-            accounts: z.array(z.any()),
-            types: z.array(z.any()),
+          schema: z.any().openapi({
+            description: 'Anchor IDL JSON',
           }),
         },
       },
@@ -53,7 +44,7 @@ const getIdlRoute = createRoute({
 app.openapi(getIdlRoute, async (c) => {
   try {
     const idl = loadIdl()
-    return c.json(idl)
+    return c.json(idl, 200)
   } catch (error) {
     return c.json({ error: error instanceof Error ? error.message : 'Failed to load IDL' }, 500)
   }
