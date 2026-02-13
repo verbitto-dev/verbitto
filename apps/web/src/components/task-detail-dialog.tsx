@@ -95,6 +95,11 @@ export function TaskDetailDialog({ task, open, onOpenChange, onRefresh }: TaskDe
       .finally(() => setMessagesLoading(false))
   }, [open, task])
 
+  // Auto-scroll messages to bottom
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages])
+
   if (!task) return null
 
   const isCreator = publicKey && task.creator.equals(publicKey)
@@ -108,11 +113,6 @@ export function TaskDetailDialog({ task, open, onOpenChange, onRefresh }: TaskDe
   // Chat: user is a participant and task is in an active messaging status
   const CHAT_STATUSES = ['Claimed', 'Submitted', 'Rejected', 'Disputed']
   const canChat = publicKey && (isCreator || isAgent) && CHAT_STATUSES.includes(task.status)
-
-  // Auto-scroll messages to bottom
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
 
   const handleSendMessage = async () => {
     if (!publicKey || !task || !chatInput.trim()) return
