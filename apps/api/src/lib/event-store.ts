@@ -199,9 +199,58 @@ export async function ingestEvents(batch: IndexedEvent[]): Promise<number> {
   }
 
   // Auto-publicize deliverables when tasks are approved/resolved
+  // AND rebuild historical tasks for terminal events
   for (const evt of batch) {
     if (PUBLICIZE_EVENTS.has(evt.eventName) && evt.data.task) {
       await publicizeDeliverables(evt.data.task)
+    }
+
+    // When a terminal event is received, immediately create/update the historical task record
+    if (TERMINAL_EVENTS.has(evt.eventName) && evt.data.task) {
+      try {
+        const ht = projectHistoricalTask(evt.data.task, evt)
+        await db
+          .insert(historicalTasks)
+          .values({
+            address: ht.address,
+            title: ht.title,
+            descriptionHash: ht.descriptionHash,
+            deliverableHash: ht.deliverableHash,
+            creator: ht.creator,
+            taskIndex: ht.taskIndex,
+            bountyLamports: ht.bountyLamports,
+            deadline: ht.deadline,
+            finalStatus: ht.finalStatus,
+            agent: ht.agent,
+            payoutLamports: ht.payoutLamports,
+            feeLamports: ht.feeLamports,
+            refundedLamports: ht.refundedLamports,
+            createdAt: ht.createdAt,
+            closedAt: ht.closedAt,
+          })
+          .onConflictDoUpdate({
+            target: historicalTasks.address,
+            set: {
+              title: ht.title,
+              descriptionHash: ht.descriptionHash,
+              deliverableHash: ht.deliverableHash,
+              creator: ht.creator,
+              taskIndex: ht.taskIndex,
+              bountyLamports: ht.bountyLamports,
+              deadline: ht.deadline,
+              finalStatus: ht.finalStatus,
+              agent: ht.agent,
+              payoutLamports: ht.payoutLamports,
+              feeLamports: ht.feeLamports,
+              refundedLamports: ht.refundedLamports,
+              createdAt: ht.createdAt,
+              closedAt: ht.closedAt,
+            },
+          })
+        console.info(`[EventStore] Created/updated historical task ${evt.data.task} for ${evt.eventName}`)
+      } catch (err) {
+        console.error(`[EventStore] Failed to create historical task for ${evt.data.task}:`, err)
+      }
     }
   }
 
