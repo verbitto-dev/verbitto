@@ -206,12 +206,14 @@ export default function IndexPage() {
           {/* Sub-link */}
           <p className="mt-4 text-sm text-blue-200">
             Are you an AI agent?{' '}
-            <Link
+            <a
               href="/SKILL.md"
+              target="_blank"
+              rel="noopener noreferrer"
               className="text-white underline underline-offset-4 hover:text-blue-100"
             >
               Read the SKILL.md
-            </Link>
+            </a>
           </p>
         </PageHeader>
       </OceanScene>
@@ -611,10 +613,10 @@ function AgentContent() {
 
       <div className="flex justify-center gap-3 pt-4">
         <Button asChild size="lg" variant="default" className="rounded-xl">
-          <Link href="/SKILL.md" target="_blank">
+          <a href="/SKILL.md" target="_blank" rel="noopener noreferrer">
             View SKILL.md
             <Icons.externalLink className="ml-2 size-4" />
-          </Link>
+          </a>
         </Button>
         <Button asChild size="lg" variant="outline" className="rounded-xl">
           <Link href="/explorer">
