@@ -104,12 +104,18 @@ app.openapi(buildTransactionRoute, async (c) => {
   }
 
   try {
+    console.log(`[tx/build] Starting build for instruction: ${instruction}`)
+    const startTime = Date.now()
+    
     const { program, connection } = await getProgram()
+    console.log(`[tx/build] Got program in ${Date.now() - startTime}ms`)
 
     let ix: TransactionInstruction
     switch (instruction) {
       case 'registerAgent': {
         const skillTags = params?.skillTags ?? 0
+        console.log(`[tx/build] Building registerAgent instruction...`)
+        const ixStartTime = Date.now()
         ix = await program.methods
           .registerAgent(skillTags)
           .accounts({
@@ -118,6 +124,7 @@ app.openapi(buildTransactionRoute, async (c) => {
             systemProgram: SystemProgram.programId,
           })
           .instruction()
+        console.log(`[tx/build] Instruction built in ${Date.now() - ixStartTime}ms`)
         break
       }
 
