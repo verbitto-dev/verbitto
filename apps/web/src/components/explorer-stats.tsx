@@ -13,10 +13,14 @@ export function ExplorerStats() {
   const loading = pLoading || tLoading
 
   const openTasks = tasks.filter((t) => t.status === 'Open').length
+  const claimedTasks = tasks.filter((t) => t.status === 'Claimed').length
+  const submittedTasks = tasks.filter((t) => t.status === 'Submitted').length
+  const rejectedTasks = tasks.filter((t) => t.status === 'Rejected').length
   const activeTasks = tasks.length
   const disputedTasks = tasks.filter((t) => t.status === 'Disputed').length
-  const settledCount = ixStats?.approvedCount ?? 0
-  const _cancelledCount = ixStats?.cancelledCount ?? 0
+  const approvedCount = ixStats?.approvedCount ?? 0
+  const cancelledCount = ixStats?.cancelledCount ?? 0
+  const expiredCount = ixStats?.expiredCount ?? 0
 
   const stats = [
     {
@@ -25,6 +29,7 @@ export function ExplorerStats() {
       icon: Icons.listChecks,
       href: '/tasks',
       description: 'Cumulative tasks created',
+      variant: 'default' as const,
     },
     {
       label: 'Active Tasks',
@@ -32,27 +37,63 @@ export function ExplorerStats() {
       icon: Icons.zap,
       href: '/tasks',
       description: 'Tasks currently on-chain',
-    },
-    {
-      label: 'Tasks Settled',
-      value: loading ? '—' : String(settledCount),
-      icon: Icons.checkCircle,
-      href: '/tasks?status=Approved',
-      description: 'Completed & settled',
-    },
-    {
-      label: 'Total Settled (SOL)',
-      value: loading ? '—' : platform ? lamportsToSol(platform.totalSettledLamports) : '0',
-      icon: Icons.wallet,
-      href: '/tasks',
-      description: 'Cumulative settled volume',
+      variant: 'default' as const,
     },
     {
       label: 'Open Tasks',
       value: loading ? '—' : String(openTasks),
-      icon: Icons.checkCircle,
+      icon: Icons.circle,
       href: '/tasks?status=Open',
       description: 'Awaiting claims',
+      variant: 'open' as const,
+    },
+    {
+      label: 'Claimed Tasks',
+      value: loading ? '—' : String(claimedTasks),
+      icon: Icons.userCheck,
+      href: '/tasks?status=Claimed',
+      description: 'Agents working on tasks',
+      variant: 'claimed' as const,
+    },
+    {
+      label: 'Submitted Tasks',
+      value: loading ? '—' : String(submittedTasks),
+      icon: Icons.fileCheck,
+      href: '/tasks?status=Submitted',
+      description: 'Awaiting creator review',
+      variant: 'submitted' as const,
+    },
+    {
+      label: 'Rejected Tasks',
+      value: loading ? '—' : String(rejectedTasks),
+      icon: Icons.xCircle,
+      href: '/tasks?status=Rejected',
+      description: 'Submissions rejected',
+      variant: 'rejected' as const,
+    },
+    {
+      label: 'Tasks Settled',
+      value: loading ? '—' : String(approvedCount),
+      icon: Icons.checkCircle,
+      href: '/tasks?status=Approved',
+      description: 'Completed & settled',
+      variant: 'approved' as const,
+    },
+    {
+      label: 'Cancelled Tasks',
+      value: loading ? '—' : String(cancelledCount),
+      icon: Icons.ban,
+      href: '/tasks?status=Cancelled',
+      description: 'Cancelled by creator',
+      variant: 'cancelled' as const,
+    },
+    {
+      label: 'Expired Tasks',
+      value: loading ? '—' : String(expiredCount),
+      icon: Icons.clock,
+      href: '/tasks?status=Expired',
+      description: 'Deadline passed',
+      variant: 'expired' as const,
     },
     {
       label: 'Open Disputes',
@@ -60,14 +101,16 @@ export function ExplorerStats() {
       icon: Icons.scale,
       href: '/tasks?status=Disputed',
       description: 'Under arbitration',
+      variant: 'disputed' as const,
     },
-    /* {
-      label: 'Templates',
-      value: loading ? '—' : String(platform?.templateCount ?? 0),
-      icon: Icons.layoutTemplate,
-      href: '/tasks?template=true',
-      description: 'View templates',
-    }, */
+    {
+      label: 'Total Settled (SOL)',
+      value: loading ? '—' : platform ? lamportsToSol(platform.totalSettledLamports) : '0',
+      icon: Icons.wallet,
+      href: '/tasks',
+      description: 'Cumulative settled volume',
+      variant: 'default' as const,
+    },
   ]
 
   return (
