@@ -34,12 +34,22 @@ const app = new OpenAPIHono()
 
 // Initialize database and load event store (only on first request in serverless)
 let initialized = false
+let initializationFailed = false
+
 async function initialize() {
-    if (!initialized) {
+    if (!initialized && !initializationFailed) {
         console.log('[App] Starting initialization...')
         try {
             console.log('[App] Testing database connection...')
-            await testConnection()
+            const dbConnected = await testConnection()
+
+            if (!dbConnected) {
+                console.warn('[App] Database connection failed - continuing without DB')
+                initializationFailed = true
+                initialized = true // Mark as initialized to avoid retrying
+                return
+            }
+
             console.log('[App] Running migrations...')
             await migrateDb()
             console.log('[App] Loading event store...')
@@ -48,20 +58,21 @@ async function initialize() {
             initialized = true
         } catch (error) {
             console.error('[App] Initialization failed:', error)
-            throw error
+            initializationFailed = true
+            initialized = true // Don't retry on every request
+            console.warn('[App] Continuing without database - some features may be limited')
         }
     }
 }
 
-// Middleware to ensure initialization
+// Middleware to ensure initialization (but don't block on failure)
 app.use('*', async (c, next) => {
-    try {
-        await initialize()
-        await next()
-    } catch (error) {
-        console.error('[App] Request failed during initialization:', error)
-        return c.json({ error: 'Service initialization failed' }, 500)
-    }
+    // Don't block requests if initialization is taking too long
+    const initPromise = initialize()
+    const timeoutPromise = new Promise((resolve) => setTimeout(resolve, 3000)) // 3s max wait
+
+    await Promise.race([initPromise, timeoutPromise])
+    await next()
 })
 
 // Middleware
