@@ -1,4 +1,4 @@
-// Vercel Serverless Function entry point (JavaScript)
+// Vercel Serverless Function catch-all entry point
 import { handle } from '@hono/node-server/vercel'
 import app from '../dist/app.js'
 
