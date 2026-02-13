@@ -107,7 +107,9 @@ const buildTransactionRoute = createRoute({
 
 // @ts-expect-error - Hono OpenAPI type inference limitation with multiple status codes
 app.openapi(buildTransactionRoute, async (c) => {
+  console.log('[tx/build] Handler entered')
   const body = c.req.valid('json')
+  console.log('[tx/build] Body parsed:', JSON.stringify(body))
   const { instruction, signer, params } = body
 
   if (!instruction || !signer) {
