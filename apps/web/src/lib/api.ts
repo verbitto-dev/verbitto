@@ -71,7 +71,10 @@ export async function fetchHistoricalTasks(params?: {
   if (params?.offset) url.searchParams.set('offset', String(params.offset))
 
   try {
-    const res = await fetch(url.toString())
+    const res = await fetch(url.toString(), {
+      cache: 'no-store',
+      headers: { 'Cache-Control': 'no-cache' }
+    })
     if (!res.ok) return { tasks: [], total: 0 }
     return await res.json()
   } catch {
@@ -82,7 +85,10 @@ export async function fetchHistoricalTasks(params?: {
 
 export async function fetchHistoricalTask(address: string): Promise<HistoricalTaskDetail | null> {
   try {
-    const res = await fetch(`${API_BASE}/v1/history/tasks/${address}`)
+    const res = await fetch(`${API_BASE}/v1/history/tasks/${address}`, {
+      cache: 'no-store',
+      headers: { 'Cache-Control': 'no-cache' }
+    })
     if (!res.ok) return null
     return await res.json()
   } catch {
@@ -92,7 +98,10 @@ export async function fetchHistoricalTask(address: string): Promise<HistoricalTa
 
 export async function fetchIndexerStats(): Promise<IndexerStats | null> {
   try {
-    const res = await fetch(`${API_BASE}/v1/history/stats`)
+    const res = await fetch(`${API_BASE}/v1/history/stats`, {
+      cache: 'no-store',
+      headers: { 'Cache-Control': 'no-cache' }
+    })
     if (!res.ok) return null
     return await res.json()
   } catch {
