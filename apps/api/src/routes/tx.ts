@@ -108,7 +108,7 @@ const buildTransactionRoute = createRoute({
 // @ts-expect-error - Hono OpenAPI type inference limitation with multiple status codes
 app.openapi(buildTransactionRoute, async (c) => {
   console.log('[tx/build] Handler entered')
-  
+
   // Bypass validation issues - parse body manually
   let body: any
   try {
@@ -118,7 +118,7 @@ app.openapi(buildTransactionRoute, async (c) => {
     console.error('[tx/build] Body parse error:', err)
     return c.json({ error: 'Invalid JSON body' }, 400)
   }
-  
+
   const { instruction, signer, params } = body
 
   if (!instruction || !signer) {
@@ -651,10 +651,15 @@ app.openapi(sendTransactionRoute, async (c) => {
 // WORKAROUND: Plain POST route to bypass Hono OpenAPI issues in Vercel
 app.post('/build-plain', async (c) => {
   console.log('[tx/build-plain] Plain handler entered')
-  
+
   let body: any
   try {
-    body = await c.req.json()
+    console.log('[tx/build-plain] About to parse JSON...')
+    const parsePromise = c.req.json()
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('JSON parse timeout')), 10000)
+    )
+    body = await Promise.race([parsePromise, timeoutPromise])
     console.log('[tx/build-plain] Body parsed:', JSON.stringify(body))
   } catch (err) {
     console.error('[tx/build-plain] Body parse error:', err)
@@ -682,7 +687,7 @@ app.post('/build-plain', async (c) => {
     console.log(`[tx/build-plain] Got program in ${Date.now() - startTime}ms`)
 
     let ix: TransactionInstruction
-    
+
     if (instruction === 'registerAgent') {
       const skillTags = params?.skillTags ?? 0
       console.log(`[tx/build-plain] Building registerAgent instruction...`)
