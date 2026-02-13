@@ -567,7 +567,7 @@ app.openapi(buildTransactionRoute, async (c) => {
       setTimeout(() => reject(new Error('Transaction build timeout - exceeded 20s')), 20000)
     })
 
-    await Promise.race([buildPromise, timeoutPromise])
+    return (await Promise.race([buildPromise, timeoutPromise])) as Response
   } catch (error) {
     console.error('[tx/build] Error:', error)
     return c.json({ error: error instanceof Error ? error.message : 'Internal error' }, 500)
