@@ -654,18 +654,24 @@ app.post('/build-plain', async (c) => {
 
   let body: any
   try {
-    console.log('[tx/build-plain] About to parse JSON...')
-    const parsePromise = c.req.json()
-    const timeoutPromise = new Promise((_, reject) => 
-      setTimeout(() => reject(new Error('JSON parse timeout')), 10000)
+    console.log('[tx/build-plain] About to read raw text...')
+    const raw = c.req.raw
+    console.log('[tx/build-plain] Raw request:', typeof raw, raw.bodyUsed)
+
+    const textPromise = raw.text()
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Text read timeout')), 10000)
     )
-    body = await Promise.race([parsePromise, timeoutPromise])
+    const text = await Promise.race([textPromise, timeoutPromise])
+    console.log('[tx/build-plain] Got text:', (text as string).substring(0, 100))
+
+    body = JSON.parse(text as string)
     console.log('[tx/build-plain] Body parsed:', JSON.stringify(body))
   } catch (err) {
     console.error('[tx/build-plain] Body parse error:', err)
-    return c.json({ error: 'Invalid JSON body' }, 400)
+    return c.json({ error: `Invalid request body: ${err instanceof Error ? err.message : 'unknown'}` }, 400)
   }
-  
+
   const { instruction, signer, params } = body
 
   if (!instruction || !signer) {
