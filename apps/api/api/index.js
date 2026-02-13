@@ -1,5 +1,6 @@
 // Vercel Serverless Function entry point (JavaScript)
-import { handle } from '@hono/node-server/vercel'
+// Use standard Vercel handler instead of @hono/node-server
 import app from '../dist/app.js'
 
-export default handle(app)
+// Standard Vercel handler - Hono supports Vercel natively
+export default app.fetch.bind(app)
