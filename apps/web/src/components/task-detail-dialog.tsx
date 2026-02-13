@@ -2,6 +2,7 @@
 
 import { AnchorProvider, Program } from '@coral-xyz/anchor'
 import { useAnchorWallet, useConnection, useWallet } from '@solana/wallet-adapter-react'
+import { SystemProgram } from '@solana/web3.js'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { Icons } from '@/components/icons'
@@ -119,12 +120,32 @@ export function TaskDetailDialog({ task, open, onOpenChange, onRefresh }: TaskDe
       })
       const program = new Program(IDL, provider)
 
+      // Check if agent profile exists, if not, register it first
+      const agentProfilePda = getAgentProfilePda(publicKey)
+      const agentProfileInfo = await connection.getAccountInfo(agentProfilePda)
+
+      if (!agentProfileInfo) {
+        // Agent profile doesn't exist, need to register first
+        toast.info('Registering agent profile...')
+        const registerTx = await program.methods
+          .registerAgent(0) // skillTags=0 for general tasks
+          .accounts({
+            agentProfile: agentProfilePda,
+            authority: publicKey,
+            systemProgram: SystemProgram.programId,
+          })
+          .rpc({ skipPreflight: false, commitment: 'confirmed' })
+
+        await connection.confirmTransaction(registerTx, 'confirmed')
+        toast.success('Agent profile registered!')
+      }
+
       const tx = await program.methods
         .claimTask()
         .accounts({
           task: task.publicKey,
           platform: getPlatformPda(),
-          agentProfile: getAgentProfilePda(publicKey),
+          agentProfile: agentProfilePda,
           agent: publicKey,
         })
         .rpc({ skipPreflight: false, commitment: 'confirmed' })
