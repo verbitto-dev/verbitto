@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { createHash } from 'node:crypto'
 import { type Keypair, Transaction } from '@solana/web3.js'
 import express from 'express'
 import { authMiddleware, isApiKeyEnabled } from './auth.js'
@@ -94,6 +95,16 @@ app.post('/verbitto/execute', async (req, res) => {
     return
   }
 
+  // Auto-compute descriptionHash from description text if not provided
+  if (
+    (action === 'createTask' || action === 'createTaskFromTemplate') &&
+    typeof params.description === 'string' &&
+    params.description.length > 0 &&
+    !params.descriptionHash
+  ) {
+    params.descriptionHash = createHash('sha256').update(params.description).digest('hex')
+  }
+
   try {
     // Step 1: Build unsigned transaction via API
     const buildRes = await fetchWithRetry(`${API_BASE}/tx/build`, {
@@ -147,6 +158,34 @@ app.post('/verbitto/execute', async (req, res) => {
     }
 
     const result = (await sendRes.json()) as { signature: string }
+
+    // Step 5: Store description off-chain for createTask / createTaskFromTemplate
+    if (
+      (action === 'createTask' || action === 'createTaskFromTemplate') &&
+      typeof params.description === 'string' &&
+      params.description.length > 0
+    ) {
+      try {
+        const descriptionText = params.description as string
+        const hashHex =
+          typeof params.descriptionHash === 'string' && params.descriptionHash.length === 64
+            ? (params.descriptionHash as string)
+            : createHash('sha256').update(descriptionText).digest('hex')
+
+        await fetchWithRetry(`${API_BASE}/descriptions`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            descriptionHash: hashHex,
+            content: descriptionText,
+            creator: keypair.publicKey.toBase58(),
+          }),
+        })
+      } catch (descErr) {
+        // Non-fatal: task was created on-chain, just log the description storage failure
+        console.warn('  ⚠️ Task created but description storage failed:', descErr)
+      }
+    }
 
     res.json({
       success: true,
