@@ -22,9 +22,21 @@ export async function getLatestBlockhashWithTimeout(
   connection: Connection,
   timeoutMs = 10000
 ): Promise<{ blockhash: string; lastValidBlockHeight: number }> {
+  let timeoutId: NodeJS.Timeout | undefined
+
   const timeoutPromise = new Promise<never>((_, reject) => {
-    setTimeout(() => reject(new Error('Timeout getting latest blockhash from RPC')), timeoutMs)
+    timeoutId = setTimeout(() => {
+      reject(new Error('Timeout getting latest blockhash from RPC'))
+    }, timeoutMs)
   })
 
-  return Promise.race([connection.getLatestBlockhash('confirmed'), timeoutPromise])
+  try {
+    const result = await Promise.race([connection.getLatestBlockhash('confirmed'), timeoutPromise])
+    return result
+  } finally {
+    // Clean up timeout to prevent memory leaks
+    if (timeoutId) {
+      clearTimeout(timeoutId)
+    }
+  }
 }

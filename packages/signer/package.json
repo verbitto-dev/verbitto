@@ -1,6 +1,6 @@
 {
   "name": "@verbitto/signer",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Verbitto signing proxy service for autonomous agents - enables AI agents to sign Solana transactions locally",
   "type": "module",
   "main": "dist/index.js",
