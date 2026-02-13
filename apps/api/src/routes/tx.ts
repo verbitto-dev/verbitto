@@ -648,4 +648,77 @@ app.openapi(sendTransactionRoute, async (c) => {
   }
 })
 
+// WORKAROUND: Plain POST route to bypass Hono OpenAPI issues in Vercel
+app.post('/build-plain', async (c) => {
+  console.log('[tx/build-plain] Plain handler entered')
+  
+  let body: any
+  try {
+    body = await c.req.json()
+    console.log('[tx/build-plain] Body parsed:', JSON.stringify(body))
+  } catch (err) {
+    console.error('[tx/build-plain] Body parse error:', err)
+    return c.json({ error: 'Invalid JSON body' }, 400)
+  }
+  
+  const { instruction, signer, params } = body
+
+  if (!instruction || !signer) {
+    return c.json({ error: 'Missing required fields: instruction, signer' }, 400)
+  }
+
+  let signerKey: PublicKey
+  try {
+    signerKey = new PublicKey(signer)
+  } catch {
+    return c.json({ error: 'Invalid signer address' }, 400)
+  }
+
+  try {
+    console.log(`[tx/build-plain] Starting build for instruction: ${instruction}`)
+    const startTime = Date.now()
+
+    const { program, connection } = await getProgram()
+    console.log(`[tx/build-plain] Got program in ${Date.now() - startTime}ms`)
+
+    let ix: TransactionInstruction
+    
+    if (instruction === 'registerAgent') {
+      const skillTags = params?.skillTags ?? 0
+      console.log(`[tx/build-plain] Building registerAgent instruction...`)
+      const ixStartTime = Date.now()
+      ix = await program.methods
+        .registerAgent(skillTags)
+        .accounts({
+          agentProfile: getAgentProfilePda(signerKey),
+          authority: signerKey,
+          systemProgram: SystemProgram.programId,
+        })
+        .instruction()
+      console.log(`[tx/build-plain] Instruction built in ${Date.now() - ixStartTime}ms`)
+    } else {
+      return c.json({ error: `Instruction ${instruction} not supported in plain route` }, 400)
+    }
+
+    const latestBlockhash = await getLatestBlockhashWithTimeout(connection, 10000)
+    const tx = new Transaction({
+      feePayer: signerKey,
+      ...latestBlockhash,
+    }).add(ix)
+
+    const serialized = tx.serialize({ requireAllSignatures: false, verifySignatures: false })
+    const base64Tx = Buffer.from(serialized).toString('base64')
+
+    console.log(`[tx/build-plain] Total time: ${Date.now() - startTime}ms`)
+
+    return c.json({
+      transaction: base64Tx,
+      message: `Unsigned ${instruction} transaction. Sign with your wallet, then POST to /v1/tx/send.`,
+    })
+  } catch (error) {
+    console.error('[tx/build-plain] Error:', error)
+    return c.json({ error: error instanceof Error ? error.message : 'Build failed' }, 500)
+  }
+})
+
 export default app
