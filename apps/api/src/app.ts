@@ -35,45 +35,51 @@ const app = new OpenAPIHono()
 // Initialize database and load event store (only on first request in serverless)
 let initialized = false
 let initializationFailed = false
+let initializationInProgress = false
 
 async function initialize() {
-    if (!initialized && !initializationFailed) {
-        console.log('[App] Starting initialization...')
-        try {
-            console.log('[App] Testing database connection...')
-            const dbConnected = await testConnection()
+    if (initialized || initializationFailed || initializationInProgress) {
+        return
+    }
 
-            if (!dbConnected) {
-                console.warn('[App] Database connection failed - continuing without DB')
-                initializationFailed = true
-                initialized = true // Mark as initialized to avoid retrying
-                return
-            }
+    initializationInProgress = true
+    console.log('[App] Starting background initialization...')
 
-            console.log('[App] Running migrations...')
-            await migrateDb()
-            console.log('[App] Loading event store...')
-            await loadStore()
-            console.log('[App] Initialization complete!')
-            initialized = true
-        } catch (error) {
-            console.error('[App] Initialization failed:', error)
+    try {
+        console.log('[App] Testing database connection...')
+        const dbConnected = await testConnection()
+
+        if (!dbConnected) {
+            console.warn('[App] Database connection failed - continuing without DB')
             initializationFailed = true
-            initialized = true // Don't retry on every request
-            console.warn('[App] Continuing without database - some features may be limited')
+            initialized = true
+            return
         }
+
+        console.log('[App] Running migrations...')
+        await migrateDb()
+        console.log('[App] Loading event store...')
+        await loadStore()
+        console.log('[App] Initialization complete!')
+        initialized = true
+    } catch (error) {
+        console.error('[App] Initialization failed:', error)
+        initializationFailed = true
+        initialized = true
+        console.warn('[App] Continuing without database - some features may be limited')
+    } finally {
+        initializationInProgress = false
     }
 }
 
-// Middleware to ensure initialization (but don't block on failure)
-app.use('*', async (c, next) => {
-    // Don't block requests if initialization is taking too long
-    const initPromise = initialize()
-    const timeoutPromise = new Promise((resolve) => setTimeout(resolve, 3000)) // 3s max wait
+// Start initialization in background immediately, but don't block
+initialize().catch(err => console.error('[App] Background init error:', err))
 
-    await Promise.race([initPromise, timeoutPromise])
-    await next()
-})
+// Don't use middleware - it blocks all requests
+// app.use('*', async (c, next) => {
+//     await initialize()
+//     await next()
+// })
 
 // Middleware
 app.use('*', logger())
