@@ -150,7 +150,8 @@ app.openapi(buildTransactionRoute, async (c) => {
           const taskPda = new PublicKey(params.task)
 
           // Prevent creator from claiming their own task
-          const taskAccount = await program.account.task.fetch(taskPda)
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const taskAccount = await (program.account as any).task.fetch(taskPda)
           if ((taskAccount.creator as PublicKey).equals(signerKey)) {
             return c.json({ error: 'Creator cannot claim their own task' }, 400)
           }

@@ -208,12 +208,18 @@ export function useHistoricalTasks(params?: { status?: string; creator?: string;
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
+  const status = params?.status
+  const creator = params?.creator
+  const agent = params?.agent
+
   const fetch = useCallback(async () => {
     setLoading(true)
     setError(null)
     try {
       const result = await fetchHistoricalTasks({
-        ...params,
+        status,
+        creator,
+        agent,
         limit: 500,
       })
       setTasks(result.tasks)
@@ -222,7 +228,7 @@ export function useHistoricalTasks(params?: { status?: string; creator?: string;
     } finally {
       setLoading(false)
     }
-  }, [params?.status, params?.creator, params?.agent, params])
+  }, [status, creator, agent])
 
   useEffect(() => {
     fetch()

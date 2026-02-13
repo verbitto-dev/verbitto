@@ -6,7 +6,7 @@ resolution = true
 skip-lint = false
 
 [programs.devnet]
-task_escrow = "FL4r4cpufpsdbhxLe4Gr3CMpPxAyeAu7WgRZHGb21Tor"
+task_escrow = "B6FPP5RtyrYTQUer1ncVntaipsqoDPAex68sDbky2cD1"
 
 [registry]
 url = "https://api.apr.dev"
@@ -17,3 +17,5 @@ wallet = "~/.config/solana/id.json"
 
 [scripts]
 test = "node --env-file=.env --loader tsx --no-warnings ./node_modules/.bin/ts-mocha -p ./tests/tsconfig.json -t 1000000 tests/**/*.ts"
+
+[hooks]
