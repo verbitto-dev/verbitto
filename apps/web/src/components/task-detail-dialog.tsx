@@ -3,7 +3,7 @@
 import { AnchorProvider, Program } from '@coral-xyz/anchor'
 import { useAnchorWallet, useConnection, useWallet } from '@solana/wallet-adapter-react'
 import { SystemProgram } from '@solana/web3.js'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { Icons } from '@/components/icons'
 import { MarkdownRenderer } from '@/components/markdown-renderer'
@@ -19,7 +19,7 @@ import {
 import { Separator } from '@/components/ui/separator'
 import { Textarea } from '@/components/ui/textarea'
 import { formatDeadline, lamportsToSol, shortKey } from '@/hooks/use-program'
-import { fetchDescription, fetchMessages, type TaskMessage } from '@/lib/api'
+import { fetchDescription, fetchMessages, sendMessage, type TaskMessage } from '@/lib/api'
 import {
   decodePlatform,
   getAgentProfilePda,
@@ -49,6 +49,9 @@ export function TaskDetailDialog({ task, open, onOpenChange, onRefresh }: TaskDe
   const [messages, setMessages] = useState<TaskMessage[]>([])
   const [messagesLoading, setMessagesLoading] = useState(false)
   const [mobileTab, setMobileTab] = useState<'details' | 'messages'>('details')
+  const [chatInput, setChatInput] = useState('')
+  const [chatSending, setChatSending] = useState(false)
+  const messagesEndRef = useRef<HTMLDivElement>(null)
 
   // Fetch description content from API when dialog opens
   useEffect(() => {
@@ -101,6 +104,37 @@ export function TaskDetailDialog({ task, open, onOpenChange, onRefresh }: TaskDe
   const canApprove = task.status === 'Submitted' && isCreator
   const canReject = task.status === 'Submitted' && isCreator
   const canCancel = (task.status === 'Open' || task.status === 'Claimed') && isCreator
+
+  // Chat: user is a participant and task is in an active messaging status
+  const CHAT_STATUSES = ['Claimed', 'Submitted', 'Rejected', 'Disputed']
+  const canChat = publicKey && (isCreator || isAgent) && CHAT_STATUSES.includes(task.status)
+
+  // Auto-scroll messages to bottom
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages])
+
+  const handleSendMessage = async () => {
+    if (!publicKey || !task || !chatInput.trim()) return
+    setChatSending(true)
+    try {
+      const result = await sendMessage(
+        task.publicKey.toBase58(),
+        publicKey.toBase58(),
+        chatInput.trim()
+      )
+      if (result.ok && result.message) {
+        setMessages((prev) => [...prev, result.message!])
+        setChatInput('')
+      } else {
+        toast.error(result.error || 'Failed to send message')
+      }
+    } catch {
+      toast.error('Failed to send message')
+    } finally {
+      setChatSending(false)
+    }
+  }
 
   const handleClaim = async () => {
     if (!publicKey || !anchorWallet) {
@@ -818,9 +852,47 @@ export function TaskDetailDialog({ task, open, onOpenChange, onRefresh }: TaskDe
                       </div>
                     )
                   })}
+                  <div ref={messagesEndRef} />
                 </div>
               )}
             </div>
+
+            {/* Chat input */}
+            {canChat && (
+              <div className="border-t p-3">
+                <div className="flex gap-2">
+                  <Textarea
+                    placeholder="Type a message..."
+                    value={chatInput}
+                    onChange={(e) => setChatInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault()
+                        handleSendMessage()
+                      }
+                    }}
+                    disabled={chatSending}
+                    className="min-h-[36px] max-h-[100px] resize-none text-sm"
+                    rows={1}
+                  />
+                  <Button
+                    size="sm"
+                    onClick={handleSendMessage}
+                    disabled={chatSending || !chatInput.trim()}
+                    className="shrink-0 self-end"
+                  >
+                    {chatSending ? (
+                      <Icons.loader className="size-4 animate-spin" />
+                    ) : (
+                      <Icons.send className="size-4" />
+                    )}
+                  </Button>
+                </div>
+                <p className="text-[10px] text-muted-foreground mt-1">
+                  Press Enter to send, Shift+Enter for new line
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </DialogContent>

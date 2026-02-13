@@ -176,6 +176,7 @@ pub fn claim_task(ctx: Context<ClaimTask>) -> Result<()> {
         VerbittoError::PlatformPaused
     );
     require!(task.status == TaskStatus::Open, VerbittoError::TaskNotOpen);
+    require!(agent_key != task.creator, VerbittoError::CreatorCannotClaim);
 
     let now = Clock::get()?.unix_timestamp;
     require!(now < task.deadline, VerbittoError::TaskExpired);

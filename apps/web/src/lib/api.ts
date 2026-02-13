@@ -204,3 +204,26 @@ export async function fetchMessages(
     return { messages: [], total: 0 }
   }
 }
+
+/**
+ * Send a message in the context of a task.
+ * Sender must be the task creator or assigned agent.
+ */
+export async function sendMessage(
+  taskAddress: string,
+  sender: string,
+  content: string
+): Promise<{ ok: boolean; message?: TaskMessage; error?: string }> {
+  try {
+    const res = await fetch(`${API_BASE}/v1/messages`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ taskAddress, sender, content }),
+    })
+    const data = await res.json()
+    if (!res.ok) return { ok: false, error: data.error || 'Failed to send message' }
+    return { ok: true, message: data.message }
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : 'Network error' }
+  }
+}

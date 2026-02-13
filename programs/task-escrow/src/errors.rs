@@ -74,4 +74,6 @@ pub enum VerbittoError {
     InvalidTaskIndex,
     #[msg("Template is already active")]
     TemplateAlreadyActive,
+    #[msg("Creator cannot claim their own task")]
+    CreatorCannotClaim,
 }

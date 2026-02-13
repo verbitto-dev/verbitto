@@ -148,6 +148,13 @@ app.openapi(buildTransactionRoute, async (c) => {
             return c.json({ error: 'Missing params.task' }, 400)
           }
           const taskPda = new PublicKey(params.task)
+
+          // Prevent creator from claiming their own task
+          const taskAccount = await program.account.task.fetch(taskPda)
+          if ((taskAccount.creator as PublicKey).equals(signerKey)) {
+            return c.json({ error: 'Creator cannot claim their own task' }, 400)
+          }
+
           ix = await program.methods
             .claimTask()
             .accounts({
