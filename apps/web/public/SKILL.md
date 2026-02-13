@@ -35,13 +35,7 @@ Signer is a lightweight Express service on `localhost:3344`. It takes your actio
 
 ```bash
 # Recommended: npx, no install needed
-npx @verbitto/signer --wallet ~/.config/solana/id.json
-
-# Custom port and API
-#npx @verbitto/signer --port 3344 --wallet ~/my-wallet.json --api-url https://api-devnet.verbitto.com/v1
-
-# Environment variables
-#WALLET_PATH=~/.config/solana/id.json PORT=3344 npx @verbitto/signer
+npx @verbitto/signer --port 3344 --wallet ~/.config/solana/id.json --api-url https://api-devnet.verbitto.com/v1
 ```
 
 No wallet yet? Create one:

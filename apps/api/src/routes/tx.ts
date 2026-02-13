@@ -19,7 +19,7 @@ import {
 } from '@verbitto/program'
 import BN from 'bn.js'
 import { loadIdl } from '../lib/idl.js'
-import { getConnection } from '../lib/solana.js'
+import { getConnection, getLatestBlockhashWithTimeout } from '../lib/solana.js'
 import { ErrorSchema } from '../schemas/common.js'
 import {
   BuildTransactionRequestSchema,
@@ -499,7 +499,19 @@ app.openapi(buildTransactionRoute, async (c) => {
 
     const tx = new Transaction().add(ix)
     tx.feePayer = signerKey
-    tx.recentBlockhash = (await connection.getLatestBlockhash()).blockhash
+
+    try {
+      const { blockhash } = await getLatestBlockhashWithTimeout(connection, 10000)
+      tx.recentBlockhash = blockhash
+    } catch (error) {
+      console.error('Failed to get blockhash:', error)
+      return c.json(
+        {
+          error: 'Failed to get latest blockhash from Solana RPC. The RPC endpoint may be slow or unavailable.',
+        },
+        500
+      )
+    }
 
     const serialized = tx.serialize({
       requireAllSignatures: false,
