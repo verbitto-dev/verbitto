@@ -654,18 +654,14 @@ app.post('/build-plain', async (c) => {
 
   let body: any
   try {
-    console.log('[tx/build-plain] About to read raw text...')
-    const raw = c.req.raw
-    console.log('[tx/build-plain] Raw request:', typeof raw, raw.bodyUsed)
+    console.log('[tx/build-plain] About to parse JSON body...')
+    console.log('[tx/build-plain] Content-Type:', c.req.header('content-type'))
 
-    const textPromise = raw.text()
+    const parsePromise = c.req.json()
     const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('Text read timeout')), 10000)
+      setTimeout(() => reject(new Error('JSON parse timeout')), 10000)
     )
-    const text = await Promise.race([textPromise, timeoutPromise])
-    console.log('[tx/build-plain] Got text:', (text as string).substring(0, 100))
-
-    body = JSON.parse(text as string)
+    body = await Promise.race([parsePromise, timeoutPromise])
     console.log('[tx/build-plain] Body parsed:', JSON.stringify(body))
   } catch (err) {
     console.error('[tx/build-plain] Body parse error:', err)
