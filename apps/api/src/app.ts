@@ -36,17 +36,32 @@ const app = new OpenAPIHono()
 let initialized = false
 async function initialize() {
     if (!initialized) {
-        await testConnection()
-        await migrateDb()
-        await loadStore()
-        initialized = true
+        console.log('[App] Starting initialization...')
+        try {
+            console.log('[App] Testing database connection...')
+            await testConnection()
+            console.log('[App] Running migrations...')
+            await migrateDb()
+            console.log('[App] Loading event store...')
+            await loadStore()
+            console.log('[App] Initialization complete!')
+            initialized = true
+        } catch (error) {
+            console.error('[App] Initialization failed:', error)
+            throw error
+        }
     }
 }
 
 // Middleware to ensure initialization
 app.use('*', async (c, next) => {
-    await initialize()
-    await next()
+    try {
+        await initialize()
+        await next()
+    } catch (error) {
+        console.error('[App] Request failed during initialization:', error)
+        return c.json({ error: 'Service initialization failed' }, 500)
+    }
 })
 
 // Middleware

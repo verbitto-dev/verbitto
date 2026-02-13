@@ -86,36 +86,62 @@ const titleMap = new Map<string, string>()
 // ────────────────────────────────────────────────────────────
 
 export async function loadStore(): Promise<void> {
+  console.log('[EventStore] Starting to load events from database...')
+  const startTime = Date.now()
+
   try {
-    // Load all events into memory for projection
-    const rows = await db.select().from(indexedEvents).orderBy(desc(indexedEvents.blockTime))
-    for (const row of rows) {
-      const dedupeKey = row.id
-      processedSigs.add(dedupeKey)
+    // Add timeout protection to database queries
+    const loadTimeout = 15000 // 15 seconds
 
-      const evt: IndexedEvent = {
-        signature: row.signature,
-        slot: row.slot,
-        blockTime: row.blockTime,
-        eventName: row.eventName,
-        data: row.data as Record<string, string>,
+    const loadPromise = (async () => {
+      // Load all events into memory for projection
+      console.log('[EventStore] Loading indexed events...')
+      const rows = await db.select().from(indexedEvents).orderBy(desc(indexedEvents.blockTime))
+      console.log(`[EventStore] Loaded ${rows.length} events`)
+
+      for (const row of rows) {
+        const dedupeKey = row.id
+        processedSigs.add(dedupeKey)
+
+        const evt: IndexedEvent = {
+          signature: row.signature,
+          slot: row.slot,
+          blockTime: row.blockTime,
+          eventName: row.eventName,
+          data: row.data as Record<string, string>,
+        }
+
+        const taskAddr = row.taskAddress
+        if (taskAddr) {
+          const list = taskEventsMap.get(taskAddr) ?? []
+          list.push(evt)
+          taskEventsMap.set(taskAddr, list)
+        }
       }
 
-      const taskAddr = row.taskAddress
-      if (taskAddr) {
-        const list = taskEventsMap.get(taskAddr) ?? []
-        list.push(evt)
-        taskEventsMap.set(taskAddr, list)
-      }
-    }
+      // Load titles
+      console.log('[EventStore] Loading task titles...')
+      const titleRows = await db.select().from(taskTitles)
+      console.log(`[EventStore] Loaded ${titleRows.length} titles`)
 
-    // Load titles
-    const titleRows = await db.select().from(taskTitles)
-    for (const row of titleRows) {
-      titleMap.set(row.taskAddress, row.title)
-    }
+      for (const row of titleRows) {
+        titleMap.set(row.taskAddress, row.title)
+      }
+    })()
+
+    // Race against timeout
+    await Promise.race([
+      loadPromise,
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Database query timeout - exceeded 15s')), loadTimeout)
+      )
+    ])
+
+    console.log(`[EventStore] Loaded successfully in ${Date.now() - startTime}ms`)
   } catch (err) {
     console.error('[EventStore] Failed to load from DB:', err)
+    console.warn('[EventStore] Continuing without cached data - will fetch on demand')
+    // Don't throw - allow API to start without cached data
   }
 }
 

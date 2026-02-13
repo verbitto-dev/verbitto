@@ -16,7 +16,7 @@ export function getConnection(): Connection {
         // Add timeout to all RPC requests
         const controller = new AbortController()
         const timeoutId = setTimeout(() => controller.abort(), 10000) // 10s timeout
-        
+
         return fetch(url, {
           ...options,
           signal: controller.signal,

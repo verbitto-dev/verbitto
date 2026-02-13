@@ -106,7 +106,7 @@ app.openapi(buildTransactionRoute, async (c) => {
   try {
     console.log(`[tx/build] Starting build for instruction: ${instruction}`)
     const startTime = Date.now()
-    
+
     const { program, connection } = await getProgram()
     console.log(`[tx/build] Got program in ${Date.now() - startTime}ms`)
 

@@ -33,7 +33,14 @@ export const db = new Proxy({} as ReturnType<typeof drizzle>, {
 /** Test the database connection */
 export async function testConnection(): Promise<boolean> {
   try {
-    await getClient()`SELECT 1`
+    console.log('[DB] Testing connection...')
+    const testPromise = getClient()`SELECT 1`
+    const timeout = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Database connection timeout - exceeded 5s')), 5000)
+    )
+
+    await Promise.race([testPromise, timeout])
+    console.log('[DB] Connection successful')
     return true
   } catch (err) {
     console.error('[DB] Connection failed:', err)
